@@ -1,0 +1,12 @@
+{
+    "profiles": {
+        "-?": {
+            "commandName": "Project",
+            "commandLineArgs": "-?"
+        },
+        "No Subcommand": {
+            "commandName": "Project",
+            "commandLineArgs": ""
+        }
+    }
+}
