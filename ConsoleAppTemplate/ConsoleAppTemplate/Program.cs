@@ -1,5 +1,8 @@
 ﻿using ConsoleAppTemplate.Command;
+using ConsoleAppTemplate.Framework;
+using ConsoleAppTemplate.Model;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -29,13 +32,26 @@ namespace ConsoleAppTemplate
         private static async Task<int> Main(string[] args)
         {
             return await new HostBuilder()
+                // TODO Uncomment this line to use a single environment configuration file
+                //.UseSingleEnvironment()
+                // TODO Uncomment this line to use a multienvironment configuration file
+                .UseMultiEnvironment()
+
                 .ConfigureServices((context, collection) =>
                 {
                     collection.AddSingleton<IReporter, ConsoleReporter>();
+                    collection.AddSingleton<SampleConfiguration>(provider =>
+                    {
+                        // Get the configuration from the host builder
+                        var config = provider.GetService<IConfiguration>();
+                        
+                        // Load SampleConfiguration section from the config file
+                        var sc =  config.GetSection("SampleConfiguration").Get<SampleConfiguration>();
+                         return sc;
+                    });
                 })
                 .RunCommandLineApplicationAsync<Program>(args);
         }
-
 
 
         /// <summary>
@@ -43,6 +59,7 @@ namespace ConsoleAppTemplate
         /// </summary>
         /// <param name="application"></param>
         /// <param name="reporter"></param>
+        /// <param name="sampleConfiguration"></param>
         /// <returns>0 on success or any positive number for failure</returns>
         /// <remarks>
         /// - If you are not using sub commands you can rewrite this method to meet your needs
@@ -53,9 +70,13 @@ namespace ConsoleAppTemplate
         internal int OnExecute
         (
             CommandLineApplication<Program> application,
-            IReporter reporter
+            IReporter reporter,
+            SampleConfiguration sampleConfiguration
         )
         {
+            
+            reporter.Output($"\nCommandTimeout from config file: {sampleConfiguration.CommandTimeout}\n\n");
+
             // TODO if you are using not using sub commands then you can remove the lines below and replace with your own code
             application.ShowHelp();
             return ExitCode.Success;
@@ -64,6 +85,7 @@ namespace ConsoleAppTemplate
             // TODO If you are using sub commands then you can remove the lines below and use the code above
             // TODO Add your code here
             reporter.Warn("Your code here");
+
 
             // TODO Return 0 for success and any positive number for failure
             return ExitCode.Success;
