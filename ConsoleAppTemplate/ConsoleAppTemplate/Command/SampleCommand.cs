@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 
 namespace ConsoleAppTemplate.Command;
 
@@ -58,4 +59,35 @@ internal class SampleCommand
     [EmailAddress]
     [MaxLength(255)]
     public string? NotifyUponComplete { get; set; }
+
+
+    internal async Task<int> OnExecuteAsync
+    (
+        IConsole console,
+        IReporter reporter,
+        ILogger<SampleCommand> logger
+    )
+    {
+        logger.LogInformation("Starting {command}", GetType().Name);
+
+        try
+        {
+            // TODO Add your code here to process the command line arguments
+            // TODO You can use the reporter to write to the console
+            console.WriteLine("Hello world!");
+            reporter.Warn("Sample console warning");
+            logger.LogWarning("Sample log warning");
+        }
+        catch (Exception e)
+        {
+            logger.LogCritical(e, e.Message);
+            console.WriteLine(e);
+            return ExitCode.ApplicationError;
+        }
+
+
+        logger.LogInformation("Completed {command}", GetType().Name);
+
+        return ExitCode.Success;
+    }
 }
