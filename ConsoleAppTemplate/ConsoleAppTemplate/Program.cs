@@ -1,10 +1,12 @@
-﻿using ConsoleAppTemplate.Command;
+﻿using System.Reflection;
+using ConsoleAppTemplate.Command;
 using ConsoleAppTemplate.Framework;
 using ConsoleAppTemplate.Model;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 
 namespace ConsoleAppTemplate
@@ -31,12 +33,20 @@ namespace ConsoleAppTemplate
     {
         private static async Task<int> Main(string[] args)
         {
-            return await new HostBuilder()
+            var result = await new HostBuilder()
                 // TODO Uncomment this line to use a single environment configuration file
-                //.UseSingleEnvironment()
+                .UseSingleEnvironment()
                 // TODO Uncomment this line to use a multienvironment configuration file
-                .UseMultiEnvironment()
+                //.UseMultiEnvironment()
 
+                // UseSerilog
+                .UseSerilog((context, configuration ) =>
+                {
+                    configuration
+                        .ReadFrom.Configuration(context.Configuration)
+                        .Enrich.WithProperty("Version", Assembly.GetEntryAssembly()?.GetName().Version)
+                        ;
+                })
                 .ConfigureServices((context, collection) =>
                 {
                     collection.AddSingleton<IReporter, ConsoleReporter>();
@@ -51,6 +61,10 @@ namespace ConsoleAppTemplate
                     });
                 })
                 .RunCommandLineApplicationAsync<Program>(args);
+
+            await Log.CloseAndFlushAsync();
+
+            return result;
         }
 
 
