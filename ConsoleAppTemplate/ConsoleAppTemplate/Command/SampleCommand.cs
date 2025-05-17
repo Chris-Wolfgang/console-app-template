@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using ConsoleAppTemplate.Model;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
@@ -63,6 +64,7 @@ internal class SampleCommand
 
     internal async Task<int> OnExecuteAsync
     (
+        SampleConfiguration configuration,
         IConsole console,
         IReporter reporter,
         ILogger<SampleCommand> logger
@@ -75,7 +77,9 @@ internal class SampleCommand
             // TODO Add your code here to process the command line arguments
             // TODO You can use the reporter to write to the console
             console.WriteLine("Hello world!");
+            console.WriteLine($"CommandTimeout: {configuration.CommandTimeout}");
             reporter.Warn("Sample console warning");
+            
             logger.LogWarning("Sample log warning");
         }
         catch (Exception e)

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using System.Configuration;
 
 
 namespace ConsoleAppTemplate
@@ -47,18 +48,26 @@ namespace ConsoleAppTemplate
                         .Enrich.WithProperty("Version", Assembly.GetEntryAssembly()?.GetName().Version)
                         ;
                 })
-                .ConfigureServices((context, collection) =>
+                .ConfigureServices((_, serviceCollection) =>
                 {
-                    collection.AddSingleton<IReporter, ConsoleReporter>();
-                    collection.AddSingleton<SampleConfiguration>(provider =>
-                    {
-                        // Get the configuration from the host builder
-                        var config = provider.GetService<IConfiguration>();
-                        
-                        // Load SampleConfiguration section from the config file
-                        var sc =  config.GetSection("SampleConfiguration").Get<SampleConfiguration>();
-                         return sc;
-                    });
+                    serviceCollection.AddSingleton<IReporter, ConsoleReporter>();
+                    serviceCollection.AddSingleton<SampleConfiguration>
+                    (
+                        provider => provider
+                            // Get the configuration from the host builder
+                            .GetRequiredService<IConfiguration>()
+                            // Get the SampleConfiguration section from the config file
+                            .GetSection("SampleConfiguration")
+                            // Bind the SampleConfiguration section to the SampleConfiguration class
+                            .Get<SampleConfiguration>()
+                            // If section is not found, throw an exception
+                            ?? throw new ConfigurationErrorsException
+                                (
+                                    "Could not bind to specified config section. " +
+                                    "Make sure the section exists in the config file and matches " +
+                                    "the specified class."
+                                )
+                    );
                 })
                 .RunCommandLineApplicationAsync<Program>(args);
 
