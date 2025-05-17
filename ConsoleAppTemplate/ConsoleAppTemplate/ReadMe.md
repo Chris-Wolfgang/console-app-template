@@ -37,18 +37,20 @@ To view the list of TODOs, in Visual Studio, under the View menu, select Task Li
 1. Add a description of the application  
 1. Determine if you are using sub commands or not and update the OnExecute method accordingly. See Sub Commands section on this file for more information this.
 1. If you are not using sub commands, and using the OnExecute method with async code, consider changing the singature to `Task<int> OnExecuteAsync (...)`
-1. Determine if you are using a single `appSettings.json` file or one per environment. See Config Files section in this file for more information on this.
+1. Determine if you are using a single `appSettings.json` file or one per environment. 
+See [Setup Config Files](#setup-config-files) section in this file for more information on this.
 
-[!NOTE]
-This template is designed so the application returns 0 on success and a value greater than 0 on failure.
-This tells the operating system, or the application that launched this app, that the application has succeeded or failed. 
+>**Note**
+>
+>This template is designed so the application returns 0 on success and a value greater than 0 on failure.
+This tells the operating system, or the application that launched this application, that the application has succeeded or failed. 
 This is important for applications that are run as part of a pipeline or in a container. 
 It is recommended that you follow this approach and use either int OnExecute or 
 Task&lt;int&gt; OnExecuteAsync and return 0 if the command succeeds or a value greater than 0 if 
-it fails. The template defines a class ExistCode with predefined values including `Success` and `ApplicationError`
-You can add additional values to this class if you want to use them.
+it fails. The template defines a class, `ExistCode` with predefined values including `Success` and `ApplicationError`
+You can add additional values to this class.
 
-The template wraps the contents on Main in a try/catch block which will catch any unhandled exceptions and log
+The template wraps the contents of Main in a try/catch block which will catch any unhandled exceptions and log
 them to any defined sinks, write the exception directly to the console and return `ExitCode.UnhandledException`.
 
 
