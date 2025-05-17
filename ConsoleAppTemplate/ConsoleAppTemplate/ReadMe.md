@@ -240,14 +240,30 @@ A user can create multiple response files for different purposes, and then use t
 	
 
 # Logging
-Logging is implmented so that is can be customized via the config file. This allows you to have different settings 
-for different environments if you are using one file per environment. If you are using a single AppSettings.json file
-for all environments, being able to configure logging via the config file, allows you to change the logging settings
-to provide more or less detail as situations arise, without the need to recompile the application.
 
-Log settings are in the config file starting in the Serilog section. This section must be in the root level of the config file.
+This template is configured to use the [Serilog](https://serilog.net/) logging library.
+Serilog is a logging library that allows you to log to multiple sinks, including the console, file, and other sinks.
+Additional sinks can be found at [Serilog Site]( https://github.com/serilog/serilog/wiki/provided-sinks)
 
-## ``Using``
+Logging is implmented so that is can be customized via the config file rather than through code.
+This allows you to have different settings for different environments if you are using one file per environment. 
+It also allows you to change the logging settings to provide more or less detail as situations arise, 
+without the need to recompile the application.
+
+However, you can use any logging library as long as it supports the Microsoft.Extensions.Logging library.
+To use a different logging library, you will need to 
+- [ ] Remove the Serilog packages 
+- [ ] Remove the Serilog configuratuion from the config file
+- [ ] Add the package for the logging library you want to use.
+- [ ] Add the configuration for the logging library you want to use
+- [ ] Update the Program.cs file to use the new logging library
+
+
+Log settings are in the config file starting in the `Serilog` section. This section must be in the root level of the config file.
+
+## Serilog Config Settings
+
+### ``Using``
 
 **Possible values**: Any valid sink you have installed
 
@@ -264,9 +280,8 @@ configuration in the `WriteTo` section, but it will not be used.
 
 
 
-## `MinimumLevel` 
+### `MinimumLevel` 
 
-### `Default`
 **Possible values**: `Debug`, `Verbose`, `Information`, `Warning`, `Error` or `Fatal`
 **Default value**: `Debug`
 
@@ -278,7 +293,7 @@ but you can only raise the level, never lower it.
 For example, you can make the Console sink
 `Warning` but have the minimum for all others as `Information`. 
 
-### `Override`
+#### `Override`
 
 **Possible values**: Any valid namespace
 **Default value**: `Microsoft` and `System`
@@ -291,10 +306,12 @@ logs from the .Net libraries. This might be useful in a dev environment, but it 
 recommended in production.
 
 
-## `WriteTo` 
+### `WriteTo` 
 
 This section is where you configure the sinks that you want to use. The template 
-is configured to use the Console and File sinks, but you can remove either or both.
+is configured to use the [Console.Sink](https://github.com/serilog/serilog-sinks-console?tab=readme-ov-file#readme)
+and [File.Sink](https://github.com/serilog/serilog-sinks-file?tab=readme-ov-file#readme)
+sinks, but you can remove either or both.
 
 The exact configuration will depend on the sink you are using. The Console and File sinks
 are configured for you as part of this template. 
@@ -306,7 +323,7 @@ resgitered in the `Using` section. If it is not registered in the `Using` sectio
 or the appropriate package is not installed, the sink will not work. 
 
 
-## `Enrich`
+### `Enrich`
 
 This section is used to add additional information to the logs. The exact configuration
 will depend on the enrichers you are using. In addition, you can add your own custom
@@ -321,4 +338,3 @@ This template uses the following libraries:
 
 - McMaster CommandLineUtils https://natemcmaster.github.io/CommandLineUtils/
 - Serilog https://serilog.net/
-- 
