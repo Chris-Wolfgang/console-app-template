@@ -38,12 +38,8 @@ namespace ConsoleAppTemplate
             {
                 // Create a new HostBuilder to build the application
                 return await new HostBuilder()
-
-                    // TODO Uncomment this line to use a single environment configuration file
-                    .UseSingleEnvironment()
-                    
-                    // TODO Uncomment this line to use a multienvironment configuration file
-                    //.UseMultiEnvironment()
+                    // TODO If using separate config file per environment change this to OneFilePerEnvironment
+                    .AddConfigurationFile(ConfigurationFileMethod.SingleFile)
 
                     // UseSerilog
                     .UseSerilog((context, configuration) =>
