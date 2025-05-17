@@ -1,4 +1,4 @@
-﻿using ConsoleAppTemplate.Model;
+﻿using ConsoleAppTemplate.Model.Framework;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
