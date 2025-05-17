@@ -34,47 +34,65 @@ namespace ConsoleAppTemplate
     {
         private static async Task<int> Main(string[] args)
         {
-            var result = await new HostBuilder()
-                // TODO Uncomment this line to use a single environment configuration file
-                .UseSingleEnvironment()
-                // TODO Uncomment this line to use a multienvironment configuration file
-                //.UseMultiEnvironment()
+            try
+            {
+                // Create a new HostBuilder to build the application
+                return await new HostBuilder()
 
-                // UseSerilog
-                .UseSerilog((context, configuration ) =>
-                {
-                    configuration
-                        .ReadFrom.Configuration(context.Configuration)
-                        .Enrich.WithProperty("Version", Assembly.GetEntryAssembly()?.GetName().Version)
-                        ;
-                })
-                .ConfigureServices((_, serviceCollection) =>
-                {
-                    serviceCollection.AddSingleton<IReporter, ConsoleReporter>();
-                    serviceCollection.AddSingleton<SampleConfiguration>
-                    (
-                        provider => provider
-                            // Get the configuration from the host builder
-                            .GetRequiredService<IConfiguration>()
-                            // Get the SampleConfiguration section from the config file
-                            .GetSection("SampleConfiguration")
-                            // Bind the SampleConfiguration section to the SampleConfiguration class
-                            .Get<SampleConfiguration>()
-                            // If section is not found, throw an exception
-                            ?? throw new ConfigurationErrorsException
+                    // TODO Uncomment this line to use a single environment configuration file
+                    .UseSingleEnvironment()
+                    
+                    // TODO Uncomment this line to use a multienvironment configuration file
+                    //.UseMultiEnvironment()
+
+                    // UseSerilog
+                    .UseSerilog((context, configuration) =>
+                    {
+                        configuration
+                            .ReadFrom.Configuration(context.Configuration)
+                            .Enrich.WithProperty("Version", Assembly.GetEntryAssembly()?.GetName().Version)
+                            ;
+                    })
+                    
+                    // Configure dependency injection
+                    .ConfigureServices((_, serviceCollection) =>
+                    {
+                        serviceCollection.AddSingleton<IReporter, ConsoleReporter>();
+                        serviceCollection.AddSingleton<SampleConfiguration>
+                        (
+                            provider => provider
+                                // Get the configuration from the host builder
+                                .GetRequiredService<IConfiguration>()
+                      
+                                // Get the SampleConfiguration section from the config file
+                                .GetSection("SampleConfiguration")
+                                
+                                // Bind the SampleConfiguration section to the SampleConfiguration class
+                                .Get<SampleConfiguration>()
+
+                                // If section is not found, throw an exception
+                                ?? throw new ConfigurationErrorsException
                                 (
                                     "Could not bind to specified config section. " +
                                     "Make sure the section exists in the config file and matches " +
                                     "the specified class."
                                 )
-                    );
-                })
-                .RunCommandLineApplicationAsync<Program>(args);
-
-            await Log.CloseAndFlushAsync();
-
-            return result;
+                        );
+                    })
+                    .RunCommandLineApplicationAsync<Program>(args);
+            }
+            catch (Exception e)
+            {
+                await Console.Error.WriteLineAsync(e.Message);
+                Log.Logger.Fatal(e, "Unhandled exception: {Message}", e.Message);
+                return ExitCode.UnhandledException;
+            }
+            finally
+            {
+                await Log.CloseAndFlushAsync();
+            }
         }
+
 
 
         /// <summary>
