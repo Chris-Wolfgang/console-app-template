@@ -38,8 +38,13 @@ namespace ConsoleAppTemplate
             {
                 // Create a new HostBuilder to build the application
                 return await new HostBuilder()
-                    // TODO If using separate config file per environment change this to OneFilePerEnvironment
-                    .AddConfigurationFile(ConfigurationFileMethod.SingleFile)
+                    .AddConfigurationFile
+                        (
+                            // TODO If using separate config file per environment change this to OneFilePerEnvironment
+                            ConfigurationFileMethod.SingleFile, 
+                            optional: false,
+                            reloadOnChange: false
+                        )
 
                     // UseSerilog
                     .UseSerilog((context, configuration) =>
@@ -53,27 +58,36 @@ namespace ConsoleAppTemplate
                     // Configure dependency injection
                     .ConfigureServices((_, serviceCollection) =>
                     {
-                        serviceCollection.AddSingleton<IReporter, ConsoleReporter>();
-                        serviceCollection.AddSingleton<SampleConfiguration>
-                        (
-                            provider => provider
-                                // Get the configuration from the host builder
-                                .GetRequiredService<IConfiguration>()
-                      
-                                // Get the SampleConfiguration section from the config file
-                                .GetSection("SampleConfiguration")
-                                
-                                // Bind the SampleConfiguration section to the SampleConfiguration class
-                                .Get<SampleConfiguration>()
+                        serviceCollection
+                            
+                            .AddSingleton<IReporter, ConsoleReporter>()
 
-                                // If section is not found, throw an exception
-                                ?? throw new ConfigurationErrorsException
-                                (
-                                    "Could not bind to specified config section. " +
-                                    "Make sure the section exists in the config file and matches " +
-                                    "the specified class."
-                                )
-                        );
+                            // TODO Remove SampleConfiguration if not needed
+                            .AddSingleton<SampleConfiguration>
+                            (
+                                provider => provider
+                                    // Get the configuration from the host builder
+                                    .GetRequiredService<IConfiguration>()
+                          
+                                    // Get the SampleConfiguration section from the config file
+                                    .GetSection("SampleConfiguration")
+                                    
+                                    // Bind the SampleConfiguration section to the SampleConfiguration class
+                                    .Get<SampleConfiguration>()
+
+                                    // If section is not found, throw an exception
+                                    ?? throw new ConfigurationErrorsException
+                                    (
+                                        "Could not bind to specified config section. " +
+                                        "Make sure the section exists in the config file and matches " +
+                                        "the specified class."
+                                    )
+                            )
+
+                            // TODO Add additional services here
+
+
+                            ;
                     })
                     .RunCommandLineApplicationAsync<Program>(args);
             }
