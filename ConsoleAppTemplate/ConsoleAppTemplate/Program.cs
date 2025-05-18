@@ -3,11 +3,9 @@ using ConsoleAppTemplate.Command;
 using ConsoleAppTemplate.Framework;
 using ConsoleAppTemplate.Model;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using System.Configuration;
 
 
 namespace ConsoleAppTemplate
@@ -59,33 +57,12 @@ namespace ConsoleAppTemplate
                     .ConfigureServices((_, serviceCollection) =>
                     {
                         serviceCollection
-                            
                             .AddSingleton<IReporter, ConsoleReporter>()
 
-                            // TODO Remove SampleConfiguration if not needed
-                            .AddSingleton<SampleConfiguration>
-                            (
-                                provider => provider
-                                    // Get the configuration from the host builder
-                                    .GetRequiredService<IConfiguration>()
-                          
-                                    // Get the SampleConfiguration section from the config file
-                                    .GetSection("SampleConfiguration")
-                                    
-                                    // Bind the SampleConfiguration section to the SampleConfiguration class
-                                    .Get<SampleConfiguration>()
-
-                                    // If section is not found, throw an exception
-                                    ?? throw new ConfigurationErrorsException
-                                    (
-                                        "Could not bind to specified config section. " +
-                                        "Make sure the section exists in the config file and matches " +
-                                        "the specified class."
-                                    )
-                            )
+                            // TODO Remove SampleConfiguration
+                            .BindConfigSection<SampleConfiguration>("SampleConfiguration")
 
                             // TODO Add additional services here
-
 
                             ;
                     })
