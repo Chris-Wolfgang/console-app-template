@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Chris Wolfgang",
+    "classifications": [ "Common", "Console", "Preconfigured Console" ],
+    "identity": "Wolfgang.Preconfigured.Console",
+    "name": "Preconfigured Console App",
+    "shortName": "wpconsole",
+    "sourceName": "ConsoleAppTemplate",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "postActions": [
+        {
+            "description": "Review ReadMe.md",
+            "manualInstructions": [
+                {
+                    "text": "Review the ReadMe.md file in the root of the project for a descrption of the project and next steps"
+                }
+            ],
+            "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+            "continueOnError": true
+        }
+    ]
+}
