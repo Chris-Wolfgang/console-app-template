@@ -4,9 +4,13 @@
             "commandName": "Project",
             "commandLineArgs": "-?"
         },
-        "No Subcommand": {
+        "sample -?": {
             "commandName": "Project",
-            "commandLineArgs": ""
+            "commandLineArgs": "sample -?"
+        },
+        "sample": {
+            "commandName": "Project",
+            "commandLineArgs": "sample appsettings.json output.txt"
         }
     }
 }

@@ -1,38 +1,61 @@
-﻿using ConsoleAppTemplate.Model;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace ConsoleAppTemplate.Framework
 {
+    internal enum ConfigurationFileMethod
+    {
+        SingleFile,
+        OneFilePerEnvironment
+    }
+
+
+
     internal static class IHostBuilderExtensions
     {
-        public static IHostBuilder UseSingleEnvironment(this IHostBuilder builder)
+        /// <summary>
+        /// Adds a configuration file to the host builder.
+        /// </summary>
+        /// <param name="builder"> </param>
+        /// <param name="method"> </param>
+        /// <param name="optional" ></param>
+        /// <param name="reloadOnChange"> </param>
+        /// <returns>IHostBuilder</returns>
+        /// <exception cref="ArgumentNullException">builder is null</exception>
+        /// <exception cref="ArgumentOutOfRangeException">method was not a valid value</exception>
+        public static IHostBuilder AddConfigurationFile
+        (
+            this IHostBuilder builder, 
+            ConfigurationFileMethod method,
+            bool optional = false,
+            bool reloadOnChange = false
+        )
         {
-            var config = new SingleEnvironmentConfiguration
-            {
-                BasePath = ConfigurationPath.Combine(AppContext.BaseDirectory),
-                ConfigFile = new ConfigurationFile
-                {
-                    Name = "AppSettings.json",
-                    Optional = false,
-                    ReloadOnChange = true
-                }
-            };
+            ArgumentNullException.ThrowIfNull(builder);
 
-            return UseSingleEnvironment(builder, config);
+            return method switch
+            {
+                ConfigurationFileMethod.SingleFile => AddSingleConfigFile(builder, optional, reloadOnChange),
+                ConfigurationFileMethod.OneFilePerEnvironment => AddConfigFileForEnvironment(builder, optional, reloadOnChange),
+                _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+            };
         }
 
 
 
-        public static IHostBuilder UseSingleEnvironment(this IHostBuilder builder, SingleEnvironmentConfiguration config)
+        private static IHostBuilder AddSingleConfigFile
+        (
+            this IHostBuilder builder,
+            bool optional,
+            bool reloadOnChange 
+        )
          {
             builder
                 .ConfigureAppConfiguration((context, configurationBuilder) =>
                 {
                     configurationBuilder
-                        .SetBasePath(config.BasePath)
-                        .AddJsonFile(config.ConfigFile.Name, optional: config.ConfigFile.Optional,
-                            reloadOnChange: config.ConfigFile.ReloadOnChange)
+                        .SetBasePath(ConfigurationPath.Combine(AppContext.BaseDirectory))
+                        .AddJsonFile("AppSettings.json", optional, reloadOnChange)
                         .AddEnvironmentVariables();
                 });
 
@@ -41,7 +64,12 @@ namespace ConsoleAppTemplate.Framework
 
 
 
-        public static IHostBuilder UseMultiEnvironment(this IHostBuilder builder)
+        private static IHostBuilder AddConfigFileForEnvironment
+            (
+                this IHostBuilder builder,
+                bool optional,
+                bool reloadOnChange
+            )
         {
             var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
             if (string.IsNullOrWhiteSpace(environment))
@@ -49,38 +77,15 @@ namespace ConsoleAppTemplate.Framework
                 Environment.FailFast("System variable DOTNET_ENVIRONMENT is not set.");
             }
 
-            var config = new MultiEnvironmentConfiguration
-            {
-                BasePath = ConfigurationPath.Combine(AppContext.BaseDirectory),
-                ConfigFile = new ConfigurationFile
-                {
-                    Name = $"AppSettings.{environment}.json",
-                    Optional = false,
-                    ReloadOnChange = true
-                }
-            };
-
-            return UseMultiEnvironment(builder, config);
-        }
-
-
-
-        public static IHostBuilder UseMultiEnvironment(this IHostBuilder builder, MultiEnvironmentConfiguration config)
-        {
             builder
                 .ConfigureAppConfiguration((context, configurationBuilder) =>
                 {
                     configurationBuilder
-                        .SetBasePath(config.BasePath)
-                        .AddJsonFile(config.ConfigFile.Name, optional: config.ConfigFile.Optional,
-                            reloadOnChange: config.ConfigFile.ReloadOnChange)
+                        .SetBasePath(ConfigurationPath.Combine(AppContext.BaseDirectory))
+                        .AddJsonFile($"AppSettings.{environment}.json", optional, reloadOnChange)
                         .AddEnvironmentVariables();
                 });
-
             return builder;
         }
-
-
-
     }
 }

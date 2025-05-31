@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using ConsoleAppTemplate.Model;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 
 namespace ConsoleAppTemplate.Command;
 
@@ -52,10 +54,44 @@ internal class SampleCommand
 
     [Option
         (
-            Description = "If set, the program will not send an email when complete"
+            Description = "When specified, sends an email notification to the specified address"
         )
     ]
     [EmailAddress]
     [MaxLength(255)]
-    public string? NotifyUponComplete { get; set; }
+    public string? EmailAddress { get; set; }
+
+
+    internal async Task<int> OnExecuteAsync
+    (
+        SampleConfiguration configuration,
+        IConsole console,
+        IReporter reporter,
+        ILogger<SampleCommand> logger
+    )
+    {
+        logger.LogInformation("Starting {command}", GetType().Name);
+
+        try
+        {
+            // TODO Add your code here to process the command line arguments
+            // TODO You can use the reporter to write to the console
+            console.WriteLine("Hello world!");
+            console.WriteLine($"CommandTimeout: {configuration.CommandTimeout}");
+            reporter.Warn("Sample console warning");
+            
+            logger.LogWarning("Sample log warning");
+        }
+        catch (Exception e)
+        {
+            logger.LogCritical(e, e.Message);
+            console.WriteLine(e);
+            return ExitCode.ApplicationError;
+        }
+
+
+        logger.LogInformation("Completed {command}", GetType().Name);
+
+        return ExitCode.Success;
+    }
 }

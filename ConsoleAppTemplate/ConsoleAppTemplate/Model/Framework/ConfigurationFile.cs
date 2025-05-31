@@ -1,4 +1,4 @@
-﻿namespace ConsoleAppTemplate.Model;
+﻿namespace ConsoleAppTemplate.Model.Framework;
 
 internal record ConfigurationFile
 {
