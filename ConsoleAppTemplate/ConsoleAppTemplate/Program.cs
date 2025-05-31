@@ -1,10 +1,11 @@
-﻿using ConsoleAppTemplate.Command;
+﻿using System.Reflection;
+using ConsoleAppTemplate.Command;
 using ConsoleAppTemplate.Framework;
 using ConsoleAppTemplate.Model;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 
 namespace ConsoleAppTemplate
@@ -27,31 +28,60 @@ namespace ConsoleAppTemplate
     )
     ]
     [Subcommand(typeof(SampleCommand))]
+    // TODO Add additional sub commands here
+    //[Subcommand(typeof(<your type>))]
     internal class Program
     {
         private static async Task<int> Main(string[] args)
         {
-            return await new HostBuilder()
-                // TODO Uncomment this line to use a single environment configuration file
-                //.UseSingleEnvironment()
-                // TODO Uncomment this line to use a multienvironment configuration file
-                .UseMultiEnvironment()
+            try
+            {
+                // Create a new HostBuilder to build the application
+                return await new HostBuilder()
+                    .AddConfigurationFile
+                        (
+                            // TODO If using separate config file per environment change this to OneFilePerEnvironment
+                            ConfigurationFileMethod.SingleFile, 
+                            optional: false,
+                            reloadOnChange: false
+                        )
 
-                .ConfigureServices((context, collection) =>
-                {
-                    collection.AddSingleton<IReporter, ConsoleReporter>();
-                    collection.AddSingleton<SampleConfiguration>(provider =>
+                    // UseSerilog
+                    .UseSerilog((context, configuration) =>
                     {
-                        // Get the configuration from the host builder
-                        var config = provider.GetService<IConfiguration>();
-                        
-                        // Load SampleConfiguration section from the config file
-                        var sc =  config.GetSection("SampleConfiguration").Get<SampleConfiguration>();
-                         return sc;
-                    });
-                })
-                .RunCommandLineApplicationAsync<Program>(args);
+                        configuration
+                            .ReadFrom.Configuration(context.Configuration)
+                            .Enrich.WithProperty("Version", Assembly.GetEntryAssembly()?.GetName().Version)
+                            ;
+                    })
+                    
+                    // Configure dependency injection
+                    .ConfigureServices((context, serviceCollection) =>
+                    {
+                        serviceCollection
+                            .AddSingleton<IReporter, ConsoleReporter>()
+
+                            // TODO Remove SampleConfiguration
+                            .BindConfigSection<SampleConfiguration>("SampleConfiguration")
+
+                            // TODO Add additional services here
+
+                            ;
+                    })
+                    .RunCommandLineApplicationAsync<Program>(args);
+            }
+            catch (Exception e)
+            {
+                await Console.Error.WriteLineAsync(e.Message);
+                Log.Logger.Fatal(e, "Unhandled exception: {Message}", e.Message);
+                return ExitCode.UnhandledException;
+            }
+            finally
+            {
+                await Log.CloseAndFlushAsync();
+            }
         }
+
 
 
         /// <summary>
