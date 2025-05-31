@@ -26,8 +26,13 @@ To view the list of TODOs, in Visual Studio, under the View menu, select Task Li
 ## Project  
 
 1. Set the version of .Net that you want to use
-1. Run package restore to get the latest packages - While the packages were updated when this template was made, and periodically updated, it is still best to run update before you get started
-1. Set the version number in the project file. See [Semver.org](https://semver.org/) for more information on symantec versioning.  
+1. Set the version number in the project file. See [Semver.org](https://semver.org/) 
+   for more information on symantec versioning.  You can set the version number by
+   right clicking on the project and selecting `Edit Project File` and changing the 
+   version number. 
+1. Run package restore to get the latest packages. While the packages were updated 
+   when this template was made, and periodically updated, it is still best to run 
+   update before you get started
 
 
 
