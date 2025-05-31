@@ -54,12 +54,12 @@ internal class SampleCommand
 
     [Option
         (
-            Description = "If set, the program will not send an email when complete"
+            Description = "When specified, sends an email notification to the specified address"
         )
     ]
     [EmailAddress]
     [MaxLength(255)]
-    public string? NotifyUponComplete { get; set; }
+    public string? EmailAddress { get; set; }
 
 
     internal async Task<int> OnExecuteAsync
