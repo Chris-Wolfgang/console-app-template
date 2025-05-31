@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Chris Wolfgang",
+    "classifications": [ "Console" ],
+    "identity": "Wolfgang.Preconfigured.Console",
+    "name": "Wolfgang Preconfigured Console App",
+    "shortName": "wpconsole",
+    "sourceName": "ConsoleAppTemplate",
+    "description": "A console application preconfigured with additional package including McMaster's CommandLineUtils, Serilog and others'",
+    "defaultName": "ConsoleApp",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "postActions": [
+        {
+            "description": "Run package upgrade",
+            "manualInstructions": [
+                {
+                    // TODO run a CLI to upgrade packages
+                    "text": "Review the ReadMe.md file in the root of the project for a descrption of the project and next steps"
+                }
+            ],
+            "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+            "continueOnError": true
+        },
+        {
+            "description": "Review ReadMe.md",
+            "manualInstructions": [
+                {
+                    "text": "Review the ReadMe.md file in the root of the project for a descrption of the project and next steps"
+                }
+            ],
+            "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+            "continueOnError": true
+        }
+    ]
+}
