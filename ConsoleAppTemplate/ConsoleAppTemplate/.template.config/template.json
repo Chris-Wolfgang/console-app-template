@@ -1,9 +1,9 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Chris Wolfgang",
-    "classifications": [ "Common", "Console", "Preconfigured Console" ],
+    "classifications": [ "Common", "Console" ],
     "identity": "Wolfgang.Preconfigured.Console",
-    "name": "Preconfigured Console App",
+    "name": "Wolfgang Preconfigured Console App",
     "shortName": "wpconsole",
     "sourceName": "ConsoleAppTemplate",
     "tags": {
