@@ -18,7 +18,7 @@
             "manualInstructions": [
                 {
                     // TODO run a CLI to upgrade packages
-                    "text": "Review the ReadMe.md file in the root of the project for a descrption of the project and next steps"
+                    "text": "Update all the nuget packages installed in the project"
                 }
             ],
             "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
