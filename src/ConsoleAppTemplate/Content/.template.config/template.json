@@ -4,7 +4,7 @@
     "classifications": [ "Console" ],
     "identity": "Wolfgang.Preconfigured.Console",
     "name": "Wolfgang Preconfigured Console App",
-    "shortName": "wpconsole",
+    "shortName": "cwconsole",
     "sourceName": "ConsoleAppTemplate",
     "description": "A console application preconfigured with additional package including McMaster's CommandLineUtils, Serilog and others'",
     "defaultName": "ConsoleApp",
