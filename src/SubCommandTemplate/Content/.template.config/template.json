@@ -4,7 +4,7 @@
     "classifications": [ "C#", "Code" ],
     "identity": "Wolfgang.Preconfigured.Console.SubCommand",
     "name": "Wolfgang Preconfigured Console App SubCommand",
-    "shortName": "wpsubcmd",
+    "shortName": "cwsubcmd",
     "sourceName": "SubCommandTemplate",
     "description": "A preconfigured SubCommand for use with Wolfgang Preconfigured Console App SubCommand",
     "defaultName": "SubCommand",
