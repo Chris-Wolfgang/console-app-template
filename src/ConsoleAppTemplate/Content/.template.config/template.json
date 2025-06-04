@@ -8,7 +8,15 @@
     "sourceName": "ConsoleAppTemplate",
     "description": "A console application preconfigured with additional package including McMaster's CommandLineUtils, Serilog and others'",
     "defaultName": "ConsoleApp",
-    "baseline": "framework",
+    
+    "baselines": {
+        "default": {
+            "defaultOverrides": {
+                "framework": "net8.0",
+            }
+        }
+    },
+
     "tags": {
         "language": "C#",
         "type": "project"
