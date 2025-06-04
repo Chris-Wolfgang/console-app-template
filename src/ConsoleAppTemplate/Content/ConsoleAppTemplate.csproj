@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
 	<PackageVersion>0.1.0</PackageVersion>
 	<LangVersion>latest</LangVersion>
+	<Copyright>Copyright © 2025 Chris Wolfgang</Copyright> 
   </PropertyGroup>
 
   <ItemGroup>

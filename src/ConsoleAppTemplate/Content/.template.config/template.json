@@ -8,15 +8,24 @@
     "sourceName": "ConsoleAppTemplate",
     "description": "A console application preconfigured with additional package including McMaster's CommandLineUtils, Serilog and others'",
     "defaultName": "ConsoleApp",
-    
+
     "baselines": {
         "default": {
             "defaultOverrides": {
                 "framework": "net8.0",
-                "version" : "0.1.0"
+                "version": "0.1.0",
+                "copyright": "Copyright © 2025 Chris Wolfgang"
             }
         }
     },
+
+    "macros": [
+        {
+            "type": "evaluate",
+            "name": "currentYear",
+            "value": "now:yyyy"
+        }
+    ],
 
     "tags": {
         "language": "C#",
@@ -55,6 +64,14 @@
             "datatype": "text",
             "replaces": "0.1.0",
             "defaultValue": "1.0.0-alpha"
+        },
+
+        "copyright": {
+            "type": "parameter",
+            "description": "Copyright notice",
+            "datatype": "text",
+            "replaces": "Copyright © 2025 Chris Wolfgang",
+            "defaultValue": "Copyright © {{ currentYear }} <Your Company>"
         }
     },
     "postActions": [
