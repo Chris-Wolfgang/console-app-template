@@ -11,14 +11,18 @@ namespace SubCommandTemplate.Content;
     //Name = "<override with command if needed>",
 
     // TODO Add a description for your command
-    Description = "<add description here>"
+    Description = "<add description here>",
+
+    // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
+    ResponseFileHandling = ResponseFileHandling.Disabled
+
 )]
 internal class SubCommand
 {
 
 
 
-    internal async Task<int> OnExecuteAsync
+    internal Task<int> OnExecuteAsync
     (
         IConsole console,
         IReporter reporter,
@@ -36,12 +40,12 @@ internal class SubCommand
         {
             logger.LogCritical(e, e.Message);
             console.WriteLine(e);
-            return ExitCode.ApplicationError;
+            return Task.FromResult<int>(ExitCode.ApplicationError);
         }
 
 
         logger.LogDebug("Completed {command}", GetType().Name);
 
-        return ExitCode.Success;
+        return Task.FromResult<int>(ExitCode.Success);
     }
 }
