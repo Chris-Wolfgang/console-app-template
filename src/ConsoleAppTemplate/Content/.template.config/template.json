@@ -13,6 +13,7 @@
         "default": {
             "defaultOverrides": {
                 "framework": "net8.0",
+                "version" : "0.1.0"
             }
         }
     },
@@ -46,6 +47,14 @@
             ],
             "replaces": "net8.0",
             "defaultValue": "net8.0"
+        },
+
+        "version": {
+            "type": "parameter",
+            "description": "Version number for the project.",
+            "datatype": "text",
+            "replaces": "0.1.0",
+            "defaultValue": "1.0.0-alpha"
         }
     },
     "postActions": [
