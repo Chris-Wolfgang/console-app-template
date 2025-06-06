@@ -22,6 +22,13 @@
                 "text": "Description"
             },
             "isVisible": true
+        },
+        {
+            "id": "response-file",
+            "name": {
+                "text": "Response file support"
+            },
+            "isVisible": true
         }
     ]
 }

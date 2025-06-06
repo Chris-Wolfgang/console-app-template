@@ -23,7 +23,7 @@ namespace ConsoleAppTemplate
         UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw,
 
         // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
-        ResponseFileHandling = ResponseFileHandling.Disabled
+        ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
     )]
     [Subcommand(typeof(SampleCommand))]
     // TODO Add additional sub commands here
