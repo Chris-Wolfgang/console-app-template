@@ -74,12 +74,14 @@
 			"defaultValue": "(your company)"
         },
 
-        "copyright": {
+		"description": {
             "type": "parameter",
-            "description": "Copyright notice",
+			"description": "A description of this application. This name will appear in the <Description> tag in the csproj and in the copyright",
             "datatype": "text",
-            "replaces": "Copyright © 2025 Chris Wolfgang",
-            "defaultValue": "Copyright © {{ currentYear }} <Your Company>"
+			"replaces": "{description}",
+			"defaultValue": "(Console Application)"
+		},
+
 		"currentYear": {
 			"type": "generated",
 			"generator": "now",
