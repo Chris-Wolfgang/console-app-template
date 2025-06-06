@@ -3,18 +3,25 @@
     "icon": "icon.png",
     "symbolInfo": [
         {
-            "id": "AuthorName",
+            "id": "version",
             "name": {
-                "text": "Author Name"
+                "text": "Version number"
             },
-            "isVisible": "true"
+            "isVisible": true
+        },
+        {
+            "id": "author",
+            "name": {
+                "text": "Author/Company"
+            },
+            "isVisible": true
         },
         {
             "id": "Description",
             "name": {
                 "text": "Description"
             },
-            "isVisible": "true"
+            "isVisible": true
         }
     ]
 }

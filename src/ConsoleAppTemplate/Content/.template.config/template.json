@@ -1,67 +1,69 @@
 {
-    "$schema": "http://json.schemastore.org/template",
-    "author": "Chris Wolfgang",
-    "classifications": [ "Console" ],
-    "identity": "Wolfgang.Preconfigured.Console",
-    "name": "Wolfgang Preconfigured Console App",
-    "shortName": "cwconsole",
-    "sourceName": "ConsoleAppTemplate",
-    "description": "A console application preconfigured with additional package including McMaster's CommandLineUtils, Serilog and others'",
-    "defaultName": "ConsoleApp",
+	"$schema": "http://json.schemastore.org/template",
+	"author": "Chris Wolfgang",
+	"classifications": [ "Console" ],
+	"identity": "Wolfgang.Preconfigured.Console",
+	"name": "Wolfgang Preconfigured Console App",
+	"shortName": "cwconsole",
+	"sourceName": "ConsoleAppTemplate",
+	"description": "A console application preconfigured with additional package including McMaster's CommandLineUtils, Serilog and others'",
+	"defaultName": "ConsoleApp",
 
-    "baselines": {
-        "default": {
-            "defaultOverrides": {
-                "framework": "net8.0",
+	"baselines": {
+		"default": {
+			"defaultOverrides": {
+				"framework": "net8.0",
 				"version": "0.1.0"
-            }
-        }
-    },
+			}
+		}
+	},
 
-    "macros": [
-        {
-            "type": "evaluate",
-            "name": "currentYear",
-            "value": "now:yyyy"
-        }
-    ],
+	"macros": [
+		{
+			"type": "evaluate",
+			"name": "currentYear",
+			"value": "now:yyyy"
+		}
+	],
 
-    "tags": {
-        "language": "C#",
-        "type": "project"
-    },
-    "symbols": {
-        "framework": {
-            "type": "parameter",
-            "description": "The target framework for the project.",
-            "datatype": "choice",
-            "choices": [
-                {
-                    "choice": "net6.0",
-                    "description": ".Net 6.0"
-                },
-                {
-                    "choice": "net7.0",
-                    "description": ".Net 7.0"
-                },
-                {
-                    "choice": "net8.0",
-                    "description": ".Net 8.0"
-                },
-                {
-                    "choice": "net9.0",
-                    "description": ".Net 9.0"
-                }
-            ],
-            "replaces": "net8.0",
-            "defaultValue": "net8.0"
-        },
 
-        "version": {
-            "type": "parameter",
-            "description": "Version number for the project.",
-            "datatype": "text",
-            "replaces": "0.1.0",
+	"tags": {
+		"language": "C#",
+		"type": "project"
+	},
+
+	"symbols": {
+		"framework": {
+			"type": "parameter",
+			"description": "The target framework for the project.",
+			"datatype": "choice",
+			"choices": [
+				{
+					"choice": "net6.0",
+					"description": ".Net 6.0"
+				},
+				{
+					"choice": "net7.0",
+					"description": ".Net 7.0"
+				},
+				{
+					"choice": "net8.0",
+					"description": ".Net 8.0"
+				},
+				{
+					"choice": "net9.0",
+					"description": ".Net 9.0"
+				}
+			],
+			"replaces": "net8.0",
+			"defaultValue": "net8.0"
+		},
+
+		"version": {
+			"type": "parameter",
+			"description": "Initial version number for the project.",
+			"datatype": "text",
+			"replaces": "0.1.0",
 			"defaultValue": "0.1.0-alpha"
 		},
 
@@ -72,12 +74,12 @@
 			"datatype": "text",
 			"replaces": "{author}",
 			"defaultValue": "(your company)"
-        },
-
+		},
+		
 		"description": {
-            "type": "parameter",
+			"type": "parameter",
 			"description": "A description of this application. This name will appear in the <Description> tag in the csproj and in the copyright",
-            "datatype": "text",
+			"datatype": "text",
 			"replaces": "{description}",
 			"defaultValue": "(Console Application)"
 		},
@@ -89,32 +91,32 @@
 				"format": "yyyy"
 			},
 			"replaces": "{copyright year}"
-        }
-    },
-    "postActions": [
-        {
-            "description": "Run package upgrade",
-            "manualInstructions": [
-                {
-                    // TODO run a CLI to upgrade packages
-                    "text": "Update all the nuget packages installed in the project"
-                }
-            ],
-            "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
-            "continueOnError": true
-        },
-        {
-            "description": "Open Instructions.md",
-            "manualInstructions": [
-                {
-                    "text": "Open Instructions.md to get started."
-                }
-            ],
-            "actionId": "EBC0B9C4-1D54-4D39-9B7B-439B23B29118",
-            "args": {
-                "files": "Instructions.md"
-            },
-            "continueOnError": true
-        }
-    ]
+		}
+	},
+
+		"postActions": [
+			{
+				"description": "Run package upgrade",
+				"manualInstructions": [
+					{
+						"text": "Update all the nuget packages installed in the project"
+					}
+				],
+				"actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+				"continueOnError": true
+			},
+			{
+				"description": "Open Instructions.md",
+				"manualInstructions": [
+					{
+						"text": "Open Instructions.md to get started."
+					}
+				],
+				"actionId": "EBC0B9C4-1D54-4D39-9B7B-439B23B29118",
+				"args": {
+					"files": "Instructions.md"
+				},
+				"continueOnError": true
+			}
+		]
 }
