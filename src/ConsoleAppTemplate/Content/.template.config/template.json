@@ -67,7 +67,7 @@
 			"defaultValue": "0.1.0-alpha"
 		},
 
-		
+
 		"author": {
 			"type": "parameter",
 			"description": "The name of the company or person that authored this project. This name will appear in the <Author> tag in the csproj and in the copyright",
@@ -75,13 +75,42 @@
 			"replaces": "{author}",
 			"defaultValue": "(your company)"
 		},
-		
+
 		"description": {
 			"type": "parameter",
 			"description": "A description of this application. This name will appear in the <Description> tag in the csproj and in the copyright",
 			"datatype": "text",
 			"replaces": "{description}",
 			"defaultValue": "(Console Application)"
+		},
+
+		"response-file": {
+			"type": "parameter",
+			"description": "Response file support. Command line arguments can be added to a response file and the response can be passed in as though each argument was manually typed at the commandline",
+			"datatype": "choice",
+			"choices": [
+				{
+					"choice": "Disabled",
+					"description": "Disabled",
+					"displayName": "Disabled - No response file support.",
+					"documentation": ""
+
+				},
+				{
+					"choice": "ParseArgsAsLineSeparated",
+					"description": "Line separated",
+					"displayName": "Line separated - Each argument is on a new line.",
+					"documentation": ""
+				},
+				{
+					"choice": "ParseArgsAsSpaceSeparated",
+					"description": "Space separated",
+					"displayName": "Space separated - All arguments are on a single line in separated by spaces.",
+					"documentation": ""
+				}
+			],
+			"replaces": "ParseArgsAsSpaceSeparated",
+			"defaultValue": "ParseArgsAsLineSeparated"
 		},
 
 		"currentYear": {

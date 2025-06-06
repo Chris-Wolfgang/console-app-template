@@ -14,7 +14,7 @@ namespace ConsoleAppTemplate.Command;
     Description = "<add description here>",
 
     // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
-    ResponseFileHandling = ResponseFileHandling.Disabled
+    ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
 
 )]
 internal class SampleCommand
