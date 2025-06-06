@@ -13,8 +13,7 @@
         "default": {
             "defaultOverrides": {
                 "framework": "net8.0",
-                "version": "0.1.0",
-                "copyright": "Copyright © 2025 Chris Wolfgang"
+				"version": "0.1.0"
             }
         }
     },
@@ -63,7 +62,16 @@
             "description": "Version number for the project.",
             "datatype": "text",
             "replaces": "0.1.0",
-            "defaultValue": "1.0.0-alpha"
+			"defaultValue": "0.1.0-alpha"
+		},
+
+		
+		"author": {
+			"type": "parameter",
+			"description": "The name of the company or person that authored this project. This name will appear in the <Author> tag in the csproj and in the copyright",
+			"datatype": "text",
+			"replaces": "{author}",
+			"defaultValue": "(your company)"
         },
 
         "copyright": {
@@ -72,6 +80,13 @@
             "datatype": "text",
             "replaces": "Copyright © 2025 Chris Wolfgang",
             "defaultValue": "Copyright © {{ currentYear }} <Your Company>"
+		"currentYear": {
+			"type": "generated",
+			"generator": "now",
+			"parameters": {
+				"format": "yyyy"
+			},
+			"replaces": "{copyright year}"
         }
     },
     "postActions": [
