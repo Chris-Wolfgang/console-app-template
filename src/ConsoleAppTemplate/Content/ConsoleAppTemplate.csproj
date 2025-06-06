@@ -8,6 +8,7 @@
 	<PackageVersion>0.1.0</PackageVersion>
 	<LangVersion>latest</LangVersion>
 	<Copyright>Copyright {copyright year} {author}</Copyright>
+	<Description>{description}</Description>
 	<Author>{author}</Author>
   </PropertyGroup>
 
