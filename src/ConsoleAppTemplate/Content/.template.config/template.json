@@ -94,7 +94,6 @@
 					"description": "Disabled",
 					"displayName": "Disabled - No response file support.",
 					"documentation": ""
-
 				},
 				{
 					"choice": "ParseArgsAsLineSeparated",
@@ -123,29 +122,21 @@
 		}
 	},
 
-		"postActions": [
-			{
-				"description": "Run package upgrade",
-				"manualInstructions": [
-					{
-						"text": "Update all the nuget packages installed in the project"
-					}
-				],
-				"actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
-				"continueOnError": true
+	"primaryOutputs": [
+		{ 
+			"path": "Instructions.md"
+		}
+	],
+
+	"postActions": [
+		{
+			"description": "Open Instructions.md",
+			"manualInstructions": [],
+			"actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+			"args": {
+				"files": "0"
 			},
-			{
-				"description": "Open Instructions.md",
-				"manualInstructions": [
-					{
-						"text": "Open Instructions.md to get started."
-					}
-				],
-				"actionId": "EBC0B9C4-1D54-4D39-9B7B-439B23B29118",
-				"args": {
-					"files": "Instructions.md"
-				},
-				"continueOnError": true
-			}
-		]
+			"continueOnError": true
+		}
+	]
 }
