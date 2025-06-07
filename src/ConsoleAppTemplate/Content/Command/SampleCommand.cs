@@ -11,7 +11,11 @@ namespace ConsoleAppTemplate.Command;
     //Name = "<override with command if needed>",
 
     // TODO Add a description for your command
-    Description = "<add description here>"
+    Description = "<add description here>",
+
+    // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
+    ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
+
 )]
 internal class SampleCommand
 {

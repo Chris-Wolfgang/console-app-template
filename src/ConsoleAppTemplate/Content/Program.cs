@@ -19,14 +19,12 @@ namespace ConsoleAppTemplate
         // TODO Add a description for the command
         Description = "A template for a console application complete with command line parse, logging, DI and more.",
 
-        // TODO Uncomment this line to make this app support response files. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
-        // ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
-
         // TODO Specify what to do with unrecognized arguments. The default is to throw an exception. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.UnrecognizedArgumentHandling.html
-        UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw
+        UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw,
 
-    )
-    ]
+        // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
+        ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
+    )]
     [Subcommand(typeof(SampleCommand))]
     // TODO Add additional sub commands here
     //[Subcommand(typeof(<your type>))]
@@ -100,14 +98,27 @@ namespace ConsoleAppTemplate
         internal int OnExecute
         (
             CommandLineApplication<Program> application,
+            SampleConfiguration sampleConfiguration,
             IReporter reporter,
-            SampleConfiguration sampleConfiguration
+            ILogger logger
         )
         {
-            
+
+            var ex = new NotImplementedException("Test");
+
+            for (var i = 0; i < 10_000_000; ++i)
+            {
+                logger.Verbose(ex, "Verbose");
+                logger.Debug(ex, "Debug");
+                logger.Information(ex, "Information");
+                logger.Warning(ex, "Warning");
+                logger.Error(ex, "Error");
+                logger.Fatal(ex, "Fatal");
+            }
+
             reporter.Output($"\nCommandTimeout from config file: {sampleConfiguration.CommandTimeout}\n\n");
 
-            // TODO if you are using not using sub commands then you can remove the lines below and replace with your own code
+            // TODO if you are not using sub commands then you can remove the lines below and replace with your own code
             application.ShowHelp();
             return ExitCode.Success;
 

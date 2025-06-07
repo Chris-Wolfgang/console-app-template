@@ -1,6 +1,11 @@
 {
     "$schema": "http://json.schemastore.org/vs-2017.3.host",
-    "icon": "icon.png",
+    "tags": [
+        {
+            "type": "platform",
+            "add": [ "C#" ]
+        }
+    ],
     "symbolInfo": [
         {
             "id": "AuthorName",
