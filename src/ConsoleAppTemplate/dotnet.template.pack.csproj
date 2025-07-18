@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageVersion>0.1.0</PackageVersion>
+    <PackageId>Wolfgang.Preconfigured.Console</PackageId>
+    <Title>"Wolfgang Preconfigured Console App</Title>
+    <Authors>Chris Wolfgang</Authors>
+	 <Description>Template for creating C# console applications, configured with Serilog, McMaster commandLineUtils and several other packages</Description>
+    <PackageTags>dotnet-new;templates;Chris Wolfgang</PackageTags>
+    <TargetFrameworks>net8.0;</TargetFrameworks>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+	 <PackageLicenseExpression>TBD</PackageLicenseExpression>
+ <!--<RepositoryUrl>https://github.com/masterzdran/dotnet-new-custom-templates</RepositoryUrl>
+  <RepositoryType>git</RepositoryType>
+  <RepositoryBranch>main</RepositoryBranch>-->
+   </PropertyGroup>
+
+  <ItemGroup>
+    <Content 
+      Include="**\*;ProjectTemplate\**\*" 
+      Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;ProjectTemplate\**\bin\**;ProjectTemplate\**\obj\**;ProjectTemplate\**\.vs\**;ProjectTemplate\**\.git\**;" />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+
+</Project>

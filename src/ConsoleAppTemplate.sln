@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleAppTemplate", "Conso
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubCommandTemplate", "SubCommandTemplate\SubCommandTemplate.csproj", "{3B6963B1-D91E-B3D8-2380-9782F9D0225C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet.template.pack", "ConsoleAppTemplate\dotnet.template.pack.csproj", "{F2F3C90B-AD76-14FF-EE77-CC9B4BF787FC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{3B6963B1-D91E-B3D8-2380-9782F9D0225C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B6963B1-D91E-B3D8-2380-9782F9D0225C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B6963B1-D91E-B3D8-2380-9782F9D0225C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2F3C90B-AD76-14FF-EE77-CC9B4BF787FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2F3C90B-AD76-14FF-EE77-CC9B4BF787FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2F3C90B-AD76-14FF-EE77-CC9B4BF787FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2F3C90B-AD76-14FF-EE77-CC9B4BF787FC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
