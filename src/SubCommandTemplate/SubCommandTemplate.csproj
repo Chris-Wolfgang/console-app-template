@@ -1,8 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+	  <TargetFramework>net8.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <PackageVersion>0.1.0</PackageVersion>
+	  <LangVersion>latest</LangVersion>
+	  <Copyright>Copyright {copyright year} {author}</Copyright>
+	  <Description>A template for adding sub commands to applications build with Wolfgang Preconfigured Console Template</Description>
+	  <Author>{author}</Author>
+	  <Authors>Chris Wolfgang</Authors>
+	  <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+	  <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
+	  <RepositoryType>https://github.com/Chris-Wolfgang/console-app-template</RepositoryType>
+	  <PackageTags>template;console-app;</PackageTags>
+	  <PackageIcon>Console-Template-icon.png</PackageIcon>
+	  <ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
+	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	  <Title>Wolfgang Preconfigured Console SubCommand Template</Title>
+	  <PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
+
   </PropertyGroup>
 
   <ItemGroup>
