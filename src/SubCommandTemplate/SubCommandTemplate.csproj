@@ -23,6 +23,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Console-Template-icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
