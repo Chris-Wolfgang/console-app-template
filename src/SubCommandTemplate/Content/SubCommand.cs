@@ -31,21 +31,25 @@ internal class SubCommand
     {
         logger.LogDebug("Starting {command}", GetType().Name);
 
+        throw new NotImplementedException("This command is not implemented yet.");
+
         try
         {
             // TODO Your code here
-            
+
         }
         catch (Exception e)
         {
             logger.LogCritical(e, e.Message);
             console.WriteLine(e);
-            return Task.FromResult<int>(ExitCode.ApplicationError);
+            // TODO Uncomment the line below to return an error exit code
+            //return ExitCode.ApplicationError;
         }
 
 
         logger.LogDebug("Completed {command}", GetType().Name);
 
-        return Task.FromResult<int>(ExitCode.Success);
+        // TODO Uncomment the line below to return a success exit code
+        //return ExitCode.Success;
     }
 }

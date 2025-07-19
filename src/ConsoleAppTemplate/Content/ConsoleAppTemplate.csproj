@@ -8,9 +8,34 @@
 	<PackageVersion>0.1.0</PackageVersion>
 	<LangVersion>latest</LangVersion>
 	<Copyright>Copyright {copyright year} {author}</Copyright>
-	<Description>{description}</Description>
+	<Description>A template for building console applications with command line parsing, logging, dependancy injection, error handling </Description>
 	<Author>{author}</Author>
+	<Authors>Chris Wolfgang</Authors>
+	<PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+	<RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
+	<RepositoryType>https://github.com/Chris-Wolfgang/console-app-template</RepositoryType>
+	<PackageTags>template;console-app;</PackageTags>
+	<PackageIcon>Console-Template-icon.png</PackageIcon>
+	<ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
+	<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	<Title>Wolfgang Preconfigured Console Template</Title>
+	<PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Console-Template-icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\assets\Console-Template-icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\..\ReadMe.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
