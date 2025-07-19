@@ -13,10 +13,10 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <NoDefaultExcludes>true</NoDefaultExcludes>
-	 <PackageLicenseExpression>TBD</PackageLicenseExpression>
- <!--<RepositoryUrl>https://github.com/masterzdran/dotnet-new-custom-templates</RepositoryUrl>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
   <RepositoryType>git</RepositoryType>
-  <RepositoryBranch>main</RepositoryBranch>-->
+  <RepositoryBranch>main</RepositoryBranch>
    </PropertyGroup>
 
   <ItemGroup>
