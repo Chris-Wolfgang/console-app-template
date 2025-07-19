@@ -19,7 +19,7 @@
 	 <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
 	 <RepositoryType>git</RepositoryType>
 	 <PackageIcon>Console-Template-icon.png</PackageIcon>
-	 <ApplicationIcon>Console-Template-icon.png</ApplicationIcon>
+	 <ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
 	 <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	 <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	 <GenerateDocumentationFile>False</GenerateDocumentationFile>
