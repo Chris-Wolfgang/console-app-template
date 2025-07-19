@@ -32,4 +32,11 @@
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Console-Template-icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
 </Project>
