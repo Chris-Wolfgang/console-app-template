@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageVersion>0.1.2</PackageVersion>
+    <PackageId>Wolfgang.Preconfigured.Console.Subcommand</PackageId>
+    <Title>Wolfgang Preconfigured Console Subcommand</Title>
+    <Authors>Chris Wolfgang</Authors>
+    <Description>A template for adding sub commands to applications build with Wolfgang Preconfigured Console Template</Description>
+    <PackageTags>dotnet-new;templates;Chris Wolfgang</PackageTags>
+    <TargetFrameworks>net8.0;</TargetFrameworks>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <Copyright>Chris Wolfgang 2025</Copyright>
+    <PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
+    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>Console-Template-icon.png</PackageIcon>
+    <ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Title>Wolfgang Preconfigured Console SubCommand Template</Title>
+   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="**\*;ProjectTemplate\**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;ProjectTemplate\**\bin\**;ProjectTemplate\**\obj\**;ProjectTemplate\**\.vs\**;ProjectTemplate\**\.git\**;" />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\assets\Console-Template-icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\ReadMe.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+
+</Project>
