@@ -1,6 +1,6 @@
 {
-    "$schema": "http://json.schemastore.org/template",
-    "author": "Chris Wolfgang",
+	"$schema": "http://json.schemastore.org/template",
+	"author": "Chris Wolfgang",
     "classifications": [ "C#", "Code" ],
     "identity": "Wolfgang.Preconfigured.Console.SubCommand",
     "name": "Wolfgang Preconfigured Console App SubCommand",
@@ -8,13 +8,20 @@
     "sourceName": "SubCommandTemplate",
     "description": "A preconfigured SubCommand for use with Wolfgang Preconfigured Console App SubCommand",
     "defaultName": "SubCommand",
-    "tags": {
-        "language": "C#",
-        "type": "item"
-    },
-    "primaryOutputs": [
-        { "path": "SubCommand.cs" }
-    ],
+	"macros": [
+		{
+			"type": "evaluate",
+			"name": "currentYear",
+			"value": "now:yyyy"
+		}
+	],
+
+
+	"tags": {
+		"language": "C#",
+        	"type": "item"
+	},
+
     "symbols": {
         "ClassName": {
             "type": "parameter",
@@ -24,5 +31,8 @@
             "fileRename": "SubCommand",
             "defaultValue": "SubCommand"
         }
+    "primaryOutputs": [
+        { "path": "SubCommand.cs" }
+    ],
     }
 }
