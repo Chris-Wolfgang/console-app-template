@@ -20,6 +20,10 @@ jobs:
         with:
           category: security
 
+    permissions:
+      contents: read
+      pull-requests: write
+  
   secret-scanning:
     name: Secret Scanning
     runs-on: ubuntu-latest
