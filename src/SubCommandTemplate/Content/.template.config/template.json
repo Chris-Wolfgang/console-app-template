@@ -31,8 +31,8 @@
             "fileRename": "SubCommand",
             "defaultValue": "SubCommand"
         }
+    },
     "primaryOutputs": [
         { "path": "SubCommand.cs" }
-    ],
-    }
+    ]
 }
