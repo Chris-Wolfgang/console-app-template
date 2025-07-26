@@ -1,7 +1,7 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
-namespace SubCommandTemplate.Content;
+namespace MyNamespace.Commands;
 
 [Command
 (
@@ -15,7 +15,7 @@ namespace SubCommandTemplate.Content;
     ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
 
 )]
-internal class SubCommand
+internal class SubCommandTemplate
 {
 
 
@@ -24,7 +24,7 @@ internal class SubCommand
     (
         IConsole console,
         IReporter reporter,
-        ILogger<SubCommand> logger
+        ILogger<SubCommandTemplate> logger
     )
     {
         logger.LogDebug("Starting {command}", GetType().Name);
