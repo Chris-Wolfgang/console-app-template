@@ -1,38 +1,71 @@
 {
 	"$schema": "http://json.schemastore.org/template",
 	"author": "Chris Wolfgang",
-    "classifications": [ "C#", "Code" ],
-    "identity": "Wolfgang.Preconfigured.Console.SubCommand",
-    "name": "Wolfgang Preconfigured Console App SubCommand",
-    "shortName": "cwsubcmd",
-    "sourceName": "SubCommandTemplate",
-    "description": "A preconfigured SubCommand for use with Wolfgang Preconfigured Console App SubCommand",
-    "defaultName": "SubCommand",
+	"classifications": [ "C#", "Code" ],
+	"identity": "Wolfgang.Preconfigured.Console.SubCommand",
+	"name": "Wolfgang Preconfigured Console App SubCommand",
+	"shortName": "cwsubcmd",
+	"sourceName": "SubCommand",
+	"description": "A preconfigured SubCommand for use with Wolfgang Preconfigured Console App SubCommand",
+	"defaultName": "SubCommand",
 	"macros": [
-		{
-			"type": "evaluate",
-			"name": "currentYear",
-			"value": "now:yyyy"
-		}
 	],
-
 
 	"tags": {
 		"language": "C#",
-        	"type": "item"
+		"type": "item"
 	},
 
-    "symbols": {
-        "ClassName": {
-            "type": "parameter",
-            "description": "The name of the sub command file and class. Normally should end with Command, i.e. ExportCommand",
-            "datatype": "text",
-            "replaces": "SubCommand",
-            "fileRename": "SubCommand",
-            "defaultValue": "SubCommand"
-        }
-    },
-    "primaryOutputs": [
-        { "path": "SubCommand.cs" }
-    ]
+	"symbols": {
+		"DefaultNamespace": {
+			"type": "bind",
+			"binding": "msbuild:RootNamespace",
+			"replaces": "{DefaultNamespace}"
+		},
+
+		"alternative-name": {
+			"type": "parameter",
+			"datatype": "string",
+			"description": "An alternate name for the command. If not specified the command will use the default value based on the class name",
+			"replaces": "{alternative-name}",
+			"defaultValue": "<you can specify an alternative name>"
+		},
+
+		"command-description": {
+			"type": "parameter",
+			"datatype": "string",
+			"description": "A description for the command",
+			"replaces": "{command-description}",
+			"defaultValue": "<provide a description>"
+		},
+
+		"response-file": {
+			"type": "parameter",
+			"description": "Response file support. Command line arguments can be added to a response file and the response can be passed in as though each argument was manually typed at the commandline",
+			"datatype": "choice",
+			"choices": [
+				{
+					"choice": "Disabled",
+					"description": "Disabled",
+					"displayName": "Disabled - No response file support.",
+					"documentation": ""
+				},
+				{
+					"choice": "ParseArgsAsLineSeparated",
+					"description": "Line separated",
+					"displayName": "Line separated - Each argument is on a new line.",
+					"documentation": ""
+				},
+				{
+					"choice": "ParseArgsAsSpaceSeparated",
+					"description": "Space separated",
+					"displayName": "Space separated - All arguments are on a single line in separated by spaces.",
+					"documentation": ""
+				}
+			],
+			"replaces": "ParseArgsAsSpaceSeparated",
+			"defaultValue": "ParseArgsAsLineSeparated"
+		}
+	}
 }
+ 
