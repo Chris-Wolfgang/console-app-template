@@ -1,38 +1,143 @@
 {
 	"$schema": "http://json.schemastore.org/template",
 	"author": "Chris Wolfgang",
-    "classifications": [ "C#", "Code" ],
-    "identity": "Wolfgang.Preconfigured.Console.SubCommand",
-    "name": "Wolfgang Preconfigured Console App SubCommand",
-    "shortName": "cwsubcmd",
-    "sourceName": "SubCommandTemplate",
-    "description": "A preconfigured SubCommand for use with Wolfgang Preconfigured Console App SubCommand",
-    "defaultName": "SubCommand",
+	"classifications": [ "C#", "Code" ],
+	"identity": "Wolfgang.Preconfigured.Console.SubCommand",
+	"name": "Wolfgang Preconfigured Console App SubCommand",
+	"shortName": "cwsubcmd",
+	"sourceName": "SubCommandTemplate",
+	"description": "A preconfigured SubCommand for use with Wolfgang Preconfigured Console App SubCommand",
+	"defaultName": "SubCommand",
 	"macros": [
-		{
-			"type": "evaluate",
-			"name": "currentYear",
-			"value": "now:yyyy"
-		}
 	],
-
 
 	"tags": {
 		"language": "C#",
-        	"type": "item"
+		"type": "item"
 	},
 
-    "symbols": {
-        "ClassName": {
-            "type": "parameter",
-            "description": "The name of the sub command file and class. Normally should end with Command, i.e. ExportCommand",
-            "datatype": "text",
-            "replaces": "SubCommand",
-            "fileRename": "SubCommand",
-            "defaultValue": "SubCommand"
-        }
-    },
-    "primaryOutputs": [
-        { "path": "SubCommand.cs" }
-    ]
+	"symbols": {
+		"DefaultNamespace": {
+			"type": "bind",
+			"binding": "msbuild:RootNamespace",
+			"replaces": "{DefaultNamespace}"
+		},
+
+		"AlterativeName": {
+			"type": "parameter",
+			"datatype": "string",
+			"description": "An alternate name for the command. If not specified the command will use the default value based on the class name",
+			"replaces": "{AlterativeName}",
+			"defaultValue": ""
+
+		},
+
+
+		"Join": {
+			"type": "generated",
+			"generator": "join",
+			"datatype": "string",
+			"parameters": {
+				"symbols": [
+					{
+						"type": "const",
+						"condition": "(AlterativeName != '')",
+						"value": "Name=\""
+					},
+					{
+						"type": "ref",
+						"condition": "(AlterativeName != '')",
+						"value": "AlterativeName"
+					},
+					{
+						"type": "const",
+						"condition": "(AlterativeName != '')",
+						"value": "\""
+					}
+				]
+			},
+			"replaces": "{join}"
+		},
+
+		"AlterativeNameString": {
+			"type": "generated",
+			"generator": "switch",
+			"datatype": "string",
+			"parameters": {
+				"cases": [
+					{
+						"condition": "(AlterativeName != '')",
+						"generator": "C++",
+						"value": "Join"
+					},
+					{
+						"condition": "(AlterativeName == '')",
+						"value": "//TODO You can override the default name for this command\n    //Name=\"<alternative name>\""
+					}
+				]
+			},
+			"replaces": "{AlterativeNameString1}"
+		},
+
+
+		"AlterativeNameReplacement": {
+			"type": "generated",
+			"generator": "switch",
+			"datatype": "string",
+			"parameters": {
+				"evaluator": "C++",
+				"cases": [
+					{
+						"condition": "(AlterativeName != '')",
+						"value": "Name=\"{AlterativeName}\""
+					},
+					{
+						"condition": "(AlterativeName == '')",
+						"value": "//TODO You can override the default name for this command\n    //Name=\"<alternative name>\""
+					}
+				]
+			},
+			"replaces": "{AlterativeNameReplacement}"
+		},
+
+		"command-description": {
+			"type": "parameter",
+			"description": "A description for the command. This will be used in the help text for the command.",
+			"replaces": "command-description",
+			"defaultValue": "<add description here>"
+		},
+
+		"response-file": {
+			"type": "parameter",
+			"description": "Response file support. Command line arguments can be added to a response file and the response can be passed in as though each argument was manually typed at the commandline",
+			"datatype": "choice",
+			"choices": [
+				{
+					"choice": "Disabled",
+					"description": "Disabled",
+					"displayName": "Disabled - No response file support.",
+					"documentation": ""
+				},
+				{
+					"choice": "ParseArgsAsLineSeparated",
+					"description": "Line separated",
+					"displayName": "Line separated - Each argument is on a new line.",
+					"documentation": ""
+				},
+				{
+					"choice": "ParseArgsAsSpaceSeparated",
+					"description": "Space separated",
+					"displayName": "Space separated - All arguments are on a single line in separated by spaces.",
+					"documentation": ""
+				}
+			],
+			"replaces": "ParseArgsAsSpaceSeparated",
+			"defaultValue": "ParseArgsAsLineSeparated"
+		}
+	},
+
+	"primaryOutputs": [
+		{ "path": "%name%.cs" }
+	]
 }
+ 

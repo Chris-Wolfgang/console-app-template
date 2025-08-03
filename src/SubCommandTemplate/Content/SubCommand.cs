@@ -1,21 +1,22 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
-namespace SubCommandTemplate.Content;
+namespace {DefaultNamespace}.Commands;
 
 [Command
 (
-    // TODO You can override the default name for the command by uncommenting the line below
-    //Name = "<override with command if needed>",
+    |{AlterativeNameString}|
+
+    --{AlterativeNameReplacement}--
 
     // TODO Add a description for your command
-    Description = "<add description here>",
+    Description = "<provide command description>",
 
     // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
     ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
 
 )]
-internal class SubCommand
+internal class SubCommandTemplate
 {
 
 
@@ -24,7 +25,7 @@ internal class SubCommand
     (
         IConsole console,
         IReporter reporter,
-        ILogger<SubCommand> logger
+        ILogger<SubCommandTemplate> logger
     )
     {
         logger.LogDebug("Starting {command}", GetType().Name);
@@ -32,6 +33,9 @@ internal class SubCommand
         try
         {
             // TODO Your code here
+
+            // Display the value of the currentYear macro
+            console.WriteLine($"Current Year: {currentYear}");
         }
         catch (Exception e)
         {
