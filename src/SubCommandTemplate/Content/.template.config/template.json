@@ -3,11 +3,12 @@
 	"author": "Chris Wolfgang",
 	"classifications": [ "C#", "Code" ],
 	"identity": "Wolfgang.Preconfigured.Console.SubCommand",
-	"name": "Wolfgang Preconfigured Console App SubCommand",
+	"name": "Wolfgang Console SubCommand",
 	"shortName": "cwsubcmd",
-	"sourceName": "SubCommand",
+	"sourceName": "SubCommandTemplate",
 	"description": "A preconfigured SubCommand for use with Wolfgang Preconfigured Console App SubCommand",
 	"defaultName": "SubCommand",
+
 	"macros": [
 	],
 
