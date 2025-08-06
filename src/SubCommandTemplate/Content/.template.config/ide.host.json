@@ -1,39 +1,28 @@
 {
     "$schema": "http://json.schemastore.org/vs-2017.3.host",
-    "icon": "icon.png",
+    "defaultSymbolVisibility": true,
+    "learnMoreLink": null,
     "tags": [
+        {
+            "type": "item",
+            "add": [ "Class" ]
+        },
         {
             "type": "platform",
             "add": [ "C#" ]
         }
     ],
+    "icon": "icon.png",
+    "itemHierarchyPaths": [
+        ".NET Core",
+        "C#",
+        "Code",
+        "Wolfgang"
+    ],
     "symbolInfo": [
         {
-            "id": "version",
-            "name": {
-                "text": "Version number"
-            },
-            "isVisible": true
-        },
-        {
-            "id": "author",
-            "name": {
-                "text": "Author/Company"
-            },
-            "isVisible": true
-        },
-        {
-            "id": "Description",
-            "name": {
-                "text": "Description"
-            },
-            "isVisible": true
-        },
-        {
-            "id": "response-file",
-            "name": {
-                "text": "Response file support"
-            },
+            "id": "description",
+            "name": { "text": "Description" },
             "isVisible": true
         }
     ]

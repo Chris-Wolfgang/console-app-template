@@ -1,7 +1,7 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
-namespace {DefaultNamespace}.Commands;
+namespace {DefaultNamespace}.Command;
 
 [Command
 (
@@ -17,10 +17,7 @@ namespace {DefaultNamespace}.Commands;
 )]
 internal class SubCommandTemplate
 {
-
-
-
-    internal Task<int> OnExecuteAsync
+    internal async Task<int> OnExecuteAsync
     (
         IConsole console,
         IReporter reporter,
@@ -33,8 +30,6 @@ internal class SubCommandTemplate
         {
             // TODO Your code here
 
-            // Display the value of the currentYear macro
-            console.WriteLine($"Current Year: {currentYear}");
         }
         catch (Exception e)
         {
