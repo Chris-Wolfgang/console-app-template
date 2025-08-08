@@ -17,10 +17,15 @@ namespace {DefaultNamespace}.Command;
 )]
 internal class SubCommandTemplate
 {
+    /// <summary>
+    /// This method is called when the command is executed.
+    /// </summary>
+    /// <returns>
+    /// A value of 0 indicatess success. A value greater than 0 indicates failure
+    /// </returns>
     internal async Task<int> OnExecuteAsync
     (
         IConsole console,
-        IReporter reporter,
         ILogger<SubCommandTemplate> logger
     )
     {
@@ -28,6 +33,10 @@ internal class SubCommandTemplate
 
         try
         {
+            // TODO: Validate the command options here if necessary
+
+
+
             // TODO Your code here
 
         }
