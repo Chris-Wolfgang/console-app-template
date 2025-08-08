@@ -6,7 +6,7 @@
 	"name": "Wolfgang Console SubCommand",
 	"shortName": "cwsubcmd",
 	"sourceName": "SubCommandTemplate",
-	"description": "A preconfigured SubCommand for use with Wolfgang Preconfigured Console App SubCommand",
+	"description": "A preconfigured SubCommand for use with Wolfgang Console App Template",
 	"defaultName": "SubCommand",
 	"macros": [
 	],

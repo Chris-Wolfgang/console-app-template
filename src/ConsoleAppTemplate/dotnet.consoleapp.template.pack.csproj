@@ -2,8 +2,8 @@
  <PropertyGroup>
     <PackageType>Template</PackageType>
     <PackageVersion>0.2.0</PackageVersion>
-    <PackageId>Wolfgang.Preconfigured.Console</PackageId>
-    <Title>Wolfgang Preconfigured Console App</Title>
+    <PackageId>Wolfgang.Template.Console</PackageId>
+    <Title>Wolfgang Console App</Title>
     <Authors>Chris Wolfgang</Authors>
 	 <Description>Template for creating C# console applications, configured with Serilog, McMaster commandLineUtils and several other packages</Description>
     <PackageTags>dotnet-new;templates;Chris Wolfgang</PackageTags>

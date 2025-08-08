@@ -2,11 +2,11 @@
 	"$schema": "http://json.schemastore.org/template",
 	"author": "Chris Wolfgang",
 	"classifications": [ "C#", "Code" ],
-	"identity": "Wolfgang.Console.ETLSubCommand",
+	"identity": "Wolfgang.Template.Console.ETLSubCommand",
 	"name": "Wolfgang Console ETL SubCommand",
 	"shortName": "cwsubcmdetl",
 	"sourceName": "EtlSubCommandTemplate",
-	"description": "A preconfigured SubCommand for use with Wolfgang Preconfigured Console App SubCommand and configured for building ETLs using Wolfgang.Etl.Abstractions",
+	"description": "A preconfigured SubCommand for use with Wolfgang Console App Template and configured for building ETLs using Wolfgang.Etl.Abstractions",
 	"defaultName": "EtlSubCommand",
 	"macros": [
 	],

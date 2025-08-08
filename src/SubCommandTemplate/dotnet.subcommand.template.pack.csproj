@@ -2,10 +2,10 @@
  <PropertyGroup>
     <PackageType>Template</PackageType>
     <PackageVersion>0.2.0</PackageVersion>
-    <PackageId>Wolfgang.Preconfigured.Console.Subcommand</PackageId>
-    <Title>Wolfgang Preconfigured Console Subcommand</Title>
+    <PackageId>Wolfgang.Template.Console.Subcommand</PackageId>
+    <Title>Wolfgang Console Subcommand</Title>
     <Authors>Chris Wolfgang</Authors>
-    <Description>A template for adding sub commands to applications build with Wolfgang Preconfigured Console Template</Description>
+    <Description>A template for adding sub commands to applications built with Wolfgang Console Template</Description>
     <PackageTags>dotnet-new;templates;Chris Wolfgang</PackageTags>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeContentInPack>true</IncludeContentInPack>
@@ -23,7 +23,6 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <Title>Wolfgang Preconfigured Console SubCommand Template</Title>
    </PropertyGroup>
 
   <ItemGroup>
