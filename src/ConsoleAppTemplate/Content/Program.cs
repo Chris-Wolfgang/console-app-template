@@ -27,7 +27,6 @@ namespace ConsoleAppTemplate
     )]
     [Subcommand(typeof(SampleCommand))]
     // TODO Add additional sub commands here
-    //[Subcommand(typeof(<your type>))]
     internal class Program
     {
         private static async Task<int> Main(string[] args)
