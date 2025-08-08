@@ -18,7 +18,7 @@
 	<PackageIcon>Console-Template-icon.png</PackageIcon>
 	<ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
 	<GenerateDocumentationFile>True</GenerateDocumentationFile>
-	<Title>Wolfgang Preconfigured Console Template</Title>
+	<Title>Wolfgang Console Template</Title>
 	<PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
   </PropertyGroup>
 
