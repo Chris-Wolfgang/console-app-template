@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json.schemastore.org/vs-2017.3.host",
+    "defaultSymbolVisibility": true,
+    "learnMoreLink": null,
+    "name": {
+        "text": "Wolfgang ETL Sub Command",
+        "description": "ETL Sub Command Template"
+    },
+    "tags": [
+        {
+            "type": "item",
+            "add": [ "Class" ]
+        },
+        {
+            "type": "platform",
+            "add": [ "C#" ]
+        }
+    ],
+    "icon": "Console-Template-icon.png",
+    "itemHierarchyPaths": [
+        "Code"
+    ],
+    "symbolInfo": [
+        {
+            "id": "description",
+            "name": { "text": "Description" },
+            "isVisible": true
+        }
+    ]
+}

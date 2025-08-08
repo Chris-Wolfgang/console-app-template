@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet.consoleapp.template.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet.subcommand.template.pack", "SubCommandTemplate\dotnet.subcommand.template.pack.csproj", "{CFFD0862-52D9-9CE7-48FB-EB01148BD614}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet.etl-subcommand.template.pack", "EtlSubCommandTemplate\dotnet.etl-subcommand.template.pack.csproj", "{BF5F1F16-9EB3-3377-9D5B-95A7492E4D83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{CFFD0862-52D9-9CE7-48FB-EB01148BD614}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFFD0862-52D9-9CE7-48FB-EB01148BD614}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CFFD0862-52D9-9CE7-48FB-EB01148BD614}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF5F1F16-9EB3-3377-9D5B-95A7492E4D83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF5F1F16-9EB3-3377-9D5B-95A7492E4D83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF5F1F16-9EB3-3377-9D5B-95A7492E4D83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF5F1F16-9EB3-3377-9D5B-95A7492E4D83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
