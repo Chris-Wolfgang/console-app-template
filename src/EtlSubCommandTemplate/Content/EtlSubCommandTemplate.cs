@@ -1,6 +1,11 @@
-﻿using System;
+﻿// NOTE: This class depends on Wolfgang.Etl.Abstractions
+// TODO Please run the following in your project folder:
+//   dotnet add package Wolfgang.Etl.Abstractions
+
+using System.ComponentModel.DataAnnotations;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
+using Wolfgang.Etl.Abstractions;
 
 namespace {DefaultNamespace}.Command;
 
@@ -44,12 +49,13 @@ internal class EtlSubCommandTemplate
     /// This method is called when the command is executed.
     /// </summary>
     /// <returns>
-    /// A value of 0 indicatess success. A value greater than 0 indicates failure
+    /// A value of 0 indicates success. A value greater than 0 indicates failure
     /// </returns>
     internal async Task<int> OnExecuteAsync
     (
         IConsole console,
-        ILogger<SubCommandTemplate> logger
+        ILoggerFactory loggerFactory,
+        ILogger<EtlSubCommandTemplate> logger
     )
     {
         logger.LogDebug("Starting {command}", GetType().Name);
@@ -71,25 +77,25 @@ internal class EtlSubCommandTemplate
             );
 
 
-            // Create instances of the extractor
-            var extractor = new MyExtractor(logger)
-            {
-                MaxItemCount = MaxItemCount,
-                SkipItemCount = SkipItemCount
-            };
+            // TODO Create instances of the extractor
+            //var extractor = new MyExtractor< ,Report>(loggerFactory.CreateLogger<MyExtractor<, Report>>())
+            //{
+            //    MaximumItemCount = MaxItemCount ?? int.MaxValue,
+            //    SkipItemCount = SkipItemCount ?? 0
+            //};
 
-            // Create instances of the transformer
-            var transformer = new MyTransformer(logger);
+            
+            // TODO Create instances of the transformer
+            // var transformer = new MyTransformer< , , Report>(loggerFactory.CreateLogger<MyTransformer< , , Report>>());
 
-            // Create instances of the loader
-            var loader = new MyLoader(logger);
+
+            // TODO Create instances of the loader
+            //var loader = new MyLoader< , Report>(loggerFactory.CreateLogger<MyLoader< ,Report>>());
 
             // Execute the ETL process asynchronously
-            await ExecuteEtlAsycn(extractor, transformer, loader, console, progress);
+            // await ExecuteEtlAsync(extractor, transformer, loader, progress);
 
             logger.LogInformation("ETL process completed successfully.");
-
-            return ExitCode.Success;
         }
         catch (Exception e)
         {
@@ -104,16 +110,16 @@ internal class EtlSubCommandTemplate
     }
 
 
-    internal async Task ExecuteEtlAsync<IExtractor, ITransformer, ILoader>
+    internal async Task ExecuteEtlAsync<TSource, TDestination, TProgress>
     (
-        IExtractWithProgressAsync extractor,
-        ITransformAsync transformer,
-        ILoadAsync loader,
-        IProgress<> reporter
-    )
+        IExtractWithProgressAsync<TSource,TProgress> extractor,
+        ITransformAsync<TSource, TDestination> transformer,
+        ILoadAsync<TDestination> loader,
+        IProgress<TProgress> reporter
+    ) where TDestination : notnull where TSource : notnull
     {
-        var item extractor.ExtractAsync(reporter);
-        var transformedItems = transformer.TransformAsync();
+        var item = extractor.ExtractAsync(reporter);
+        var transformedItems = transformer.TransformAsync(item);
         await loader.LoadAsync(transformedItems);
     }
 }

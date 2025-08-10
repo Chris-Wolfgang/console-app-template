@@ -35,7 +35,15 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <None Include="..\SubCommandTemplate\Console-Template-icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Wolfgang.Etl.Abstractions" />
+	</ItemGroup>
 
   <ItemGroup>
     <None Update="Console-Template-icon.png">
