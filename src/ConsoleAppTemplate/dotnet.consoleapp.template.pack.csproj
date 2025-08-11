@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
     <PackageType>Template</PackageType>
-    <PackageVersion>0.2.0</PackageVersion>
+    <PackageVersion>0.3.0</PackageVersion>
     <PackageId>Wolfgang.Template.Console</PackageId>
     <Title>Wolfgang Console App</Title>
     <Authors>Chris Wolfgang</Authors>
