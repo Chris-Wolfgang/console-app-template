@@ -18,8 +18,8 @@
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageIcon>Console-Template-icon.png</PackageIcon>
-    <ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
+    <PackageIcon>Etl-SubCmd-Template-icon.png</PackageIcon>
+    <ApplicationIcon>Etl-SubCmd-Template-icon.ico</ApplicationIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -35,18 +35,18 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\SubCommandTemplate\Console-Template-icon.png">
+    <None Include="Etl-SubCmd-Template-icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Wolfgang.Etl.Abstractions" />
+		<PackageReference Include="Wolfgang.Etl.Abstractions" Version="0.6.0" />
 	</ItemGroup>
 
   <ItemGroup>
-    <None Update="Console-Template-icon.png">
+    <None Update="Etl-SubCmd-Template-icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

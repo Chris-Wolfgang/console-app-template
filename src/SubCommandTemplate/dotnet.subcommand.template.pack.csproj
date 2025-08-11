@@ -18,8 +18,8 @@
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageIcon>Console-Template-icon.png</PackageIcon>
-    <ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
+    <PackageIcon>SubCmd-Template-icon.png</PackageIcon>
+    <ApplicationIcon>SubCmd-Template-icon.ico</ApplicationIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -38,7 +38,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Console-Template-icon.png">
+    <None Update="SubCmd-Template-icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Update="SubCmd-Template-icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
