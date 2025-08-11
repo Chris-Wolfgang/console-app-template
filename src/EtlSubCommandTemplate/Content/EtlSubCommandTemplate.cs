@@ -72,7 +72,7 @@ internal class EtlSubCommandTemplate
                 report =>
                 {
                     logger.LogDebug("Current count: {count}", report.CurrentCount);
-                    console.WriteLine("Current count: {count}", report.CurrentCount);
+                    console.WriteLine($"Current count: {report.CurrentCount}");
                 }
             );
 
