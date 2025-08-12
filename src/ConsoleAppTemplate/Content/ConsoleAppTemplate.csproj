@@ -27,11 +27,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\assets\Console-Template-icon.png">
+    <None Include="..\..\..\ReadMe.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\..\..\ReadMe.md">
+    <None Include="..\Console-Template-icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

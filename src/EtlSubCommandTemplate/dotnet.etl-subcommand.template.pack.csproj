@@ -2,7 +2,7 @@
  <PropertyGroup>
     <PackageType>Template</PackageType>
     <PackageVersion>0.3.0</PackageVersion>
-    <PackageId>Wolfgang.Template.Console.SubCommand.ETL</PackageId>
+    <PackageId>Wolfgang.Template.Console.ETL-SubCommand</PackageId>
     <Title>Wolfgang Console ETL Subcommand</Title>
     <Authors>Chris Wolfgang</Authors>
     <Description>A template for adding ETL sub commands designed for use with Wolfgang Console Template</Description>
@@ -23,7 +23,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-   </PropertyGroup>
+  </PropertyGroup>
 
   <ItemGroup>
     <Content Include="**\*;ProjectTemplate\**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;ProjectTemplate\**\bin\**;ProjectTemplate\**\obj\**;ProjectTemplate\**\.vs\**;ProjectTemplate\**\.git\**;" />
@@ -41,15 +41,8 @@
     </None>
   </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Wolfgang.Etl.Abstractions" Version="0.6.0" />
-	</ItemGroup>
-
   <ItemGroup>
-    <None Update="Etl-SubCmd-Template-icon.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
+    <PackageReference Include="Wolfgang.Etl.Abstractions" Version="0.6.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
-
-
 </Project>

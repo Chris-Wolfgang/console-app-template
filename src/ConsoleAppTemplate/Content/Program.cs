@@ -5,8 +5,9 @@ using ConsoleAppTemplate.Model;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
-
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ConsoleAppTemplate
 {
@@ -87,6 +88,7 @@ namespace ConsoleAppTemplate
         /// <param name="application"></param>
         /// <param name="reporter"></param>
         /// <param name="sampleConfiguration"></param>
+        /// <param name="logger"></param>
         /// <returns>0 on success or any positive number for failure</returns>
         /// <remarks>
         /// - If you are not using sub commands you can rewrite this method to meet your needs
@@ -103,28 +105,23 @@ namespace ConsoleAppTemplate
         )
         {
 
-            var ex = new NotImplementedException("Test");
+            logger.LogDebug("Starting {command}", GetType().Name);
 
-            for (var i = 0; i < 10_000_000; ++i)
-            {
-                logger.Verbose(ex, "Verbose");
-                logger.Debug(ex, "Debug");
-                logger.Information(ex, "Information");
-                logger.Warning(ex, "Warning");
-                logger.Error(ex, "Error");
-                logger.Fatal(ex, "Fatal");
-            }
 
-            reporter.Output($"\nCommandTimeout from config file: {sampleConfiguration.CommandTimeout}\n\n");
-
-            // TODO if you are not using sub commands then you can remove the lines below and replace with your own code
+            // TODO if you are not using sub commands then you can remove the
+            // two lines below
             application.ShowHelp();
             return ExitCode.Success;
 
 
-            // TODO If you are using sub commands then you can remove the lines below and use the code above
+            // TODO If you are using sub commands then you can remove the
+            // lines below and use the code above
+            
             // TODO Add your code here
             reporter.Warn("Your code here");
+
+
+            logger.LogDebug("Starting {command}", GetType().Name);
 
 
             // TODO Return 0 for success and any positive number for failure
