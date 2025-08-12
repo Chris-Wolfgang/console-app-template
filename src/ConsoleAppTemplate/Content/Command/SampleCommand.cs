@@ -78,16 +78,18 @@ internal class SampleCommand
 
         try
         {
-            // TODO Add your code here to process the command line arguments
-            // TODO You can use the reporter to write to the console
+            // TODO Validate command line arguments
+
+            // TODO Your code here
             console.WriteLine("Hello world!");
-            console.WriteLine($"CommandTimeout: {configuration.CommandTimeout}");
+            await Task.Yield(); // Simulate doing work
+
+            // Note You can use the reporter to write to the console
             reporter.Warn("Sample console warning");
-            
-            logger.LogWarning("Sample log warning");
         }
         catch (Exception e)
         {
+
             logger.LogCritical(e, e.Message);
             console.WriteLine(e);
             return ExitCode.ApplicationError;

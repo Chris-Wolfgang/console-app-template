@@ -18,7 +18,7 @@
 	<PackageIcon>Console-Template-icon.png</PackageIcon>
 	<ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
 	<GenerateDocumentationFile>True</GenerateDocumentationFile>
-	<Title>Wolfgang Preconfigured Console Template</Title>
+	<Title>Wolfgang Console Template</Title>
 	<PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
   </PropertyGroup>
 
@@ -27,11 +27,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\assets\Console-Template-icon.png">
+    <None Include="..\..\..\ReadMe.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\..\..\ReadMe.md">
+    <None Include="..\Console-Template-icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

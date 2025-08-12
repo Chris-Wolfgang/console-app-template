@@ -2,12 +2,12 @@
 	"$schema": "http://json.schemastore.org/template",
 	"author": "Chris Wolfgang",
 	"classifications": [ "C#", "Code" ],
-	"identity": "Wolfgang.Template.Console.SubCommand",
-	"name": "Wolfgang Console SubCommand",
-	"shortName": "cwsubcmd",
-	"sourceName": "SubCommandTemplate",
-	"description": "A preconfigured SubCommand for use with Wolfgang Console App Template",
-	"defaultName": "SubCommand",
+	"identity": "Wolfgang.Template.Console.ETLSubCommand",
+	"name": "Wolfgang Console ETL SubCommand",
+	"shortName": "cwsubcmdetl",
+	"sourceName": "EtlSubCommandTemplate",
+	"description": "A preconfigured SubCommand for use with Wolfgang Console App Template and configured for building ETLs using Wolfgang.Etl.Abstractions",
+	"defaultName": "EtlSubCommand",
 	"macros": [
 	],
 
@@ -66,6 +66,22 @@
 			"replaces": "ParseArgsAsSpaceSeparated",
 			"defaultValue": "ParseArgsAsLineSeparated"
 		}
-	}
+	},
+	"postActions": [
+		{
+			"description": "Add Wolfgang.Etl.Abstractions NuGet package",
+			"actionId": "E9E1F7F3-5C39-488A-B7F0-1234567890AB",
+			"manualInstructions": [
+				{
+					"text": "Run 'dotnet add package Wolfgang.Etl.Abstractions' in your project."
+				}
+			],
+			"args": {
+				"executable": "dotnet",
+				"args": [ "add", "package", "Wolfgang.Etl.Abstractions" ]
+			},
+			"continueOnError": true
+		}
+	]
 }
  
