@@ -2,10 +2,10 @@
  <PropertyGroup>
     <PackageType>Template</PackageType>
     <PackageVersion>0.3.0</PackageVersion>
-    <PackageId>Wolfgang.Template.Console.Subcommand</PackageId>
-    <Title>Wolfgang Console Subcommand</Title>
+    <PackageId>Wolfgang.Template.Console.ETL-SubCommand</PackageId>
+    <Title>Wolfgang Console ETL Subcommand</Title>
     <Authors>Chris Wolfgang</Authors>
-    <Description>A template for adding sub commands to applications built with Wolfgang Console Template</Description>
+    <Description>A template for adding ETL sub commands designed for use with Wolfgang Console Template</Description>
     <PackageTags>dotnet-new;templates;Chris Wolfgang</PackageTags>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeContentInPack>true</IncludeContentInPack>
@@ -18,12 +18,12 @@
     <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageIcon>SubCmd-Template-icon.png</PackageIcon>
-    <ApplicationIcon>SubCmd-Template-icon.ico</ApplicationIcon>
+    <PackageIcon>Etl-SubCmd-Template-icon.png</PackageIcon>
+    <ApplicationIcon>Etl-SubCmd-Template-icon.ico</ApplicationIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-   </PropertyGroup>
+  </PropertyGroup>
 
   <ItemGroup>
     <Content Include="**\*;ProjectTemplate\**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;ProjectTemplate\**\bin\**;ProjectTemplate\**\obj\**;ProjectTemplate\**\.vs\**;ProjectTemplate\**\.git\**;" />
@@ -35,12 +35,14 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="SubCmd-Template-icon.png">
+    <None Include="Etl-SubCmd-Template-icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Wolfgang.Etl.Abstractions" Version="0.6.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
 </Project>
