@@ -21,7 +21,7 @@ internal class SubCommandTemplate
     /// This method is called when the command is executed.
     /// </summary>
     /// <returns>
-    /// A value of 0 indicatess success. A value greater than 0 indicates failure
+    /// A value of 0 indicates success. A value greater than 0 indicates failure
     /// </returns>
     internal async Task<int> OnExecuteAsync
     (
