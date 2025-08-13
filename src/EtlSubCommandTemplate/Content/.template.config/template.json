@@ -31,7 +31,7 @@
 			"defaultValue": "<you can specify an alternative name>"
 		},
 
-		"command-description": {
+		"description": {
 			"type": "parameter",
 			"datatype": "string",
 			"description": "A description for the command",
