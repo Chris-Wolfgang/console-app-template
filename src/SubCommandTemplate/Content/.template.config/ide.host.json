@@ -8,6 +8,10 @@
 
     "tags": [
         {
+            "type": "item",
+            "add": [ "Class" ]
+        },
+        {
             "type": "platform",
             "add": [ "C#" ]
         }
