@@ -73,14 +73,11 @@ jobs:
       - name: Build Solution (Release)
         run: dotnet build --no-restore --configuration Release
 
-      - name: Pack NuGet Package for Each Project in Src (Release)
+      - name: Pack NuGet Package for Each Template Project (Release)
         shell: bash
         run: |
-            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF6/Wolfgang.DbContextBuilder-Core-EF6.csproj --no-build --configuration Release --output ./nuget-packages 
-            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF7/Wolfgang.DbContextBuilder-Core-EF7.csproj --no-build --configuration Release --output ./nuget-packages 
-            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF8/Wolfgang.DbContextBuilder-Core-EF8.csproj --no-build --configuration Release --output ./nuget-packages 
-            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF9/Wolfgang.DbContextBuilder-Core-EF9.csproj --no-build --configuration Release --output ./nuget-packages 
-            
+            dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --no-build --configuration Release --output ./nuget-packages
+            dotnet pack src/SubCommandTemplate/dotnet.subcommand.template.pack.csproj --no-build --configuration Release --output ./nuget-packages
       - name: Publish NuGet Package
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }} # Ensure this secret is set in repository settings
