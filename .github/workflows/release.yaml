@@ -38,11 +38,15 @@ jobs:
       - name: Run tests for all test projects
         shell: pwsh
         run: |
-          $testProjects = Get-ChildItem -Path ./tests -Filter '*Test*.csproj' -Recurse -ErrorAction SilentlyContinue
+          $testProjects = Get-ChildItem -Path ./tests -Filter '*Test*.csproj' -File -Recurse -ErrorAction SilentlyContinue
           if ($testProjects) {
             foreach ($proj in $testProjects) {
               Write-Host "Running tests for $($proj.FullName)"
               dotnet test "$($proj.FullName)" --no-build --configuration Release
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "Tests failed for $($proj.FullName)"
+                exit $LASTEXITCODE
+              }
             }
           } else {
             Write-Host "No test projects found in ./tests directory"
