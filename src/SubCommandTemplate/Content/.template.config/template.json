@@ -60,6 +60,6 @@
 		}
 	},
     "primaryOutputs": [
-		{ "path": "SubCommandTemplate.cs" }
+		{ "path": "%name%.cs" }
     ]
 }
