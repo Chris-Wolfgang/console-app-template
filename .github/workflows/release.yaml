@@ -36,12 +36,17 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Run tests for all test projects
-        shell: bash
+        shell: pwsh
         run: |
-          find ./tests -type f -name '*Test*.csproj' | while read proj; do
-            echo "Running tests for $proj"
-            dotnet test "$proj" --no-build --configuration Release
-          done
+          $testProjects = Get-ChildItem -Path ./tests -Filter '*Test*.csproj' -Recurse -ErrorAction SilentlyContinue
+          if ($testProjects) {
+            foreach ($proj in $testProjects) {
+              Write-Host "Running tests for $($proj.FullName)"
+              dotnet test "$($proj.FullName)" --no-build --configuration Release
+            }
+          } else {
+            Write-Host "No test projects found in ./tests directory"
+          }
 
       - name: Upload test results
         if: always()
