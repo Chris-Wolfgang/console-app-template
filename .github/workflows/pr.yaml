@@ -1,5 +1,5 @@
 # This workflow runs all branches when a pull request is created. 
-# If security settings have been properly configured, any branch that fails this workflow will be blocked from being merged into main and possibly other common branches link develop depending your specific settings
+# If security settings have been properly configured, any branch that fails this workflow will be blocked from being merged into main and possibly other common branches like develop depending your specific settings
 
 name: PR Checks
 
