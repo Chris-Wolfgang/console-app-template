@@ -3,8 +3,8 @@
     "defaultSymbolVisibility": true,
     "learnMoreLink": null,
     "name": {
-        "text": "Wolfgang Sub Command",
-        "description": "Sub Command Template"
+        "text": "Wolfgang ETL Sub Command",
+        "description": "ETL Sub Command Template"
     },
     "tags": [
         {
