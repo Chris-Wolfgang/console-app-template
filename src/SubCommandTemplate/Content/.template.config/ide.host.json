@@ -12,6 +12,10 @@
             "add": [ "Class" ]
         },
         {
+            "type": "item",
+            "add": [ "Class" ]
+        },
+        {
             "type": "platform",
             "add": [ "C#" ]
         }
