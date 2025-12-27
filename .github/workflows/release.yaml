@@ -81,6 +81,7 @@ jobs:
         run: |
             dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --no-build --configuration Release --output ./nuget-packages
             dotnet pack src/SubCommandTemplate/dotnet.subcommand.template.pack.csproj --no-build --configuration Release --output ./nuget-packages
+            dotnet pack src/EtlSubCommandTemplate/dotnet.etlsubcommand.template.pack.csproj --no-build --configuration Release --output ./nuget-packages
       - name: Publish NuGet Package
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }} # Ensure this secret is set in repository settings
