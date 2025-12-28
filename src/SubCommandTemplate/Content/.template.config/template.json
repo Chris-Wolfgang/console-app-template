@@ -75,7 +75,9 @@
 			"replaces": "ParseArgsAsSpaceSeparated",
 			"defaultValue": "ParseArgsAsLineSeparated"
 		}
-	}
+	},
+	"primaryOutputs": [
 		{ "path": "%name%.cs" }
+	]
 }
  
