@@ -8,7 +8,7 @@
 	<PackageVersion>0.1.0</PackageVersion>
 	<LangVersion>latest</LangVersion>
 	<Copyright>Copyright {copyright year} {author}</Copyright>
-	<Description>A template for building console applications with command line parsing, logging, dependancy injection, error handling </Description>
+	<Description>A template for building console applications with command line parsing, logging, dependency injection, error handling </Description>
 	<Author>{author}</Author>
 	<Authors>Chris Wolfgang</Authors>
 	<PackageReadmeFile>ReadMe.md</PackageReadmeFile>
