@@ -28,7 +28,7 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$Repository = "{{GITHUB_USERNAME}}/{{REPO_NAME}}"
+    [string]$Repository = "Chris-Wolfgang/console-app-template"
 )
 
 # Check if gh CLI is installed
@@ -54,14 +54,14 @@ try {
 }
 
 # Determine repository
-if ($Repository -eq "{{GITHUB_USERNAME}}/{{REPO_NAME}}" -or -not $Repository) {
+if ($Repository -eq "Chris-Wolfgang/console-app-template" -or -not $Repository) {
     Write-Host "Detecting current repository..." -ForegroundColor Cyan
     try {
         $repoInfo = gh repo view --json nameWithOwner | ConvertFrom-Json
         $Repository = $repoInfo.nameWithOwner
         Write-Host "Using repository: $Repository" -ForegroundColor Green
     } catch {
-        if ($Repository -eq "{{GITHUB_USERNAME}}/{{REPO_NAME}}") {
+        if ($Repository -eq "Chris-Wolfgang/console-app-template") {
             Write-Error "Could not detect repository. Please run the setup script first to replace placeholders, or specify -Repository parameter."
         } else {
             Write-Error "Could not detect repository. Please run from within a git repository or specify -Repository parameter."
