@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "nuget"
-    directory: "/" # Root - for solution-level dependencies
+    directory: "/src/ConsoleAppTemplate/Content"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -10,7 +10,7 @@ updates:
       - "dotnet"
 
   - package-ecosystem: "nuget"
-    directory: "/src"
+    directory: "/src/ConsoleAppTemplate"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -19,7 +19,7 @@ updates:
       - "dotnet"
 
   - package-ecosystem: "nuget"
-    directory: "/tests"
+    directory: "/src/EtlSubCommandTemplate"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -28,16 +28,7 @@ updates:
       - "dotnet"
 
   - package-ecosystem: "nuget"
-    directory: "/benchmarks"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "dotnet"
-
-  - package-ecosystem: "nuget"
-    directory: "/examples"
+    directory: "/src/SubCommandTemplate"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
