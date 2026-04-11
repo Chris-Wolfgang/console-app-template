@@ -105,7 +105,7 @@ namespace ConsoleAppTemplate
         )
         {
 
-            logger.LogDebug("Starting {command}", GetType().Name);
+            logger.LogDebug("Starting {Command}", GetType().Name);
 
 
             // TODO if you are not using sub commands then you can remove the
