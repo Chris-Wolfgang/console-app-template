@@ -29,10 +29,7 @@ jobs:
             9.0.x
             10.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build all projects (Release)
+      - name: Restore and build all projects (Release)
         shell: pwsh
         run: |
           $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj'
@@ -43,7 +40,15 @@ jobs:
           }
 
           foreach ($proj in $projects) {
-            Write-Host "📦 Building $($proj.Name)" -ForegroundColor Cyan
+            Write-Host "📦 Restoring $($proj.Name)" -ForegroundColor Cyan
+            dotnet restore $proj.FullName
+
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Restore failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
+
+            Write-Host "🔨 Building $($proj.Name)" -ForegroundColor Cyan
             dotnet build $proj.FullName --no-restore --configuration Release
 
             if ($LASTEXITCODE -ne 0) {
@@ -77,10 +82,30 @@ jobs:
             9.0.x
             10.0.x
 
-      - name: Restore and build
+      - name: Restore and build all projects
+        shell: pwsh
         run: |
-          dotnet restore
-          dotnet build --no-restore --configuration Release
+          $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj'
+
+          foreach ($proj in $projects) {
+            Write-Host "📦 Restoring $($proj.Name)" -ForegroundColor Cyan
+            dotnet restore $proj.FullName
+
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Restore failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
+
+            Write-Host "🔨 Building $($proj.Name)" -ForegroundColor Cyan
+            dotnet build $proj.FullName --no-restore --configuration Release
+
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Build failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
+          }
+
+          Write-Host "✅ All projects restored and built successfully" -ForegroundColor Green
 
       - name: Pack NuGet template packages
         id: check-packages
