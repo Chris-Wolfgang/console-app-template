@@ -1,0 +1,122 @@
+# PR validation workflow for template pack repository
+# Builds all template projects and runs security scanning
+# No test stage — this repo contains only dotnet new templates
+
+name: PR Checks
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================================
+  # SECRETS SCAN: Detect leaked credentials before merge
+  # ============================================================================
+  secrets-scan:
+    name: "Secrets Scan (gitleaks)"
+    runs-on: ubuntu-latest
+    if: github.repository != 'Chris-Wolfgang/repo-template'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # BUILD: Validate all template projects compile
+  # ============================================================================
+  build-and-validate:
+    name: "Build & Validate Templates"
+    runs-on: windows-latest
+    if: github.repository != 'Chris-Wolfgang/repo-template'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Restore and build all projects (Release)
+        shell: pwsh
+        run: |
+          $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj'
+
+          if ($projects.Count -eq 0) {
+            Write-Error "❌ No projects found in src/ directory"
+            exit 1
+          }
+
+          foreach ($proj in $projects) {
+            Write-Host "📦 Restoring $($proj.Name)" -ForegroundColor Cyan
+            dotnet restore $proj.FullName
+
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Restore failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
+
+            Write-Host "🔨 Building $($proj.Name)" -ForegroundColor Cyan
+            dotnet build $proj.FullName --no-restore --configuration Release
+
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Build failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
+          }
+
+          Write-Host "✅ All projects built successfully" -ForegroundColor Green
+
+      - name: Pack NuGet packages (validate packaging)
+        shell: pwsh
+        run: |
+          $packagesPath = Join-Path $PWD 'nuget-packages'
+          New-Item -ItemType Directory -Force -Path $packagesPath | Out-Null
+
+          dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --no-build --configuration Release --output $packagesPath
+          dotnet pack src/SubCommandTemplate/dotnet.subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath
+          dotnet pack src/EtlSubCommandTemplate/dotnet.etl-subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath
+
+          $packages = Get-ChildItem -Path $packagesPath -Filter '*.nupkg'
+          Write-Host "✅ Created $($packages.Count) NuGet package(s):" -ForegroundColor Green
+          $packages | ForEach-Object { Write-Host "   $($_.Name)" }
+
+      - name: Install DevSkim CLI
+        run: dotnet tool install --global Microsoft.CST.DevSkim.CLI
+
+      - name: Run DevSkim Security Scan
+        run: devskim analyze --source-code . --file-format text -E --ignore-rule-ids DS176209,DS137138 --ignore-globs "**/api/**,**/CoverageReport/**" --output-file devskim-results.txt
+
+      - name: Show DevSkim Results in Summary
+        if: failure()
+        run: |
+          echo "### DevSkim Security Issues Found"
+          cat devskim-results.txt
+        shell: bash
+
+      - name: Upload DevSkim Results as Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: devskim-results
+          path: devskim-results.txt
