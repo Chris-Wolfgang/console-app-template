@@ -110,13 +110,19 @@ jobs:
       - name: Pack NuGet template packages
         id: check-packages
         shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
+          # Extract version from release tag (v0.4.0 → 0.4.0)
+          $version = $env:RELEASE_TAG -replace '^v', ''
+          Write-Host "📋 Packaging with version: $version" -ForegroundColor Cyan
+
           $packagesPath = Join-Path $PWD 'nuget-packages'
           New-Item -ItemType Directory -Force -Path $packagesPath | Out-Null
 
-          dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --no-build --configuration Release --output $packagesPath
-          dotnet pack src/SubCommandTemplate/dotnet.subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath
-          dotnet pack src/EtlSubCommandTemplate/dotnet.etl-subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath
+          dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --no-build --configuration Release --output $packagesPath /p:PackageVersion=$version
+          dotnet pack src/SubCommandTemplate/dotnet.subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath /p:PackageVersion=$version
+          dotnet pack src/EtlSubCommandTemplate/dotnet.etl-subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath /p:PackageVersion=$version
 
           $packages = Get-ChildItem -Path $packagesPath -Filter '*.nupkg' -ErrorAction SilentlyContinue
 
