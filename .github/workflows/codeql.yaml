@@ -110,16 +110,23 @@ jobs:
             exit $LASTEXITCODE
           }
         } else {
-          Write-Host "No solution file found, building all projects..."
-          dotnet restore
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "dotnet restore failed with exit code $LASTEXITCODE"
-            exit $LASTEXITCODE
-          }
-          dotnet build --configuration Release --no-restore
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "dotnet build failed with exit code $LASTEXITCODE"
-            exit $LASTEXITCODE
+          Write-Host "No solution file found, building all projects individually..."
+          $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj'
+
+          foreach ($proj in $projects) {
+            Write-Host "Restoring $($proj.Name)"
+            dotnet restore $proj.FullName
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "dotnet restore failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
+
+            Write-Host "Building $($proj.Name)"
+            dotnet build $proj.FullName --configuration Release --no-restore
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "dotnet build failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
           }
         }
 
