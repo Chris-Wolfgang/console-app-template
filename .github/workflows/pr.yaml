@@ -1,25 +1,56 @@
-# This workflow runs all branches when a pull request is created. 
-# If security settings have been properly configured, any branch that fails this workflow will be blocked from being merged into main and possibly other common branches like develop depending your specific settings
+# PR validation workflow for template pack repository
+# Builds all template projects and runs security scanning
+# No test stage — this repo contains only dotnet new templates
 
 name: PR Checks
 
 permissions:
   contents: read
-  
+
 on:
   pull_request:
     branches:
-      # List any other branches here that you want this workflow to run on
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build-and-test:
-    # Specifies the OS to run this workflow on. You can specify more than one. For a complete and current list, review the [documentation] (https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job)
+  # ============================================================================
+  # SECRETS SCAN: Detect leaked credentials before merge
+  # ============================================================================
+  secrets-scan:
+    name: "Secrets Scan (gitleaks)"
     runs-on: ubuntu-latest
-    if: github.repository != 'Chris-Wolfgang/repo-template' # Only run in child repos otherwise this will fail because the template does not have any projects
+    if: github.repository != 'Chris-Wolfgang/repo-template'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        run: |
+          GITLEAKS_VERSION="8.24.0"
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar xz -C /usr/local/bin gitleaks
+          gitleaks detect --source . --verbose --redact
+        shell: bash
+
+  # ============================================================================
+  # BUILD: Validate all template projects compile
+  # ============================================================================
+  build-and-validate:
+    name: "Build & Validate Templates"
+    runs-on: windows-latest
+    if: github.repository != 'Chris-Wolfgang/repo-template'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -27,80 +58,51 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
+            10.0.x
 
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build Solution (Release)
-        # Specify any additional build options
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Run Tests and Collect Coverage for Each Test Project (Release)
+      - name: Build all projects (Release)
         shell: pwsh
         run: |
-          $testProjects = Get-ChildItem -Path ./tests -Filter '*Test*.csproj' -File -Recurse -ErrorAction SilentlyContinue
-          if ($testProjects) {
-            foreach ($proj in $testProjects) {
-              Write-Host "Testing $($proj.FullName)"
-              dotnet test "$($proj.FullName)" --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory "./TestResults"
-              if ($LASTEXITCODE -ne 0) {
-                Write-Error "Tests failed for $($proj.FullName)"
-                exit $LASTEXITCODE
-              }
-            }
-          } else {
-            Write-Host "No test projects found in ./tests directory"
+          $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj'
+
+          if ($projects.Count -eq 0) {
+            Write-Error "❌ No projects found in src/ directory"
+            exit 1
           }
 
-      - name: Install ReportGenerator
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+          foreach ($proj in $projects) {
+            Write-Host "📦 Building $($proj.Name)" -ForegroundColor Cyan
+            dotnet build $proj.FullName --no-restore --configuration Release
 
-      - name: Generate Coverage Reports (HTML, TextSummary, GitHub Markdown, CSV)
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Build failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
+          }
+
+          Write-Host "✅ All projects built successfully" -ForegroundColor Green
+
+      - name: Pack NuGet packages (validate packaging)
+        shell: pwsh
         run: |
-          reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"CoverageReport" -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
+          $packagesPath = Join-Path $PWD 'nuget-packages'
+          New-Item -ItemType Directory -Force -Path $packagesPath | Out-Null
 
-      - name: Check Coverage Thresholds
-        run: |
-          if [ ! -f CoverageReport/Summary.txt ]; then
-            echo "CoverageReport/Summary.txt not found! Coverage report was not generated."
-            exit 1
-          fi
+          dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --no-build --configuration Release --output $packagesPath
+          dotnet pack src/SubCommandTemplate/dotnet.subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath
+          dotnet pack src/EtlSubCommandTemplate/dotnet.etl-subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath
 
-          failed_projects=""
-          while read -r line; do
-            module=$(echo "$line" | awk '{print $1}')
-            percent=$(echo "$line" | awk '{print $NF}' | tr -d '%' | xargs)
-            echo "Checking module: '$module', percent: '$percent'"
-            if [[ "$percent" =~ ^[0-9]+$ ]]; then
-              if [ "$percent" -lt 80 ]; then
-                echo "FAIL: $module is below 80% ($percent%)"
-                failed_projects="$failed_projects $module ($percent%)"
-              else
-                echo "PASS: $module meets coverage ($percent%)"
-              fi
-            else
-              echo "WARNING: extracted percent value '$percent' is not a number!"
-            fi
-          done < <(grep -E '^[^ ].*[0-9]+%$' CoverageReport/Summary.txt | grep -v '^Summary')
-
-          if [ -n "$failed_projects" ]; then
-            echo "The following projects are below 80% line coverage:$failed_projects"
-            exit 1
-          fi
-
-      - name: Upload coverage results and reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-results-and-report
-          path: |
-            TestResults/
-            CoverageReport/
+          $packages = Get-ChildItem -Path $packagesPath -Filter '*.nupkg'
+          Write-Host "✅ Created $($packages.Count) NuGet package(s):" -ForegroundColor Green
+          $packages | ForEach-Object { Write-Host "   $($_.Name)" }
 
       - name: Install DevSkim CLI
         run: dotnet tool install --global Microsoft.CST.DevSkim.CLI
 
-      - name: Run DevSkim Security Scan (Save output)
+      - name: Run DevSkim Security Scan
         run: devskim analyze --source-code . --file-format text -E --ignore-rule-ids DS176209 --ignore-globs "**/api/**,**/CoverageReport/**" --output-file devskim-results.txt
 
       - name: Show DevSkim Results in Summary
