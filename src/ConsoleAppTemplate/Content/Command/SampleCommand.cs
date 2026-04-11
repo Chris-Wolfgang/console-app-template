@@ -74,7 +74,7 @@ internal class SampleCommand
         ILogger<SampleCommand> logger
     )
     {
-        logger.LogInformation("Starting {command}", GetType().Name);
+        logger.LogInformation("Starting {Command}", GetType().Name);
 
         try
         {
@@ -96,7 +96,7 @@ internal class SampleCommand
         }
 
 
-        logger.LogInformation("Completed {command}", GetType().Name);
+        logger.LogInformation("Completed {Command}", GetType().Name);
 
         return ExitCode.Success;
     }
