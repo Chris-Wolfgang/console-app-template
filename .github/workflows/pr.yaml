@@ -32,12 +32,9 @@ jobs:
           fetch-depth: 0
 
       - name: Run gitleaks
-        run: |
-          GITLEAKS_VERSION="8.24.0"
-          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
-            | tar xz -C /usr/local/bin gitleaks
-          gitleaks detect --source . --verbose --redact
-        shell: bash
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ============================================================================
   # BUILD: Validate all template projects compile
@@ -60,10 +57,7 @@ jobs:
             9.0.x
             10.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build all projects (Release)
+      - name: Restore and build all projects (Release)
         shell: pwsh
         run: |
           $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj'
@@ -74,7 +68,15 @@ jobs:
           }
 
           foreach ($proj in $projects) {
-            Write-Host "📦 Building $($proj.Name)" -ForegroundColor Cyan
+            Write-Host "📦 Restoring $($proj.Name)" -ForegroundColor Cyan
+            dotnet restore $proj.FullName
+
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Restore failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
+
+            Write-Host "🔨 Building $($proj.Name)" -ForegroundColor Cyan
             dotnet build $proj.FullName --no-restore --configuration Release
 
             if ($LASTEXITCODE -ne 0) {

@@ -64,29 +64,49 @@ jobs:
             9.0.x
             10.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Restore and build all projects
         shell: pwsh
+        run: |
+          $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj'
 
-      - name: Build solution
-        run: dotnet build --configuration Release --no-restore
+          foreach ($proj in $projects) {
+            dotnet restore $proj.FullName
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            dotnet build $proj.FullName --no-restore --configuration Release
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Check for DocFX configuration
+        id: check-docfx
         shell: pwsh
+        run: |
+          if (Test-Path "docfx_project/docfx.json") {
+            Write-Host "✅ DocFX configuration found"
+            "has-docfx=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          } else {
+            Write-Host "ℹ️ No docfx.json found in docfx_project/ — skipping documentation build"
+            "has-docfx=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
 
       - name: Install DocFX
+        if: steps.check-docfx.outputs.has-docfx == 'true'
         run: dotnet tool update docfx --global || dotnet tool install docfx --global
         shell: pwsh
 
       - name: Build DocFX Metadata
+        if: steps.check-docfx.outputs.has-docfx == 'true'
         run: docfx metadata
         working-directory: docfx_project
         shell: pwsh
 
       - name: Build Docs
+        if: steps.check-docfx.outputs.has-docfx == 'true'
         run: docfx build
         working-directory: docfx_project
         shell: pwsh
 
       - name: Verify build output
+        if: steps.check-docfx.outputs.has-docfx == 'true'
         run: |
           if (-Not (Test-Path "docfx_project/_site")) {
           Write-Host "Error: docfx_project/_site directory not found!"
@@ -99,6 +119,7 @@ jobs:
         shell: pwsh
 
       - name: Generate versions.json
+        if: steps.check-docfx.outputs.has-docfx == 'true'
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
         shell: pwsh
@@ -138,6 +159,7 @@ jobs:
           Write-Host "Generated versions.json with $($versions.Count) version(s): $($versions | ForEach-Object { $_.version })"
 
       - name: Compute destination directory
+        if: steps.check-docfx.outputs.has-docfx == 'true'
         id: dest
         env:
           INPUT_VERSION: ${{ inputs.version }}
@@ -155,7 +177,7 @@ jobs:
           Add-Content -Path $env:GITHUB_OUTPUT -Value "dir=$sanitized"
 
       - name: Deploy docs to GitHub Pages
-        if: inputs.deploy_to_pages != false
+        if: steps.check-docfx.outputs.has-docfx == 'true' && inputs.deploy_to_pages != false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
