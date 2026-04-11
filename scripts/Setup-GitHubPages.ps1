@@ -49,7 +49,7 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$Repository = "{{GITHUB_USERNAME}}/{{REPO_NAME}}",
+    [string]$Repository = "Chris-Wolfgang/console-app-template",
     
     [Parameter()]
     [switch]$EnablePages,
@@ -211,7 +211,7 @@ try {
 }
 
 # Determine repository
-if ($Repository -eq "{{GITHUB_USERNAME}}/{{REPO_NAME}}" -or -not $Repository) {
+if ($Repository -eq "Chris-Wolfgang/console-app-template" -or -not $Repository) {
     # Placeholders not replaced or no repository specified - auto-detect
     Write-Info "Detecting current repository..."
     try {
@@ -219,7 +219,7 @@ if ($Repository -eq "{{GITHUB_USERNAME}}/{{REPO_NAME}}" -or -not $Repository) {
         $Repository = $repoInfo.nameWithOwner
         Write-Success "Using repository: $Repository"
     } catch {
-        if ($Repository -eq "{{GITHUB_USERNAME}}/{{REPO_NAME}}") {
+        if ($Repository -eq "Chris-Wolfgang/console-app-template") {
             Write-Error-Custom "Could not detect repository. Please run the setup script (scripts/setup.ps1 or scripts/setup.sh) first to replace placeholders, or specify -Repository parameter."
         } else {
             Write-Error-Custom "Could not detect repository. Please run from within a git repository or specify -Repository parameter."
