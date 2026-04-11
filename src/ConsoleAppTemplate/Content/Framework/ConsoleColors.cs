@@ -5,11 +5,11 @@
         // https://ss64.com/nt/syntax-ansi.html
 
         public static readonly string Reset         = "\e[0m";
-        public static readonly string Bold          = "\e[0m";
-        public static readonly string Underline     = "\e[0m";
-        public static readonly string NoUnderline   = "\e[0m";
-        public static readonly string ReverseTest   = "\e[0m";
-        public static readonly string PositiveText  = "\e[0m";
+        public static readonly string Bold          = "\e[1m";
+        public static readonly string Underline     = "\e[4m";
+        public static readonly string NoUnderline   = "\e[24m";
+        public static readonly string ReverseTest   = "\e[7m";
+        public static readonly string PositiveText  = "\e[27m";
 
 
 
@@ -27,7 +27,7 @@
         public static readonly string Gray     = "\e[100m";
         public static readonly string LightRed     = "\e[101m";
         public static readonly string LightGreen   = "\e[102m";
-        public static readonly string LightYellow  = "\e[1033m";
+        public static readonly string LightYellow  = "\e[103m";
         public static readonly string LightBlue    = "\e[104m";
         public static readonly string LightMagenta = "\e[105m";
         public static readonly string LightCyan    = "\e[106m";
