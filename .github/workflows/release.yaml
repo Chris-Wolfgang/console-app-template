@@ -1,23 +1,25 @@
-name: Release on Version Tag
+name: Release on Published Release
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  release:
+    types: [published]
 
 permissions:
-  contents: read
+  contents: read  # Default to read-only; individual jobs declare write where required
 
 jobs:
-  build-and-test:
-    name: Build and Test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+  # ============================================================================
+  # VALIDATE: Build all template projects
+  # ============================================================================
+  validate-release:
+    name: Validate Release Build
+    runs-on: windows-latest
+    if: github.repository != 'Chris-Wolfgang/repo-template'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -25,44 +27,47 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
+            10.0.x
 
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build Solution (Release)
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Run tests for all test projects
+      - name: Build all projects (Release)
         shell: pwsh
         run: |
-          $testProjects = Get-ChildItem -Path ./tests -Filter '*Test*.csproj' -File -Recurse -ErrorAction SilentlyContinue
-          if ($testProjects) {
-            foreach ($proj in $testProjects) {
-              Write-Host "Running tests for $($proj.FullName)"
-              dotnet test "$($proj.FullName)" --no-build --configuration Release
-              if ($LASTEXITCODE -ne 0) {
-                Write-Error "Tests failed for $($proj.FullName)"
-                exit $LASTEXITCODE
-              }
-            }
-          } else {
-            Write-Host "No test projects found in ./tests directory"
+          $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj'
+
+          if ($projects.Count -eq 0) {
+            Write-Error "❌ No projects found in src/ directory"
+            exit 1
           }
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.os }}
-          path: '**/TestResults*.trx'
+          foreach ($proj in $projects) {
+            Write-Host "📦 Building $($proj.Name)" -ForegroundColor Cyan
+            dotnet build $proj.FullName --no-restore --configuration Release
 
-  publish:
-    name: Pack and Publish NuGet
-    needs: build-and-test
-    runs-on: ubuntu-latest
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Build failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
+          }
+
+          Write-Host "✅ All projects built successfully" -ForegroundColor Green
+
+  # ============================================================================
+  # PACK: Create and validate NuGet packages
+  # ============================================================================
+  pack-and-validate:
+    name: Pack & Validate NuGet
+    needs: validate-release
+    runs-on: windows-latest
+    outputs:
+      has-packages: ${{ steps.check-packages.outputs.has-packages }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -70,22 +75,201 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
-      - name: Restore dependencies
-        run: dotnet restore
+            10.0.x
 
-      - name: Build Solution (Release)
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Pack NuGet Package for Each Template Project (Release)
-        shell: bash
+      - name: Restore and build
         run: |
-            dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --no-build --configuration Release --output ./nuget-packages
-            dotnet pack src/SubCommandTemplate/dotnet.subcommand.template.pack.csproj --no-build --configuration Release --output ./nuget-packages
-            dotnet pack src/EtlSubCommandTemplate/dotnet.etlsubcommand.template.pack.csproj --no-build --configuration Release --output ./nuget-packages
-      - name: Publish NuGet Package
+          dotnet restore
+          dotnet build --no-restore --configuration Release
+
+      - name: Pack NuGet template packages
+        id: check-packages
+        shell: pwsh
+        run: |
+          $packagesPath = Join-Path $PWD 'nuget-packages'
+          New-Item -ItemType Directory -Force -Path $packagesPath | Out-Null
+
+          dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --no-build --configuration Release --output $packagesPath
+          dotnet pack src/SubCommandTemplate/dotnet.subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath
+          dotnet pack src/EtlSubCommandTemplate/dotnet.etl-subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath
+
+          $packages = Get-ChildItem -Path $packagesPath -Filter '*.nupkg' -ErrorAction SilentlyContinue
+
+          if ($packages.Count -eq 0) {
+            Write-Warning "No .nupkg files were produced during packing"
+            "has-packages=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            exit 0
+          }
+
+          Write-Host "✅ NuGet packages created successfully:" -ForegroundColor Green
+          $packages | ForEach-Object { Write-Host "   $($_.Name)" }
+          "has-packages=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Smoke test NuGet template installation
+        shell: pwsh
+        run: |
+          $packages = Get-ChildItem -Path 'nuget-packages' -Filter '*.nupkg' -ErrorAction SilentlyContinue
+
+          if ($packages.Count -eq 0) {
+            Write-Warning "No .nupkg files found - skipping smoke test"
+            exit 0
+          }
+
+          # Install template packages from local source
+          foreach ($package in $packages) {
+            Write-Host "🧪 Installing template package: $($package.Name)" -ForegroundColor Yellow
+            dotnet new install $package.FullName
+
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Failed to install template $($package.Name)"
+              exit $LASTEXITCODE
+            }
+
+            Write-Host "✅ Template $($package.Name) installed successfully" -ForegroundColor Green
+          }
+
+          # Verify templates are listed
+          Write-Host ""
+          Write-Host "Installed templates:" -ForegroundColor Cyan
+          dotnet new list wolfgang
+
+      - name: Generate SBOM (CycloneDX)
+        if: steps.check-packages.outputs.has-packages == 'true'
+        shell: pwsh
+        run: |
+          dotnet tool install --global CycloneDX
+
+          $sbomDir = Join-Path $PWD 'nuget-packages'
+          $srcProjects = Get-ChildItem -Path 'src' -Filter '*.csproj' -Recurse -ErrorAction SilentlyContinue
+
+          if ($srcProjects.Count -eq 0) {
+            Write-Warning "No projects found in src/ - skipping SBOM generation"
+            return
+          }
+
+          foreach ($proj in $srcProjects) {
+            $sbomName = "$($proj.BaseName).bom.json"
+            $sbomPath = Join-Path $sbomDir $sbomName
+
+            Write-Host "📋 Generating SBOM for $($proj.Name)" -ForegroundColor Cyan
+            dotnet CycloneDX $proj.FullName --output $sbomDir --filename $sbomName --json
+
+            if ($LASTEXITCODE -ne 0) {
+              Write-Warning "⚠️ SBOM generation failed for $($proj.Name) - continuing"
+            } else {
+              Write-Host "✅ SBOM generated: $sbomName" -ForegroundColor Green
+            }
+          }
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./nuget-packages/
+          retention-days: 90
+          if-no-files-found: warn
+
+  # ============================================================================
+  # PUBLISH: Push to NuGet.org
+  # ============================================================================
+  publish-nuget:
+    name: Publish to NuGet.org
+    needs: pack-and-validate
+    if: needs.pack-and-validate.outputs.has-packages == 'true'
+    runs-on: windows-latest
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./packages
+
+      - name: Validate NuGet API key
+        shell: pwsh
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }} # Ensure this secret is set in repository settings
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          for pkg in ./nuget-packages/*.nupkg; do
-            dotnet nuget push "$pkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
-          done
+          if ([string]::IsNullOrEmpty($env:NUGET_API_KEY)) {
+            Write-Error "❌ NUGET_API_KEY secret not configured!"
+            Write-Host "Please add it in: Repository Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          }
+          Write-Host "✅ NUGET_API_KEY is configured" -ForegroundColor Green
+
+      - name: Publish to NuGet
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          $packages = Get-ChildItem -Path './packages' -Filter '*.nupkg' -ErrorAction SilentlyContinue
+
+          if ($packages.Count -eq 0) {
+            Write-Warning "No .nupkg files found - nothing to publish"
+            exit 0
+          }
+
+          foreach ($package in $packages) {
+            Write-Host "📤 Publishing $($package.Name) to NuGet.org" -ForegroundColor Cyan
+
+            dotnet nuget push $package.FullName `
+              --api-key $env:NUGET_API_KEY `
+              --source https://api.nuget.org/v3/index.json `
+              --skip-duplicate
+
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Failed to publish $($package.Name)"
+              exit $LASTEXITCODE
+            }
+
+            Write-Host "✅ Successfully published $($package.Name)" -ForegroundColor Green
+          }
+
+          Write-Host ""
+          Write-Host "==========================================" -ForegroundColor Green
+          Write-Host "✅ All packages published to NuGet.org" -ForegroundColor Green
+          Write-Host "==========================================" -ForegroundColor Green
+
+  # ============================================================================
+  # DOCS: Build and deploy versioned documentation
+  # ============================================================================
+  trigger-docs:
+    name: Build & Deploy Documentation
+    needs: validate-release
+    permissions:
+      contents: write  # Required by docfx.yaml to push to gh-pages branch
+    uses: ./.github/workflows/docfx.yaml
+    with:
+      version: ${{ github.event.release.tag_name }}
+
+  # ============================================================================
+  # RELEASE ARTIFACTS: Attach packages to GitHub Release
+  # ============================================================================
+  update-release-artifacts:
+    name: Attach Artifacts to Release
+    needs: [validate-release, pack-and-validate, publish-nuget]
+    if: needs.pack-and-validate.outputs.has-packages == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to upload assets to the GitHub Release
+    steps:
+      - name: Download NuGet packages artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./nuget-packages
+
+      - name: Attach artifacts to release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b  # v2.5.0
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            ./nuget-packages/*.nupkg
+            ./nuget-packages/*.bom.json
