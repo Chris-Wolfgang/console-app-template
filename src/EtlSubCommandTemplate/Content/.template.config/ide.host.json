@@ -25,6 +25,16 @@
             "id": "description",
             "name": { "text": "Description" },
             "isVisible": true
+        },
+        {
+            "id": "alternative-name",
+            "name": { "text": "Alternative name" },
+            "isVisible": true
+        },
+        {
+            "id": "response-file",
+            "name": { "text": "Response file support" },
+            "isVisible": true
         }
     ]
 }

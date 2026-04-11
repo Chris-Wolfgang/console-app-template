@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
     <PackageType>Template</PackageType>
-    <PackageVersion>0.3.0</PackageVersion>
+    <PackageVersion>0.4.0</PackageVersion>
     <PackageId>Wolfgang.Template.Console.ETL-SubCommand</PackageId>
     <Title>Wolfgang Console ETL Subcommand</Title>
     <Authors>Chris Wolfgang</Authors>
@@ -42,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Wolfgang.Etl.Abstractions" Version="0.6.0" />
+    <PackageReference Include="Wolfgang.Etl.Abstractions" Version="0.12.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
 </Project>

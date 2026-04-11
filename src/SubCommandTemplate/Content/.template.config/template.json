@@ -17,6 +17,15 @@
 	},
 
 	"symbols": {
+		"ClassName": {
+			"type": "parameter",
+			"description": "The name of the subcommand class",
+			"datatype": "text",
+			"replaces": "SubCommandTemplate",
+			"fileRename": "SubCommandTemplate",
+			"defaultValue": "SubCommand"
+		},
+
 		"DefaultNamespace": {
 			"type": "bind",
 			"binding": "msbuild:RootNamespace",
@@ -31,7 +40,7 @@
 			"defaultValue": "<you can specify an alternative name>"
 		},
 
-		"command-description": {
+		"description": {
 			"type": "parameter",
 			"datatype": "string",
 			"description": "A description for the command",
@@ -66,6 +75,9 @@
 			"replaces": "ParseArgsAsSpaceSeparated",
 			"defaultValue": "ParseArgsAsLineSeparated"
 		}
-	}
+	},
+	"primaryOutputs": [
+		{ "path": "%name%.cs" }
+	]
 }
  

@@ -121,9 +121,6 @@ namespace ConsoleAppTemplate
             reporter.Warn("Your code here");
 
 
-            logger.LogDebug("Starting {command}", GetType().Name);
-
-
             // TODO Return 0 for success and any positive number for failure
             return ExitCode.Success;
         }
