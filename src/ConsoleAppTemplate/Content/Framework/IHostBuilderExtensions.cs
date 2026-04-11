@@ -54,7 +54,7 @@ namespace ConsoleAppTemplate.Framework
                 .ConfigureAppConfiguration((context, configurationBuilder) =>
                 {
                     configurationBuilder
-                        .SetBasePath(ConfigurationPath.Combine(AppContext.BaseDirectory))
+                        .SetBasePath(AppContext.BaseDirectory)
                         .AddJsonFile("AppSettings.json", optional, reloadOnChange)
                         .AddEnvironmentVariables();
                 });
@@ -81,7 +81,7 @@ namespace ConsoleAppTemplate.Framework
                 .ConfigureAppConfiguration((context, configurationBuilder) =>
                 {
                     configurationBuilder
-                        .SetBasePath(ConfigurationPath.Combine(AppContext.BaseDirectory))
+                        .SetBasePath(AppContext.BaseDirectory)
                         .AddJsonFile($"AppSettings.{environment}.json", optional, reloadOnChange)
                         .AddEnvironmentVariables();
                 });
