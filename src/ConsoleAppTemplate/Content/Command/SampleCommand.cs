@@ -90,7 +90,7 @@ internal class SampleCommand
         catch (Exception e)
         {
 
-            logger.LogCritical(e, e.Message);
+            logger.LogCritical(e, "Unhandled error: {Message}", e.Message);
             console.WriteLine(e);
             return ExitCode.ApplicationError;
         }

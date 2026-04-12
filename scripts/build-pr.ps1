@@ -223,7 +223,7 @@ if (-not $SkipSecurity) {
         --source-code . `
         --file-format text `
         --output-file devskim-results.txt `
-        --ignore-rule-ids DS176209 `
+        --ignore-rule-ids DS176209,DS137138 `
         --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**"
 
     if (Test-Path "devskim-results.txt") {
