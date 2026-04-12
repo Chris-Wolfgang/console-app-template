@@ -278,15 +278,13 @@ try {
             Write-Host "   ✅ No approvals required (single-developer mode)" -ForegroundColor Gray
         }
         Write-Host "   ✅ Required status checks (must pass before merging):" -ForegroundColor Gray
-        Write-Host "      - Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate" -ForegroundColor DarkGray
-        Write-Host "      - Stage 2: Windows Tests (.NET 5.0-10.0, Framework 4.6.2-4.8.1)" -ForegroundColor DarkGray
-        Write-Host "      - Stage 3: macOS Tests (.NET 6.0-10.0)" -ForegroundColor DarkGray
-        Write-Host "      - Security Scan (DevSkim)" -ForegroundColor DarkGray
-        Write-Host "      - CodeQL Security Analysis / Security Scan (CodeQL) (csharp) (pull_request)" -ForegroundColor DarkGray
+        Write-Host "      - Build & Validate Templates" -ForegroundColor DarkGray
+        Write-Host "      - Secrets Scan (gitleaks)" -ForegroundColor DarkGray
         Write-Host "   ✅ Branches must be up to date before merging" -ForegroundColor Gray
         Write-Host "   ✅ Conversation resolution required before merging" -ForegroundColor Gray
         Write-Host "   ✅ Stale reviews dismissed when new commits are pushed" -ForegroundColor Gray
-        Write-Host "   ✅ CodeQL code scanning enforcement (blocks on High+ severity findings)" -ForegroundColor Gray
+        Write-Host "   ✅ CodeQL code scanning enforcement enabled (blocks on High+ severity findings)" -ForegroundColor Gray
+        Write-Host "      - Enforced via code scanning rules, not a required status check context" -ForegroundColor DarkGray
         Write-Host "   ✅ Automatic Copilot code review enabled:" -ForegroundColor Gray
         Write-Host "      - Auto-request for new pull requests" -ForegroundColor DarkGray
         Write-Host "      - Review new pushes automatically" -ForegroundColor DarkGray
