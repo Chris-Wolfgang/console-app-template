@@ -26,12 +26,10 @@ indent_size = 2
 indent_size = 2
 
 # PowerShell files
-# PowerShell uses CRLF to maintain compatibility with Windows and PowerShell conventions
-# This overrides the global end_of_line = lf setting and aligns with .gitattributes
+# LF line endings for cross-platform shebang compatibility, aligned with .gitattributes
 [*.ps1]
 indent_size = 4
-end_of_line = crlf
-charset = utf-8-bom
+end_of_line = lf
 
 # C# files
 [*.cs]
