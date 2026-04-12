@@ -53,6 +53,9 @@ try {
     exit 1
 }
 
+# Strip leading '@' in case template substitution produced an @-prefixed owner
+$Repository = $Repository -replace '^@', ''
+
 # Determine repository
 if ($Repository -eq "Chris-Wolfgang/console-app-template" -or -not $Repository) {
     Write-Host "Detecting current repository..." -ForegroundColor Cyan
