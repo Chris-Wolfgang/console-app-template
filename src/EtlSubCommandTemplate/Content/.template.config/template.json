@@ -70,7 +70,7 @@
 	"postActions": [
 		{
 			"description": "Add Wolfgang.Etl.Abstractions NuGet package",
-			"actionId": "E9E1F7F3-5C39-488A-B7F0-1234567890AB",
+			"actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
 			"manualInstructions": [
 				{
 					"text": "Run 'dotnet add package Wolfgang.Etl.Abstractions' in your project."
