@@ -17,6 +17,15 @@
 	},
 
 	"symbols": {
+		"ClassName": {
+			"type": "parameter",
+			"description": "The name of the subcommand class",
+			"datatype": "text",
+			"replaces": "EtlSubCommandTemplate",
+			"fileRename": "EtlSubCommandTemplate",
+			"defaultValue": "EtlSubCommand"
+		},
+
 		"DefaultNamespace": {
 			"type": "bind",
 			"binding": "msbuild:RootNamespace",
@@ -67,6 +76,9 @@
 			"defaultValue": "ParseArgsAsLineSeparated"
 		}
 	},
+	"primaryOutputs": [
+		{ "path": "%name%.cs" }
+	],
 	"postActions": [
 		{
 			"description": "Add Wolfgang.Etl.Abstractions NuGet package",

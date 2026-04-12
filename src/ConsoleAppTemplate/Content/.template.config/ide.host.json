@@ -17,7 +17,7 @@
             "isVisible": true
         },
         {
-            "id": "Description",
+            "id": "description",
             "name": {
                 "text": "Description"
             },
