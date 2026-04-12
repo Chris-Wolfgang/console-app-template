@@ -50,7 +50,7 @@ Write-Host "✅ dotnet format is available" -ForegroundColor Green
 Write-Host ""
 
 # Find solution file
-$solution = Get-ChildItem -Path . -File | Where-Object { $_.Extension -eq '.sln' -or $_.Extension -eq '.slnx' } | Select-Object -First 1
+$solution = Get-ChildItem -Path . -Recurse -File | Where-Object { $_.Extension -eq '.sln' -or $_.Extension -eq '.slnx' } | Select-Object -First 1
 
 if (-not $solution)
 {

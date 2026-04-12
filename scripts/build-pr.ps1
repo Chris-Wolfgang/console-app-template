@@ -59,13 +59,15 @@ function Write-Fail($message) {
 # ============================================================================
 Write-Step "Step 1: Restore and Build (Release)"
 
-dotnet restore
+$solutionPath = "src/ConsoleAppTemplate.sln"
+
+dotnet restore $solutionPath
 if ($LASTEXITCODE -ne 0) {
     Write-Fail "Restore failed"
     $failed += "Restore"
 }
 else {
-    dotnet build --no-restore --configuration Release
+    dotnet build $solutionPath --no-restore --configuration Release
     if ($LASTEXITCODE -ne 0) {
         Write-Fail "Build failed"
         $failed += "Build"
@@ -269,8 +271,8 @@ if (-not $SkipSecurity) {
             $url = "https://github.com/gitleaks/gitleaks/releases/download/v${version}/$archive"
             $dest = Join-Path ([Environment]::GetFolderPath('UserProfile')) ".local/bin"
             New-Item -ItemType Directory -Force -Path $dest | Out-Null
-            $tarball = Join-Path $env:TMPDIR $archive
-            if (-not $tarball) { $tarball = Join-Path "/tmp" $archive }
+            $tempDir = [IO.Path]::GetTempPath()
+            $tarball = Join-Path $tempDir $archive
             Invoke-WebRequest -Uri $url -OutFile $tarball
             tar xzf $tarball -C $dest gitleaks
             Remove-Item $tarball -ErrorAction SilentlyContinue

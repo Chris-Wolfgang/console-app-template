@@ -9,11 +9,10 @@
 *.fsx text eol=lf
 
 # Scripts
-# PowerShell scripts: CRLF line endings (intentional override)
-# Both .gitattributes and .editorconfig consistently configure PowerShell files
-# to use CRLF (Windows-style) line endings for PowerShell convention compliance.
-# See .editorconfig [*.ps1] section for the matching configuration.
-*.ps1 text eol=crlf
+# PowerShell scripts: LF line endings for cross-platform compatibility.
+# This avoids breaking Unix shebang execution (#!/usr/bin/env pwsh)
+# on Linux/macOS while remaining compatible with PowerShell on Windows.
+*.ps1 text eol=lf
 
 
 # Build and configuration files
