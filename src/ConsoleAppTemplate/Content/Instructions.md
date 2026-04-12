@@ -27,7 +27,7 @@ To view the list of TODOs, in Visual Studio, under the View menu, select Task Li
 
 1. Set the version of .Net that you want to use
 1. Set the version number in the project file. See [Semver.org](https://semver.org/) 
-   for more information on symantec versioning.  You can set the version number by
+   for more information on semantic versioning.  You can set the version number by
    right clicking on the project and selecting `Edit Project File` and changing the 
    version number. 
 1. Run package restore to get the latest packages. While the packages were updated 
@@ -52,7 +52,7 @@ This tells the operating system, or the application that launched this applicati
 This is important for applications that are run as part of a pipeline or in a container. 
 It is recommended that you follow this approach and use either int OnExecute or 
 Task&lt;int&gt; OnExecuteAsync and return 0 if the command succeeds or a value greater than 0 if 
-it fails. The template defines a class, `ExistCode` with predefined values including `Success` and `ApplicationError`
+it fails. The template defines a class, `ExitCode` with predefined values including `Success` and `ApplicationError`
 You can add additional values to this class.
 
 The template wraps the contents of Main in a try/catch block which will catch any unhandled exceptions and log
@@ -63,10 +63,10 @@ them to any defined sinks, write the exception directly to the console and retur
 ## Setup Config Files
 
 This template supports using a single appSettings.config file for all environments or 
-sepearate config files, one for each environment. 
+separate config files, one for each environment. 
 
 ### Single File (appSettings.json) vs One File Per Environment (appSettings.&lt;environment&gt;.json)
-1. If using a single file for all environements 
+1. If using a single file for all environments 
 	a. You will use the file named `appsettings.json` in the root of your project. 
 	a. You can safely delete the other json files, `appsettings.*.json`, i.e. `appsettings.Development.json`, `appsettings.Production.json` etc.
 	a. In the Program.cs file make sure that the line UseSingleEnvironment() is uncommented and that the line UseMultiEnvironment() is either commented out or removed
@@ -94,7 +94,7 @@ Task<int> OnExecuteAsync(IConfiguration config)
 }
 ```
 
-However, it is recommended that you group related settings into a section in the config file, create a class to hold all the values, and then setup the dependecy injection to load the config file into the class
+However, it is recommended that you group related settings into a section in the config file, create a class to hold all the values, and then setup the dependency injection to load the config file into the class
 	
 AppSettings.json
 ```json
@@ -256,7 +256,7 @@ This template is configured to use the [Serilog](https://serilog.net/) logging l
 Serilog is a logging library that allows you to log to multiple sinks, including the console, file, and other sinks.
 Additional sinks can be found at [Serilog Site]( https://github.com/serilog/serilog/wiki/provided-sinks)
 
-Logging is implmented so that is can be customized via the config file rather than through code.
+Logging is implemented so that is can be customized via the config file rather than through code.
 This allows you to have different settings for different environments if you are using one file per environment. 
 It also allows you to change the logging settings to provide more or less detail as situations arise, 
 without the need to recompile the application.
@@ -264,7 +264,7 @@ without the need to recompile the application.
 However, you can use any logging library as long as it supports the Microsoft.Extensions.Logging library.
 To use a different logging library, you will need to 
 - [ ] Remove the Serilog packages 
-- [ ] Remove the Serilog configuratuion from the config file
+- [ ] Remove the Serilog configuration from the config file
 - [ ] Add the package for the logging library you want to use.
 - [ ] Add the configuration for the logging library you want to use
 - [ ] Update the Program.cs file to use the new logging library
@@ -330,7 +330,7 @@ are configured for you as part of this template.
 
 [!Note]
 The `WriteTo` section configures the individual sinks, however, the sink must be 
-resgitered in the `Using` section. If it is not registered in the `Using` section, 
+registered in the `Using` section. If it is not registered in the `Using` section, 
 or the appropriate package is not installed, the sink will not work. 
 
 
