@@ -13,7 +13,7 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <NoDefaultExcludes>true</NoDefaultExcludes>
-	 <Copyright>Chris Wolfgang 2025</Copyright>
+	 <Copyright>Chris Wolfgang 2025-2026</Copyright>
 	 <PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
 	 <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
 	 <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
