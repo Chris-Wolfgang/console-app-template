@@ -259,7 +259,7 @@ if (-not $SkipSecurity) {
             $dest = Join-Path $env:LOCALAPPDATA "gitleaks"
             New-Item -ItemType Directory -Force -Path $dest | Out-Null
             $zip = Join-Path $env:TEMP $archive
-            Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
+            Invoke-WebRequest -Uri $url -OutFile $zip
             Expand-Archive -Path $zip -DestinationPath $dest -Force
             Remove-Item $zip -ErrorAction SilentlyContinue
             $env:PATH = "$dest;$env:PATH"
@@ -267,7 +267,14 @@ if (-not $SkipSecurity) {
         else {
             $archive = "gitleaks_${version}_linux_x64.tar.gz"
             $url = "https://github.com/gitleaks/gitleaks/releases/download/v${version}/$archive"
-            curl -sSfL $url | tar xz -C /usr/local/bin gitleaks
+            $dest = Join-Path ([Environment]::GetFolderPath('UserProfile')) ".local/bin"
+            New-Item -ItemType Directory -Force -Path $dest | Out-Null
+            $tarball = Join-Path $env:TMPDIR $archive
+            if (-not $tarball) { $tarball = Join-Path "/tmp" $archive }
+            Invoke-WebRequest -Uri $url -OutFile $tarball
+            tar xzf $tarball -C $dest gitleaks
+            Remove-Item $tarball -ErrorAction SilentlyContinue
+            $env:PATH = "${dest}:$env:PATH"
         }
     }
 
