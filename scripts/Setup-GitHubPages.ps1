@@ -210,6 +210,9 @@ try {
     exit 1
 }
 
+# Strip leading '@' in case template substitution produced an @-prefixed owner
+$Repository = $Repository -replace '^@', ''
+
 # Determine repository
 if ($Repository -eq "Chris-Wolfgang/console-app-template" -or -not $Repository) {
     # Placeholders not replaced or no repository specified - auto-detect
@@ -220,7 +223,7 @@ if ($Repository -eq "Chris-Wolfgang/console-app-template" -or -not $Repository) 
         Write-Success "Using repository: $Repository"
     } catch {
         if ($Repository -eq "Chris-Wolfgang/console-app-template") {
-            Write-Error-Custom "Could not detect repository. Please run the setup script (scripts/setup.ps1 or scripts/setup.sh) first to replace placeholders, or specify -Repository parameter."
+            Write-Error-Custom "Could not detect repository. Please run the setup script (scripts/setup.ps1) first to replace placeholders, or specify -Repository parameter."
         } else {
             Write-Error-Custom "Could not detect repository. Please run from within a git repository or specify -Repository parameter."
         }
