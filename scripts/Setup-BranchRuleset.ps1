@@ -82,6 +82,9 @@ try {
     exit 1
 }
 
+# Strip leading '@' in case template substitution produced an @-prefixed owner
+$Repository = $Repository -replace '^@', ''
+
 # Determine repository
 if ($Repository -eq "Chris-Wolfgang/console-app-template" -or -not $Repository) {
     # Placeholders not replaced or no repository specified - auto-detect
@@ -193,14 +196,13 @@ $rulesetConfig = @{
                 # must NOT have path filters (paths/paths-ignore). If a workflow is path-filtered
                 # and doesn't run for a PR, GitHub will treat the required check as missing and
                 # block the merge. All required status checks must run on every PR.
-                # This also applies to the CodeQL workflow (codeql.yml) which provides the code_scanning
-                # rule below - see that section for details on how CodeQL handles graceful skipping.
+                # Keep this list aligned with the exact job names produced by the PR workflow.
+                # CodeQL is enforced via the 'code_scanning' rule below rather than as a required
+                # status check context, which avoids blocking merges on a non-existent or skipped
+                # CodeQL check run.
                 required_status_checks = @(
-                    @{ context = "Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate" },
-                    @{ context = "Stage 2: Windows Tests (.NET 5.0-10.0, Framework 4.6.2-4.8.1)" },
-                    @{ context = "Stage 3: macOS Tests (.NET 6.0-10.0)" },
-                    @{ context = "Security Scan (DevSkim)" },
-                    @{ context = "CodeQL Security Analysis / Security Scan (CodeQL) (csharp) (pull_request)" }
+                    @{ context = "Build & Validate Templates" },
+                    @{ context = "Secrets Scan (gitleaks)" }
                 )
             }
         },
@@ -208,11 +210,10 @@ $rulesetConfig = @{
             type = "code_scanning"
             parameters = @{
                 # NOTE: CodeQL uses the 'code_scanning' ruleset type instead of 'required_status_checks'
-                # because it has built-in intelligence to handle cases where scans don't run
-                # The workflow (.github/workflows/codeql.yml) has no path filters to ensure
-                # GitHub can properly evaluate this rule. The workflow runs on all PRs and gracefully
-                # skips analysis when there's no C# code, preventing false merge blocks while still
-                # enforcing security scanning when needed.
+                # because GitHub evaluates code scanning results natively and can handle cases where
+                # CodeQL does not run or does not apply to a change without incorrectly blocking merges.
+                # This repository relies on GitHub's default CodeQL setup rather than a local
+                # .github/workflows/codeql.yaml workflow file.
                 code_scanning_tools = @(
                     @{
                         tool = "CodeQL"
