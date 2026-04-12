@@ -13,7 +13,7 @@
 	<Authors>Chris Wolfgang</Authors>
 	<PackageReadmeFile>ReadMe.md</PackageReadmeFile>
 	<RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
-	<RepositoryType>https://github.com/Chris-Wolfgang/console-app-template</RepositoryType>
+	<RepositoryType>git</RepositoryType>
 	<PackageTags>template;console-app;</PackageTags>
 	<PackageIcon>Console-Template-icon.png</PackageIcon>
 	<ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>

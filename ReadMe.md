@@ -46,7 +46,7 @@ This template is designed for scalability, maintainability, and ease-of-use, whe
 
 ### Prerequisites
 
-- [.NET 6.0 SDK or later](https://dotnet.microsoft.com/en-us/download)
+- [.NET 8.0 SDK or later](https://dotnet.microsoft.com/en-us/download)
 - (Optional) [Visual Studio](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/)
 
 ### Installation
@@ -61,7 +61,7 @@ dotnet new install <PackageID>
 Create a new project using this template:
 
 ```sh
-dotnet new console-app-template -n MyConsoleApp
+dotnet new cwconsole -n MyConsoleApp
 cd MyConsoleApp
 ```
 
@@ -108,7 +108,7 @@ You can also publish the app and run the executable:
 
 ```sh
 dotnet publish -c Release
-./bin/Release/net6.0/MyConsoleApp.exe [options]
+./bin/Release/net8.0/MyConsoleApp.exe [options]
 ```
 
 ### Command Line Options
