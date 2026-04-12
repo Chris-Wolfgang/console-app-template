@@ -71,8 +71,8 @@ internal class EtlSubCommandTemplate
             (
                 report =>
                 {
-                    logger.LogDebug("Current count: {count}", report.CurrentCount);
-                    console.WriteLine($"Current count: {report.CurrentCount}");
+                    logger.LogDebug("Current count: {count}", report.CurrentItemCount);
+                    console.WriteLine($"Current count: {report.CurrentItemCount}");
                 }
             );
 
@@ -99,7 +99,7 @@ internal class EtlSubCommandTemplate
         }
         catch (Exception e)
         {
-            logger.LogCritical(e, e.Message);
+            logger.LogCritical(e, "Unhandled error: {Message}", e.Message);
             console.WriteLine(e);
             return ExitCode.ApplicationError;
         }

@@ -10,7 +10,7 @@ If you discover a security vulnerability, please follow these steps:
 1. Fill out the provided form. It will request information like:
    - A description of the vulnerability
    - Steps to reproduce the issue
-   - Potential impact on student data or website functionality
+   - Potential impact
    - Suggested fix (if you have one)
 
 ## Response Timeline
