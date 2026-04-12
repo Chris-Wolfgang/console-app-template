@@ -16,7 +16,7 @@ Thank you for your interest in contributing! Your help is appreciated. Please fo
 
 ## Pull Requests
 
-1. **Ensure your branch is up to date** with the target branch (usually `main` or `develope`).
+1. **Ensure your branch is up to date** with the target branch (usually `main` or `develop`).
 2. **Test your code** before submitting.
 3. **Describe your changes** clearly in the pull request description.
 4. Link to any related issues.
@@ -29,7 +29,7 @@ Thank you for your interest in contributing! Your help is appreciated. Please fo
 
 ## Reporting Issues
 
-If you find a bug or have a feature request, please [open an issue](https://github.com/Chris-Wolfgang/ETL-Abstractions/issues) with a clear description.
+If you find a bug or have a feature request, please [open an issue](https://github.com/Chris-Wolfgang/console-app-template/issues) with a clear description.
 
 ## Code of Conduct
 
@@ -37,4 +37,4 @@ Be respectful and considerate of others. See the [CODE_OF_CONDUCT.md](./CODE_OF_
 
 ---
 
-Thank you for helping make ETL-Abstractions better!
+Thank you for helping make console-app-template better!

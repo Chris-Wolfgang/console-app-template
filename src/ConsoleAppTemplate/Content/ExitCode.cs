@@ -3,7 +3,7 @@ namespace ConsoleAppTemplate;
 internal static class ExitCode
 {
 
-    public static readonly int Success = 0;
-    public static readonly int UnhandledException = 10;
-    public static readonly int ApplicationError = 11;
+    internal const int Success = 0;
+    internal const int UnhandledException = 10;
+    internal const int ApplicationError = 11;
 }

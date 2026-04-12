@@ -74,7 +74,7 @@ internal class SampleCommand
         ILogger<SampleCommand> logger
     )
     {
-        logger.LogInformation("Starting {command}", GetType().Name);
+        logger.LogInformation("Starting {Command}", GetType().Name);
 
         try
         {
@@ -90,13 +90,13 @@ internal class SampleCommand
         catch (Exception e)
         {
 
-            logger.LogCritical(e, e.Message);
+            logger.LogCritical(e, "Unhandled error: {Message}", e.Message);
             console.WriteLine(e);
             return ExitCode.ApplicationError;
         }
 
 
-        logger.LogInformation("Completed {command}", GetType().Name);
+        logger.LogInformation("Completed {Command}", GetType().Name);
 
         return ExitCode.Success;
     }
