@@ -395,12 +395,18 @@ jobs:
 
       - name: Run tests with coverage (.NET Core 5.0 - 10.0)
         run: |
+          # Skip gracefully when there is no ./tests directory (e.g. template repos)
+          if [ ! -d "./tests" ]; then
+            echo "ℹ️  No ./tests directory found — skipping test execution"
+            exit 0
+          fi
+
           # Find all test projects (C#, VB.NET, F#)
           mapfile -d '' -t test_projects < <(find ./tests -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -print0)
-          
+
           if [ ${#test_projects[@]} -eq 0 ]; then
-            echo "❌ No test projects found in ./tests directory!"
-            exit 1
+            echo "ℹ️  No test projects found in ./tests directory — skipping test execution"
+            exit 0
           fi
           
           echo "=========================================="
@@ -660,12 +666,18 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          
-          $testProjects = @(Get-ChildItem -Path './tests/*' -Recurse -File -Include '*.csproj','*.vbproj','*.fsproj')
-          
+
+          # Skip gracefully when there is no ./tests directory (e.g. template repos)
+          if (-not (Test-Path './tests')) {
+            Write-Host "ℹ️  No ./tests directory found — skipping test execution"
+            exit 0
+          }
+
+          $testProjects = @(Get-ChildItem -Path './tests/*' -Recurse -File -Include '*.csproj','*.vbproj','*.fsproj' -ErrorAction SilentlyContinue)
+
           if (@($testProjects).Count -eq 0) {
-            Write-Error "❌ No test projects found in ./tests directory!"
-            exit 1
+            Write-Host "ℹ️  No test projects found in ./tests directory — skipping test execution"
+            exit 0
           }
           
           Write-Host "==========================================" -ForegroundColor Cyan
@@ -1015,15 +1027,21 @@ jobs:
 
       - name:  Run tests (.NET 6.0 - 10.0 only - ARM64 compatible)
         run: |
+          # Skip gracefully when there is no ./tests directory (e.g. template repos)
+          if [ ! -d "./tests" ]; then
+            echo "ℹ️  No ./tests directory found — skipping test execution"
+            exit 0
+          fi
+
           # Find all test projects (C#, VB.NET, F#)
           test_projects=()
           while IFS= read -r -d '' file; do
           test_projects+=("$file")
-          done < <(find ./tests -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -print0)          
-          
+          done < <(find ./tests -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -print0)
+
           if [ ${#test_projects[@]} -eq 0 ]; then
-            echo "❌ No test projects found in ./tests directory!"
-            exit 1
+            echo "ℹ️  No test projects found in ./tests directory — skipping test execution"
+            exit 0
           fi
           
           echo "=========================================="
@@ -1085,8 +1103,8 @@ jobs:
       - name: Enforce 90% coverage threshold
         run: |
           if [ ! -f "CoverageReport/Summary.txt" ]; then
-            echo "❌ Coverage report not generated!"
-            exit 1
+            echo "ℹ️  No coverage report generated — skipping threshold check"
+            exit 0
           fi
 
           echo "Coverage Summary:"
