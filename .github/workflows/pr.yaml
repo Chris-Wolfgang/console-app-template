@@ -194,6 +194,9 @@ jobs:
           Write-Host ""
           Write-Host "✅ Configuration files secured - using versions from main branch"
 
+          # Reset exit code — git cat-file -e leaves $LASTEXITCODE=1 for missing files
+          exit 0
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
