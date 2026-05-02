@@ -713,8 +713,8 @@ jobs:
       - name: Restore and build all projects
         shell: pwsh
         run: |
-          # Find solution file first, fall back to per-project restore
-          $solution = Get-ChildItem -Path . -Recurse -Depth 2 -Include "*.sln", "*.slnx" | Select-Object -First 1
+          # Find solution file first (full recursive search), fall back to per-project restore
+          $solution = Get-ChildItem -Path . -Recurse -Include "*.sln", "*.slnx" -ErrorAction SilentlyContinue | Select-Object -First 1
 
           if ($solution) {
             Write-Host "Found solution: $($solution.FullName)"
@@ -724,9 +724,14 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           } else {
             Write-Host "No solution file found, restoring and building projects individually..."
-            $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj' -ErrorAction SilentlyContinue
-            if (-not $projects) {
-              $projects = Get-ChildItem -Path . -Recurse -Filter '*.csproj' -ErrorAction SilentlyContinue
+            $projects = @(Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj' -ErrorAction SilentlyContinue)
+            if ($projects.Count -eq 0) {
+              $projects = @(Get-ChildItem -Path . -Recurse -Filter '*.csproj' -ErrorAction SilentlyContinue)
+            }
+
+            if ($projects.Count -eq 0) {
+              Write-Error "❌ No solution or project files found - nothing to build"
+              exit 1
             }
 
             foreach ($proj in $projects) {
