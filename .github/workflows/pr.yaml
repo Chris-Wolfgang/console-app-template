@@ -185,7 +185,7 @@ jobs:
             $exists = git cat-file -e "main-branch:$configFile" 2>&1
             if ($LASTEXITCODE -eq 0) {
               Write-Host "  ✓ Copying $configFile from main branch"
-              git show "main-branch:$configFile" | Out-File -FilePath $configFile -Encoding UTF8 -NoNewline
+              git show "main-branch:$configFile" | Out-File -FilePath $configFile -Encoding UTF8NoBOM -NoNewline
             } else {
               Write-Host "  ℹ️  $configFile not found in main branch, skipping"
             }
