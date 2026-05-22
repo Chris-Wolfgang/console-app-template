@@ -59,15 +59,13 @@ function Write-Fail($message) {
 # ============================================================================
 Write-Step "Step 1: Restore and Build (Release)"
 
-$solutionPath = "src/ConsoleAppTemplate.sln"
-
-dotnet restore $solutionPath
+dotnet restore
 if ($LASTEXITCODE -ne 0) {
     Write-Fail "Restore failed"
     $failed += "Restore"
 }
 else {
-    dotnet build $solutionPath --no-restore --configuration Release
+    dotnet build --no-restore --configuration Release
     if ($LASTEXITCODE -ne 0) {
         Write-Fail "Build failed"
         $failed += "Build"
@@ -225,7 +223,7 @@ if (-not $SkipSecurity) {
         --source-code . `
         --file-format text `
         --output-file devskim-results.txt `
-        --ignore-rule-ids DS176209,DS137138 `
+        --ignore-rule-ids DS176209 `
         --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**"
 
     if (Test-Path "devskim-results.txt") {
@@ -261,7 +259,7 @@ if (-not $SkipSecurity) {
             $dest = Join-Path $env:LOCALAPPDATA "gitleaks"
             New-Item -ItemType Directory -Force -Path $dest | Out-Null
             $zip = Join-Path $env:TEMP $archive
-            Invoke-WebRequest -Uri $url -OutFile $zip
+            Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
             Expand-Archive -Path $zip -DestinationPath $dest -Force
             Remove-Item $zip -ErrorAction SilentlyContinue
             $env:PATH = "$dest;$env:PATH"
@@ -269,14 +267,7 @@ if (-not $SkipSecurity) {
         else {
             $archive = "gitleaks_${version}_linux_x64.tar.gz"
             $url = "https://github.com/gitleaks/gitleaks/releases/download/v${version}/$archive"
-            $dest = Join-Path ([Environment]::GetFolderPath('UserProfile')) ".local/bin"
-            New-Item -ItemType Directory -Force -Path $dest | Out-Null
-            $tempDir = [IO.Path]::GetTempPath()
-            $tarball = Join-Path $tempDir $archive
-            Invoke-WebRequest -Uri $url -OutFile $tarball
-            tar xzf $tarball -C $dest gitleaks
-            Remove-Item $tarball -ErrorAction SilentlyContinue
-            $env:PATH = "${dest}:$env:PATH"
+            curl -sSfL $url | tar xz -C /usr/local/bin gitleaks
         }
     }
 
