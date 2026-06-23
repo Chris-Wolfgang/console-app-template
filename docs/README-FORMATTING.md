@@ -26,14 +26,16 @@ Or check without making changes:
 
 ### Manual Formatting
 
+This repo has no root `.sln`/`.csproj`, so `dotnet format` needs an explicit solution path or it will fail with MSB1003. The solution lives at `src/ConsoleAppTemplate.sln`:
+
 ```bash
-dotnet format
+dotnet format src/ConsoleAppTemplate.sln
 ```
 
 ### Verify Without Modifying Files
 
 ```bash
-dotnet format --verify-no-changes
+dotnet format src/ConsoleAppTemplate.sln --verify-no-changes
 ```
 
 This is useful as a pre-commit guard or in a CI step if the repo opts in to enforcing formatting at PR time. By default, the standard PR workflow does **not** run `dotnet format --verify-no-changes`; formatting is treated as a developer-side hygiene step driven by `.editorconfig` and IDE-on-save behavior.

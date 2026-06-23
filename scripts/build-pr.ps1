@@ -59,13 +59,18 @@ function Write-Fail($message) {
 # ============================================================================
 Write-Step "Step 1: Restore and Build (Release)"
 
-dotnet restore
+# This repo has no root .sln/.csproj — the solution lives at src/ConsoleAppTemplate.sln.
+# Pass it explicitly so the script is runnable from the repo root (otherwise dotnet
+# fails with MSB1003 "Specify a project or solution file").
+$SolutionPath = 'src/ConsoleAppTemplate.sln'
+
+dotnet restore $SolutionPath
 if ($LASTEXITCODE -ne 0) {
     Write-Fail "Restore failed"
     $failed += "Restore"
 }
 else {
-    dotnet build --no-restore --configuration Release
+    dotnet build $SolutionPath --no-restore --configuration Release
     if ($LASTEXITCODE -ne 0) {
         Write-Fail "Build failed"
         $failed += "Build"

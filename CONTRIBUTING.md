@@ -150,24 +150,28 @@ var now = DateTimeOffset.UtcNow;
 
 ### Build the Project
 
+This repo has no root `.sln`/`.csproj` — the solution lives at `src/ConsoleAppTemplate.sln`, so the `dotnet` commands below pass it explicitly. The same applies to the `Run Tests` and `Code Formatting` sections that follow.
+
 ```bash
 # Restore NuGet packages
-dotnet restore
+dotnet restore src/ConsoleAppTemplate.sln
 
 # Build in Release configuration (enforces all analyzers)
-dotnet build --configuration Release
+dotnet build src/ConsoleAppTemplate.sln --configuration Release
 ```
 
 **Note:** Release builds treat all analyzer warnings as errors (`<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`). Debug builds allow warnings to facilitate development.
+
+Alternatively, run `pwsh ./scripts/build-pr.ps1` from the repo root — it wraps restore + build + test + format-check + Gitleaks with the right paths baked in.
 
 ### Run Tests
 
 ```bash
 # Run all unit tests
-dotnet test --configuration Release
+dotnet test src/ConsoleAppTemplate.sln --configuration Release
 
 # Run with coverage (if configured)
-dotnet test --collect:"XPlat Code Coverage"
+dotnet test src/ConsoleAppTemplate.sln --collect:"XPlat Code Coverage"
 ```
 
 ### Code Formatting
@@ -176,13 +180,13 @@ This project uses `.editorconfig` for consistent code style:
 
 ```bash
 # Format all code
-dotnet format
+dotnet format src/ConsoleAppTemplate.sln
 
 # Check formatting without changes (CI mode)
-dotnet format --verify-no-changes
+dotnet format src/ConsoleAppTemplate.sln --verify-no-changes
 
-# PowerShell formatting script
-pwsh ./format.ps1
+# PowerShell formatting script (resolves the solution path itself)
+pwsh ./scripts/format.ps1
 ```
 
 See [README-FORMATTING.md](README-FORMATTING.md) for detailed formatting rules.

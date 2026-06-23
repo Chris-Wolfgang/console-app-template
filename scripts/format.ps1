@@ -51,12 +51,21 @@ if ($LASTEXITCODE -ne 0)
 Write-Host "✅ dotnet format is available" -ForegroundColor Green
 Write-Host ""
 
-# Find solution file
-$solution = Get-ChildItem -Path . -File | Where-Object { $_.Extension -eq '.sln' -or $_.Extension -eq '.slnx' } | Select-Object -First 1
+# Find solution file. This template repo has no root .sln (the solution lives
+# under src/), so a flat search of the root finds nothing. Search recursively
+# but exclude bin/obj/.vs/node_modules so we don't pick up generated copies.
+$solution = Get-ChildItem -Path . -Recurse -File `
+                          -Include '*.sln', '*.slnx' `
+                          -ErrorAction SilentlyContinue |
+    Where-Object {
+        $relativePath = [IO.Path]::GetRelativePath((Get-Location).Path, $_.FullName)
+        $relativePath -notmatch '(?i)(^|[\\/])(bin|obj|\.vs|node_modules)([\\/]|$)'
+    } |
+    Select-Object -First 1
 
 if (-not $solution)
 {
-    Write-Host "❌ No solution file found!" -ForegroundColor Red
+    Write-Host "❌ No solution file found (searched recursively under .)!" -ForegroundColor Red
     exit 1
 }
 

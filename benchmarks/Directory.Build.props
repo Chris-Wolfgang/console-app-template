@@ -1,5 +1,12 @@
 <Project>
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))" />
+  <!-- Try to inherit from a root Directory.Build.props. This template repo
+       currently has no root Directory.Build.props (source projects live under
+       src/ConsoleAppTemplate/Content/ as the template payload, not as built
+       sources here). The Exists() guard prevents MSBuild from failing with an
+       empty Import path on a clean build when a benchmark project is
+       eventually added. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))"
+          Condition="'$([MSBuild]::GetPathOfFileAbove(`Directory.Build.props`, `$(MSBuildThisFileDirectory)..`))' != ''" />
   <PropertyGroup>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
