@@ -38,9 +38,11 @@ if ($LASTEXITCODE -ne 0)
     Write-Host "❌ dotnet format is not available!" -ForegroundColor Red
     Write-Host ""
     Write-Host "The 'dotnet format' command is built into the .NET SDK starting with .NET 6." -ForegroundColor Yellow
-    Write-Host "This project requires .NET 8.0 SDK or later." -ForegroundColor Yellow
+    Write-Host "You need an SDK new enough to load this repo's target frameworks — see" -ForegroundColor Yellow
+    Write-Host ".github/workflows/pr.yaml (and global.json if present) for the SDK" -ForegroundColor Yellow
+    Write-Host "versions CI uses. The latest stable .NET SDK is generally a safe choice." -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "Please install the .NET 8.0 SDK or later from:" -ForegroundColor Yellow
+    Write-Host "Install the .NET SDK from:" -ForegroundColor Yellow
     Write-Host "https://dotnet.microsoft.com/download" -ForegroundColor Cyan
     Write-Host ""
     exit 1
@@ -49,12 +51,21 @@ if ($LASTEXITCODE -ne 0)
 Write-Host "✅ dotnet format is available" -ForegroundColor Green
 Write-Host ""
 
-# Find solution file
-$solution = Get-ChildItem -Path . -Recurse -File | Where-Object { $_.Extension -eq '.sln' -or $_.Extension -eq '.slnx' } | Select-Object -First 1
+# Find solution file. This template repo has no root .sln (the solution lives
+# under src/), so a flat search of the root finds nothing. Search recursively
+# but exclude bin/obj/.vs/node_modules so we don't pick up generated copies.
+$solution = Get-ChildItem -Path . -Recurse -File `
+                          -Include '*.sln', '*.slnx' `
+                          -ErrorAction SilentlyContinue |
+    Where-Object {
+        $relativePath = [IO.Path]::GetRelativePath((Get-Location).Path, $_.FullName)
+        $relativePath -notmatch '(?i)(^|[\\/])(bin|obj|\.vs|node_modules)([\\/]|$)'
+    } |
+    Select-Object -First 1
 
 if (-not $solution)
 {
-    Write-Host "❌ No solution file found!" -ForegroundColor Red
+    Write-Host "❌ No solution file found (searched recursively under .)!" -ForegroundColor Red
     exit 1
 }
 

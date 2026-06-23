@@ -9,9 +9,19 @@
 *.fsx text eol=lf
 
 # Scripts
-# PowerShell scripts: LF line endings for cross-platform compatibility.
-# This avoids breaking Unix shebang execution (#!/usr/bin/env pwsh)
-# on Linux/macOS while remaining compatible with PowerShell on Windows.
+# PowerShell scripts: enforce LF line endings in both the index AND
+# the working tree (the explicit `eol=lf` overrides any user-level
+# `core.autocrlf=true` setting that would otherwise convert to CRLF
+# on checkout). BOM-free UTF-8 encoding is enforced separately by
+# .editorconfig's global `charset = utf-8` — `.gitattributes` can
+# normalize line endings (and control text/binary, diff, and merge
+# behavior) but has no attribute for byte-order marks.
+#
+# LF is required for the `#!/usr/bin/env pwsh` shebang to work on
+# Linux/macOS — the kernel parses CR as part of the interpreter name
+# (looking for `pwsh\r`), and a UTF-8 BOM before `#!` would prevent
+# shebang recognition entirely. Modern PowerShell 7+ handles LF on
+# Windows transparently.
 *.ps1 text eol=lf
 
 
