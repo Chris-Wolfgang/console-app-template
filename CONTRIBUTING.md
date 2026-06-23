@@ -189,7 +189,7 @@ dotnet format src/ConsoleAppTemplate.sln --verify-no-changes
 pwsh ./scripts/format.ps1
 ```
 
-See [README-FORMATTING.md](README-FORMATTING.md) for detailed formatting rules.
+See [docs/README-FORMATTING.md](docs/README-FORMATTING.md) for detailed formatting rules.
 
 ---
 

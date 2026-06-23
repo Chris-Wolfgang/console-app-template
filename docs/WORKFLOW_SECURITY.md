@@ -45,7 +45,7 @@ A malicious PR could modify these files to disable security checks.
 
 In addition to the overwrite step, a separate "Detect protected configuration file changes" step in `pr.yaml` causes the PR to fail if any of these files differ from `main`, signalling that a maintainer must manually review the change. Dependabot is exempted (its bumps to `Directory.Build.props` are legitimate).
 
-**Implementation** (in jobs that consume project source — e.g. `detect-projects`, the test stages, and the security scans; *not* the `secrets-scan` job, which only fetches `.gitleaks.toml`):
+**Implementation** (in jobs that consume project source — e.g. `detect-projects`, `Build & Validate Templates`, and the security scans; *not* the `secrets-scan` job, which only fetches `.gitleaks.toml`). Note: this repo is a `dotnet new` template host, so the PR workflow runs `Build & Validate Templates` rather than the test-matrix stages used by library repos.
 ```yaml
 - name: Fetch trusted configuration files from main branch
   run: |
@@ -80,7 +80,7 @@ All checkout steps include `persist-credentials: false` to prevent the checkout 
 
 ```yaml
 - name: Checkout code
-  uses: actions/checkout@v6
+  uses: actions/checkout@v4
   with:
     ref: refs/pull/${{ github.event.pull_request.number }}/head
     persist-credentials: false

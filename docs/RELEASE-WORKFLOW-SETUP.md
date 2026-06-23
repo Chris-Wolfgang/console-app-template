@@ -5,11 +5,13 @@ This guide explains how to configure a repository to use the standard `release.y
 ## Overview
 
 The release workflow triggers when you **publish a GitHub Release** and implements a comprehensive validation and automatic deployment process that:
-- ✅ Tests all target frameworks per test project on Windows
-- ✅ Enforces 90% code coverage threshold
-- ✅ Validates NuGet package integrity with smoke tests
-- ✅ Automatically publishes to NuGet.org after validation passes
-- ✅ Eliminates duplicate build work for faster releases
+- ✅ Validates the release build (`Validate Release Build` job)
+- ✅ Packs and validates the NuGet package (`Pack & Validate NuGet` job)
+- ✅ Automatically publishes to NuGet.org after validation passes (`Publish to NuGet.org`)
+- ✅ Builds and deploys versioned documentation to GitHub Pages
+- ✅ Attaches release artifacts to the GitHub Release
+
+> **Note**: this repo is a `dotnet new` template host. The workflow ships the **template pack** itself; it does not run test-matrix stages or a 90 % coverage gate that would only make sense for a library/source repo. If you copy this guide into a library repo, update this overview to reflect that repo's `release.yaml` jobs.
 
 ## Required Configuration
 

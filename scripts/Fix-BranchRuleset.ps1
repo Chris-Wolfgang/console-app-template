@@ -84,6 +84,16 @@ if ($Repository -eq "{{GITHUB_USERNAME}}/{{REPO_NAME}}" -or -not $Repository) {
     Write-Host "Using specified repository: $Repository" -ForegroundColor Green
 }
 
+# Strip a leading '@' from the owner segment. The companion setup.ps1 writes
+# the GitHub username with the conventional '@' prefix (e.g., `@chris-wolfgang`)
+# into copyright/license placeholders, and template authors sometimes pass the
+# same value through here for convenience. `gh api` rejects `@owner/repo` as
+# an invalid repository identifier, so normalize before any API call.
+if ($Repository -match '^@(.+)$') {
+    $Repository = $Matches[1]
+    Write-Host "Stripped leading '@' from owner — using: $Repository" -ForegroundColor Yellow
+}
+
 # Fetch all rulesets
 Write-Host "`nFetching existing rulesets..." -ForegroundColor Cyan
 
