@@ -156,10 +156,10 @@ jobs:
         id: check-projects
         run: |
           if git ls-files '*.csproj' '*.vbproj' '*.fsproj' | grep -q .; then
-            echo "has-projects=true" >> $GITHUB_OUTPUT
+            echo "has-projects=true" >> "$GITHUB_OUTPUT"
             echo "✅ Found .NET project files"
           else
-            echo "has-projects=false" >> $GITHUB_OUTPUT
+            echo "has-projects=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️  No .NET project files found - skipping build"
           fi
 
