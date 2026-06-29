@@ -1,5 +1,6 @@
 name: Release on Published Release
 
+
 on:
   release:
     types: [published]
@@ -7,10 +8,11 @@ on:
 permissions:
   contents: read  # Default to read-only; individual jobs declare write where required
 
+env:
+  CODECOV_MINIMUM: 90
+
 jobs:
-  # ============================================================================
-  # VALIDATE: Build all template projects
-  # ============================================================================
+  # Streamlined validation: All frameworks, Windows only
   validate-release:
     name: Validate Release Build
     runs-on: windows-latest
@@ -79,43 +81,267 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
+            3.1.x
+            5.0.x
+            6.0.x
+            7.0.x
             8.0.x
             9.0.x
             10.0.x
 
-      - name: Restore and build all projects (Release)
+      - name: Restore dependencies
+        # This repo has no root .sln/.csproj — the solution lives at
+        # src/ConsoleAppTemplate.sln. Pass it explicitly so dotnet doesn't
+        # fail with MSB1003 "Specify a project or solution file".
+        run: dotnet restore src/ConsoleAppTemplate.sln
+
+      - name: Build Solution (Release)
+        run: dotnet build src/ConsoleAppTemplate.sln --no-restore --configuration Release
+
+      - name: Run multi-framework tests with coverage
         shell: pwsh
         run: |
-          $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj'
-
-          if ($projects.Count -eq 0) {
-            Write-Error "❌ No projects found in src/ directory"
+          $testProjects = Get-ChildItem -Path './tests' -Recurse -Filter '*Test*.csproj'
+          
+          if ($testProjects.Count -eq 0) {
+            Write-Error "❌ No test projects found - release requires tests to validate quality"
             exit 1
           }
-
-          foreach ($proj in $projects) {
-            Write-Host "📦 Restoring $($proj.Name)" -ForegroundColor Cyan
-            dotnet restore $proj.FullName
-
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "❌ Restore failed for $($proj.Name)"
-              exit $LASTEXITCODE
+          
+          foreach ($testProj in $testProjects) {
+            Write-Host "==========================================" -ForegroundColor Cyan
+            Write-Host "Testing project: $($testProj.Name)" -ForegroundColor Cyan
+            Write-Host "==========================================" -ForegroundColor Cyan
+            
+            # Parse the project file to extract target frameworks
+            try {
+              [xml]$projectXml = Get-Content $testProj.FullName
+            } catch {
+              Write-Error "❌ Failed to parse project file $($testProj.Name): $_"
+              exit 1
             }
+            
+            # Search all PropertyGroup elements for TargetFramework(s)
+            $targetFramework = $null
+            $targetFrameworks = $null
+            foreach ($propGroup in $projectXml.Project.PropertyGroup) {
+              if ($propGroup.TargetFrameworks) {
+                $targetFrameworks = $propGroup.TargetFrameworks
+                break
+              } elseif ($propGroup.TargetFramework) {
+                $targetFramework = $propGroup.TargetFramework
+                break
+              }
+            }
+            
+            # Determine which frameworks this project targets
+            $frameworks = @()
+            if ($targetFrameworks) {
+              # Multiple frameworks (semicolon-separated)
+              $frameworks = $targetFrameworks -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+              if ($frameworks.Count -eq 0) {
+                Write-Error "❌ TargetFrameworks property in $($testProj.Name) is empty or malformed"
+                exit 1
+              }
+            } elseif ($targetFramework) {
+              # Single framework
+              $frameworks = @($targetFramework.Trim())
+              if (-not $frameworks[0]) {
+                Write-Error "❌ TargetFramework property in $($testProj.Name) is empty"
+                exit 1
+              }
+            } else {
+              # If no TargetFramework/TargetFrameworks are defined directly in the project file,
+              # attempt to resolve them via MSBuild (to account for Directory.Build.props, imports, etc.).
+              Write-Host "No TargetFramework or TargetFrameworks found directly in $($testProj.Name); querying MSBuild..." -ForegroundColor Yellow
+              
+              $msbuildOutput = @()
+              $msbuildExitCode = 0
+              foreach ($prop in @("TargetFrameworks", "TargetFramework")) {
+                $result = dotnet msbuild $testProj.FullName /nologo "-getProperty:$prop" 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                  $msbuildExitCode = $LASTEXITCODE
+                }
+                if ($result) {
+                  $msbuildOutput += $result
+                }
+              }
+              
+              if ($msbuildExitCode -ne 0) {
+                # MSBuild query failed, fall back to running tests without explicit --framework
+                Write-Warning "MSBuild query failed for $($testProj.Name). Tests will run without explicit --framework."
+                $frameworks = @('')
+              } else {
+                # MSBuild succeeded, parse the output
+                $resolvedFrameworks = @()
+                foreach ($line in $msbuildOutput) {
+                  if ([string]::IsNullOrWhiteSpace($line)) {
+                    continue
+                  }
+                  
+                  # Expect lines like "TargetFrameworks=net7.0;net8.0" or "TargetFramework=net8.0"
+                  # Support both '=' and ':' separators for different MSBuild output formats
+                  if ($line -match '^\s*TargetFrameworks\s*[:=]\s*(.+)$') {
+                    $propertyValue = $Matches[1].Trim()
+                    $resolvedFrameworks = $propertyValue -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+                    break
+                  } elseif ($line -match '^\s*TargetFramework\s*[:=]\s*(.+)$') {
+                    $propertyValue = $Matches[1].Trim()
+                    if ($propertyValue) {
+                      $resolvedFrameworks = @($propertyValue)
+                    }
+                    
+                    if ($resolvedFrameworks.Count -gt 0) {
+                      break
+                    }
+                  }
+                }
+                
+                if ($resolvedFrameworks.Count -gt 0) {
+                  $frameworks = $resolvedFrameworks
+                } else {
+                  Write-Warning "MSBuild query returned no target frameworks for $($testProj.Name). Tests will run without explicit --framework."
+                  $frameworks = @('')
+                }
+              }
+            }
+            
+            Write-Host "Detected frameworks: $($frameworks -join ', ')" -ForegroundColor Cyan
+            
+            foreach ($fw in $frameworks) {
+              if ([string]::IsNullOrWhiteSpace($fw)) {
+                Write-Host "Testing project $($testProj.Name) without explicit --framework (using SDK/MSBuild defaults)" -ForegroundColor Yellow
+                
+                # When framework cannot be determined, run tests once without specifying --framework.
+                # Collect coverage in this case to avoid missing data due to unknown TFM.
+                dotnet test $testProj.FullName `
+                  --configuration Release `
+                  --no-build `
+                  --no-restore `
+                  --collect:"XPlat Code Coverage" `
+                  --results-directory "./TestResults" `
+                  --logger "console;verbosity=minimal"
+                
+                if ($LASTEXITCODE -ne 0) {
+                  Write-Error "❌ Tests failed (no explicit TargetFramework) in $($testProj.Name)"
+                  exit $LASTEXITCODE
+                }
+                
+                continue
+              }
+              
+              Write-Host "Testing framework: $fw" -ForegroundColor Yellow
+              
+              # Collect coverage only for .NET 5.0+ TFMs; still run tests for all frameworks
+              if ($fw -match '^net([5-9]|[1-9][0-9]+)\.') {
+                dotnet test $testProj.FullName `
+                  --configuration Release `
+                  --framework $fw `
+                  --no-build `
+                  --no-restore `
+                  --collect:"XPlat Code Coverage" `
+                  --results-directory "./TestResults" `
+                  --logger "console;verbosity=minimal"
+              } else {
+                # For older frameworks (e.g., netstandard, net4x, net3x, etc.), run tests without coverage
+                dotnet test $testProj.FullName `
+                  --configuration Release `
+                  --framework $fw `
+                  --no-build `
+                  --no-restore `
+                  --results-directory "./TestResults" `
+                  --logger "console;verbosity=minimal"
+              }
+              
+              if ($LASTEXITCODE -ne 0) {
+                if ($fw) {
+                  Write-Error "❌ Tests failed for $fw in $($testProj.Name)"
+                } else {
+                  Write-Error "❌ Tests failed in $($testProj.Name)"
+                }
+                exit $LASTEXITCODE
+              }
+            }
+            Write-Host ""
+          }
+          Write-Host "✅ All framework tests passed" -ForegroundColor Green
 
-            Write-Host "🔨 Building $($proj.Name)" -ForegroundColor Cyan
-            dotnet build $proj.FullName --no-restore --configuration Release
-
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "❌ Build failed for $($proj.Name)"
-              exit $LASTEXITCODE
+      - name: Verify coverage threshold
+        shell: pwsh
+        run: |
+          # Check if coverage files exist
+          $coverageFiles = Get-ChildItem -Path "TestResults" -Recurse -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue
+          
+          if ($coverageFiles.Count -eq 0) {
+            Write-Error "❌ No coverage files found - coverage data is required to enforce the 90% threshold"
+            exit 1
+          }
+          
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          
+          reportgenerator `
+            -reports:"TestResults/**/coverage.cobertura.xml" `
+            -targetdir:"CoverageReport" `
+            -reporttypes:"TextSummary;Html"
+          
+          Write-Host "==========================================" -ForegroundColor Cyan
+          Write-Host "Coverage Summary:" -ForegroundColor Cyan
+          Write-Host "==========================================" -ForegroundColor Cyan
+          Get-Content CoverageReport/Summary.txt
+          Write-Host ""
+          
+          # Parse coverage and enforce threshold per module (matching pr.yaml)
+          $summaryContent = Get-Content CoverageReport/Summary.txt
+          $threshold = if ($env:CODECOV_MINIMUM) { [int]$env:CODECOV_MINIMUM } else { 90 }
+          $failedModules = @()
+          $coverageFound = $false
+          
+          foreach ($line in $summaryContent) {
+            # Match lines with module names and percentages (skip Summary line)
+            if ($line -match '^([^ ]+)\s+.*\s+(\d+(?:\.\d+)?)%$' -and $line -notmatch '^Summary') {
+              $coverageFound = $true
+              $module = $matches[1]
+              $coverage = [decimal]$matches[2]
+              
+              Write-Host "Checking module: '$module' - Coverage: ${coverage}%" -ForegroundColor Cyan
+              
+              if ($coverage -lt $threshold) {
+                Write-Host "  ❌ FAIL: Below ${threshold}% threshold" -ForegroundColor Red
+                $failedModules += "$module (${coverage}%)"
+              } else {
+                Write-Host "  ✅ PASS: Meets ${threshold}% threshold" -ForegroundColor Green
+              }
             }
           }
+          
+          # Ensure we found and parsed coverage data
+          if (-not $coverageFound) {
+            Write-Error "❌ Failed to parse coverage data from Summary.txt - cannot enforce threshold"
+            exit 1
+          }
+          
+          if ($failedModules.Count -gt 0) {
+            Write-Host ""
+            Write-Host "==========================================" -ForegroundColor Red
+            Write-Host "❌ COVERAGE GATE FAILED" -ForegroundColor Red
+            Write-Host "==========================================" -ForegroundColor Red
+            Write-Host "Modules below ${threshold}% coverage: $($failedModules -join ', ')" -ForegroundColor Red
+            exit 1
+          }
+          
+          Write-Host ""
+          Write-Host "==========================================" -ForegroundColor Green
+          Write-Host "✅ All modules meet ${threshold}% coverage threshold" -ForegroundColor Green
+          Write-Host "==========================================" -ForegroundColor Green
 
-          Write-Host "✅ All projects built successfully" -ForegroundColor Green
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-coverage
+          path: CoverageReport/
 
-  # ============================================================================
-  # PACK: Create and validate NuGet packages
-  # ============================================================================
+  # Pack and validate NuGet package
   pack-and-validate:
     name: Pack & Validate NuGet
     needs: validate-release
@@ -132,65 +358,82 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
+            3.1.x
+            5.0.x
+            6.0.x
+            7.0.x
             8.0.x
             9.0.x
             10.0.x
 
-      - name: Restore and build all projects
-        shell: pwsh
+      - name: Restore and build
+        # No root .sln in this repo — the solution lives at
+        # src/ConsoleAppTemplate.sln. Pass it explicitly.
         run: |
-          $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.csproj'
+          dotnet restore src/ConsoleAppTemplate.sln
+          dotnet build src/ConsoleAppTemplate.sln --no-restore --configuration Release
 
-          foreach ($proj in $projects) {
-            Write-Host "📦 Restoring $($proj.Name)" -ForegroundColor Cyan
-            dotnet restore $proj.FullName
-
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "❌ Restore failed for $($proj.Name)"
-              exit $LASTEXITCODE
-            }
-
-            Write-Host "🔨 Building $($proj.Name)" -ForegroundColor Cyan
-            dotnet build $proj.FullName --no-restore --configuration Release
-
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "❌ Build failed for $($proj.Name)"
-              exit $LASTEXITCODE
-            }
-          }
-
-          Write-Host "✅ All projects restored and built successfully" -ForegroundColor Green
-
-      - name: Pack NuGet template packages
+      - name: Pack NuGet packages
         id: check-packages
         shell: pwsh
-        env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          # Extract version from release tag (v0.4.0 → 0.4.0)
-          $version = $env:RELEASE_TAG -replace '^v', ''
-          Write-Host "📋 Packaging with version: $version" -ForegroundColor Cyan
-
+          # Create output directory for NuGet packages
           $packagesPath = Join-Path $PWD 'nuget-packages'
           New-Item -ItemType Directory -Force -Path $packagesPath | Out-Null
 
-          dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --no-build --configuration Release --output $packagesPath /p:PackageVersion=$version
-          dotnet pack src/SubCommandTemplate/dotnet.subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath /p:PackageVersion=$version
-          dotnet pack src/EtlSubCommandTemplate/dotnet.etl-subcommand.template.pack.csproj --no-build --configuration Release --output $packagesPath /p:PackageVersion=$version
+          # This repo is a `dotnet new` template host — only the
+          # *.template.pack.csproj files are intended to ship as NuGet
+          # packages. The other csprojs under src/ (notably the template
+          # payload at src/ConsoleAppTemplate/Content/) build to compile
+          # the content tree but are NOT meant to be packed.
+          $projects = Get-ChildItem -Path 'src' -Recurse -Filter '*.template.pack.csproj'
 
-          $packages = Get-ChildItem -Path $packagesPath -Filter '*.nupkg' -ErrorAction SilentlyContinue
-
-          if ($packages.Count -eq 0) {
-            Write-Warning "No .nupkg files were produced during packing"
+          # Handle case when no template pack projects are found
+          if ($projects.Count -eq 0) {
+            Write-Warning "No *.template.pack.csproj files found under src/ - skipping package creation"
+            Write-Warning "Downstream publish and release jobs will be skipped"
+            # Create empty directory for artifact upload
+            New-Item -ItemType File -Path (Join-Path $packagesPath '.placeholder') -Force | Out-Null
+            # Set output to indicate no packages were created
             "has-packages=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
             exit 0
           }
 
-          Write-Host "✅ NuGet packages created successfully:" -ForegroundColor Green
-          $packages | ForEach-Object { Write-Host "   $($_.Name)" }
+          # Derive PackageVersion from the release tag so the packages carry
+          # the version the user actually published, not whatever
+          # <PackageVersion> is baked into the .csproj. Tags conventionally
+          # carry a leading 'v' (e.g. v0.6.0) — strip it before passing to
+          # `dotnet pack /p:PackageVersion=...`.
+          $rawTag = '${{ github.event.release.tag_name }}'
+          $packageVersion = $rawTag -replace '^v', ''
+          Write-Host "Using PackageVersion=$packageVersion (from tag $rawTag)" -ForegroundColor Cyan
+
+          # Iterate through each template pack project and create NuGet package
+          foreach ($proj in $projects) {
+            Write-Host "📦 Packing $($proj.Name)" -ForegroundColor Cyan
+            dotnet pack $proj.FullName --no-build --configuration Release --output $packagesPath "/p:PackageVersion=$packageVersion"
+            
+            # Check if pack operation failed and exit with error
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "❌ Pack failed for $($proj.Name)"
+              exit $LASTEXITCODE
+            }
+          }
+          
+          # Check whether any .nupkg files were actually created
+          $packages = Get-ChildItem -Path $packagesPath -Filter '*.nupkg' -ErrorAction SilentlyContinue
+          
+          if ($packages.Count -eq 0) {
+            Write-Warning "No .nupkg files were produced during packing - downstream publish and release jobs will be skipped"
+            "has-packages=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            exit 0
+          }
+          
+          # At least one package was created successfully
+          Write-Host "✅ NuGet packages created successfully" -ForegroundColor Green
           "has-packages=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
-      - name: Smoke test NuGet template installation
+      - name: Smoke test template package install + instantiate
         shell: pwsh
         run: |
           $packages = Get-ChildItem -Path 'nuget-packages' -Filter '*.nupkg' -ErrorAction SilentlyContinue
@@ -200,23 +443,79 @@ jobs:
             exit 0
           }
 
-          # Install template packages from local source
-          foreach ($package in $packages) {
-            Write-Host "🧪 Installing template package: $($package.Name)" -ForegroundColor Yellow
-            dotnet new install $package.FullName
+          # These packages are `dotnet new` TEMPLATES (<PackageType>Template</PackageType>),
+          # not library NuGets. The canonical "create a SmokeTest console app, dotnet add
+          # package <id>" approach validates a library consumer path that does not apply
+          # here — template packages are consumed via `dotnet new install` / list /
+          # instantiate, not as PackageReferences. Validate the actual consumer path.
 
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "❌ Failed to install template $($package.Name)"
-              exit $LASTEXITCODE
+          # Snapshot installed templates so we can diff after install to know which
+          # short-names the new package contributed (no need to parse the .nuspec).
+          $beforeRaw  = dotnet new list 2>&1
+          $beforeText = ($beforeRaw -join "`n")
+
+          $cleanupQueue = [System.Collections.Generic.List[string]]::new()
+          try {
+            foreach ($package in $packages) {
+              Write-Host "🧪 Installing template package: $($package.Name)" -ForegroundColor Yellow
+              dotnet new install $package.FullName
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "❌ Failed to install template package $($package.Name)"
+                exit $LASTEXITCODE
+              }
+              # Record the absolute path so the matching uninstall in `finally`
+              # always works regardless of the package id (`dotnet new uninstall`
+              # accepts the .nupkg path that was used to install).
+              $cleanupQueue.Add($package.FullName)
             }
 
-            Write-Host "✅ Template $($package.Name) installed successfully" -ForegroundColor Green
-          }
+            $afterRaw   = dotnet new list 2>&1
+            $afterText  = ($afterRaw -join "`n")
 
-          # Verify templates are listed
-          Write-Host ""
-          Write-Host "Installed templates:" -ForegroundColor Cyan
-          dotnet new list wolfgang
+            # Naive but effective: any non-empty line present in 'after' but not 'before'
+            # is a row that the install just added. The first whitespace-delimited token
+            # on each such row is the short name we can pass to `dotnet new <short>`.
+            $beforeLines = $beforeText -split "`n" | ForEach-Object { $_.TrimEnd() }
+            $newLines    = $afterText -split "`n" | ForEach-Object { $_.TrimEnd() } |
+                Where-Object { $_ -and ($beforeLines -notcontains $_) -and ($_ -notmatch '^(Template Name|--+)') }
+
+            if (-not $newLines) {
+              Write-Error "❌ Template install reported success but `dotnet new list` shows no new entries — the package may not actually contain template manifests."
+              exit 1
+            }
+
+            # The short-name column is the second whitespace block on each row.
+            # Example row:  "Wolfgang Console App       cwconsole       [C#]   ..."
+            $shortNames = $newLines | ForEach-Object {
+              ($_ -split '\s{2,}', 4)[1].Trim()
+            } | Where-Object { $_ } | Select-Object -Unique
+
+            Write-Host "✅ Templates installed:" -ForegroundColor Green
+            $shortNames | ForEach-Object { Write-Host "   - $_" }
+
+            # Instantiate each newly-installed template into a throwaway directory
+            # so we exercise the full consumer path (install → list → new <short>).
+            $instantiateRoot = Join-Path $PWD 'template-smoke-test'
+            New-Item -ItemType Directory -Force -Path $instantiateRoot | Out-Null
+            foreach ($short in $shortNames) {
+              $outDir = Join-Path $instantiateRoot $short
+              Write-Host "🧪 Instantiating template '$short' → $outDir" -ForegroundColor Yellow
+              dotnet new $short -n "SmokeApp_$short" -o $outDir
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "❌ Failed to instantiate template '$short'"
+                exit $LASTEXITCODE
+              }
+            }
+
+            Write-Host "✅ Smoke test passed — templates install, list, and instantiate" -ForegroundColor Green
+          }
+          finally {
+            # Uninstall in reverse so install order doesn't leak across runs.
+            for ($i = $cleanupQueue.Count - 1; $i -ge 0; $i--) {
+              $nupkg = $cleanupQueue[$i]
+              dotnet new uninstall $nupkg 2>$null | Out-Null
+            }
+          }
 
       - name: Generate SBOM (CycloneDX)
         if: steps.check-packages.outputs.has-packages == 'true'
@@ -246,6 +545,7 @@ jobs:
             }
           }
 
+
       - name: Upload NuGet packages
         uses: actions/upload-artifact@v7
         with:
@@ -254,12 +554,107 @@ jobs:
           retention-days: 90
           if-no-files-found: warn
 
-  # ============================================================================
-  # PUBLISH: Push to NuGet.org
-  # ============================================================================
+  # Verify the documentation builds cleanly BEFORE publishing the release —
+  # initiative D8. Builds DocFX without deploying so a docs failure blocks
+  # publish-nuget rather than landing after the package is already live.
+  verify-docs-build:
+    name: Verify Documentation Builds
+    runs-on: windows-latest
+    # Gate on the prior validation jobs so we don't burn ~5-10 min of Windows
+    # runner time on a release that's already failing earlier in the pipeline.
+    needs: [validate-release, pack-and-validate]
+    if: github.repository != 'Chris-Wolfgang/repo-template'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Detect docfx project
+        id: check
+        shell: pwsh
+        run: |
+          if (Test-Path "docfx_project/docfx.json") {
+            "found=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          } else {
+            Write-Host "::notice::No docfx_project/docfx.json - skipping docs verification."
+            "found=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
+
+      - name: Setup .NET
+        if: steps.check.outputs.found == 'true'
+        uses: actions/setup-dotnet@v5
+        with:
+          # Install the same SDK set as validate-release so dotnet build can
+          # compile every TFM the solution targets (some test projects span
+          # netcoreapp3.1 → net10.0). Without these, the docs verify step
+          # fails on repos with broad multi-targeting.
+          dotnet-version: |
+            3.1.x
+            5.0.x
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Restore .NET workloads
+        # Same gated probe as pr.yaml — only run dotnet workload restore when
+        # at least one csproj declares a workload-bearing TFM. Required for
+        # repos with MAUI/Android/iOS targets (e.g. Hawsey); fast no-op
+        # otherwise. Without this, dotnet build below fails on workload-bearing
+        # projects because the SDK can't resolve the workload assemblies.
+        if: steps.check.outputs.found == 'true'
+        shell: bash
+        run: |
+          if find . -name '*.csproj' -type f -exec grep -lE 'net[0-9]+\.[0-9]+-(android|ios|maccatalyst|maui|tvos|tizen|browser)' {} \; | grep -q .; then
+            echo "Workload-bearing TFMs detected — running dotnet workload restore"
+            dotnet workload restore
+          else
+            echo "No workload-bearing TFMs in any csproj — skipping dotnet workload restore"
+          fi
+
+      - name: Restore dependencies
+        if: steps.check.outputs.found == 'true'
+        run: dotnet restore
+
+      - name: Build solution (Release)
+        if: steps.check.outputs.found == 'true'
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Install DocFX
+        if: steps.check.outputs.found == 'true'
+        shell: pwsh
+        run: dotnet tool update docfx --global || dotnet tool install docfx --global
+
+      - name: Build DocFX metadata
+        if: steps.check.outputs.found == 'true'
+        run: docfx metadata
+        working-directory: docfx_project
+
+      - name: Build documentation (no deploy)
+        if: steps.check.outputs.found == 'true'
+        run: docfx build
+        working-directory: docfx_project
+
+      - name: Verify documentation output
+        if: steps.check.outputs.found == 'true'
+        shell: pwsh
+        run: |
+          if (-Not (Test-Path "docfx_project/_site")) {
+            Write-Error "docfx_project/_site not found after build"
+            exit 1
+          }
+          if (-Not (Test-Path "docfx_project/_site/api")) {
+            Write-Error "docfx_project/_site/api not found - API metadata generation may have failed"
+            exit 1
+          }
+          Write-Host "Documentation built successfully - release may proceed"
+
+  # Publish to NuGet (only if validation passed)
   publish-nuget:
     name: Publish to NuGet.org
-    needs: pack-and-validate
+    needs: [pack-and-validate, verify-docs-build]
     if: needs.pack-and-validate.outputs.has-packages == 'true'
     runs-on: windows-latest
     steps:
@@ -267,12 +662,16 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
+            3.1.x
+            5.0.x
+            6.0.x
+            7.0.x
             8.0.x
             9.0.x
             10.0.x
 
       - name: Download packages
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: nuget-packages
           path: ./packages
@@ -295,36 +694,36 @@ jobs:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           $packages = Get-ChildItem -Path './packages' -Filter '*.nupkg' -ErrorAction SilentlyContinue
-
+          
           if ($packages.Count -eq 0) {
             Write-Warning "No .nupkg files found - nothing to publish"
             exit 0
           }
-
+          
           foreach ($package in $packages) {
             Write-Host "📤 Publishing $($package.Name) to NuGet.org" -ForegroundColor Cyan
-
+            
             dotnet nuget push $package.FullName `
               --api-key $env:NUGET_API_KEY `
               --source https://api.nuget.org/v3/index.json `
               --skip-duplicate
-
+            
+            # Exit code 0 = success, 409 would be duplicate (handled by --skip-duplicate flag)
             if ($LASTEXITCODE -ne 0) {
               Write-Error "❌ Failed to publish $($package.Name)"
               exit $LASTEXITCODE
             }
-
+            
             Write-Host "✅ Successfully published $($package.Name)" -ForegroundColor Green
           }
-
+          
           Write-Host ""
           Write-Host "==========================================" -ForegroundColor Green
           Write-Host "✅ All packages published to NuGet.org" -ForegroundColor Green
           Write-Host "==========================================" -ForegroundColor Green
 
-  # ============================================================================
-  # DOCS: Build and deploy versioned documentation
-  # ============================================================================
+  # Build and deploy versioned documentation via the shared docfx workflow
+  # Note: reusable workflow jobs called via `uses:` do not require `runs-on` in the caller
   trigger-docs:
     name: Build & Deploy Documentation
     needs: validate-release
@@ -334,9 +733,7 @@ jobs:
     with:
       version: ${{ github.event.release.tag_name }}
 
-  # ============================================================================
-  # RELEASE ARTIFACTS: Attach packages to GitHub Release
-  # ============================================================================
+  # Attach NuGet packages and coverage report to the GitHub Release page
   update-release-artifacts:
     name: Attach Artifacts to Release
     needs: [validate-release, pack-and-validate, publish-nuget]
@@ -346,10 +743,19 @@ jobs:
       contents: write  # Required to upload assets to the GitHub Release
     steps:
       - name: Download NuGet packages artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           name: nuget-packages
           path: ./nuget-packages
+
+      - name: Download coverage report artifact
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: release-coverage
+          path: ./release-coverage
+
+      - name: Zip coverage report
+        run: zip -r release-coverage.zip ./release-coverage
 
       - name: Attach artifacts to release
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b  # v3.0.1
@@ -358,3 +764,5 @@ jobs:
           files: |
             ./nuget-packages/*.nupkg
             ./nuget-packages/*.bom.json
+            release-coverage.zip
+
