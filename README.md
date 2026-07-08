@@ -1,12 +1,21 @@
-# ConsoleAppTemplate
+# Wolfgang Console App Templates
 
-A robust template for building .NET console applications with modern development best practices, including dependency injection, configuration management, logging, and extensible command-line parsing.
+A robust set of .NET templates for building console applications with modern development best practices, including dependency injection, configuration management, structured logging, and extensible command-line parsing.
+
+[![NuGet](https://img.shields.io/nuget/v/Wolfgang.Template.Console.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Wolfgang.Template.Console)
+[![NuGet downloads](https://img.shields.io/nuget/dt/Wolfgang.Template.Console.svg?logo=nuget&label=downloads)](https://www.nuget.org/packages/Wolfgang.Template.Console)
+[![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/console-app-template/pr.yaml?event=pull_request_target&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/console-app-template/actions/workflows/pr.yaml)
+[![Release](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/console-app-template/release.yaml?label=release&logo=github)](https://github.com/Chris-Wolfgang/console-app-template/actions/workflows/release.yaml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg)](https://dotnet.microsoft.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github)](https://github.com/Chris-Wolfgang/console-app-template)
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Templates in this Repository](#templates-in-this-repository)
 - [Features](#features)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
@@ -25,9 +34,19 @@ A robust template for building .NET console applications with modern development
 
 ## Overview
 
-**ConsoleAppTemplate** provides a solid foundation for .NET console applications. It leverages best practices such as structured logging (via Serilog), dependency injection, configuration via JSON files, and powerful command-line parsing (with McMaster.Extensions.CommandLineUtils).
+**Wolfgang.Template.Console** provides a solid foundation for .NET console applications. It leverages best practices such as structured logging (via Serilog), dependency injection, configuration via JSON files, and powerful command-line parsing (with McMaster.Extensions.CommandLineUtils).
 
-This template is designed for scalability, maintainability, and ease-of-use, whether for small scripts or complex automation tools.
+The templates are designed for scalability, maintainability, and ease-of-use, whether for small scripts or complex automation tools.
+
+---
+
+## Templates in this Repository
+
+| Template | Short name | Type | NuGet package |
+|----------|------------|------|---------------|
+| Wolfgang Console App | `cwconsole` | Project template — a complete console application | [Wolfgang.Template.Console](https://www.nuget.org/packages/Wolfgang.Template.Console) |
+| Wolfgang Console Subcommand | `cwsubcmd` | Item template — adds a new subcommand class to an existing app | [Wolfgang.Template.Console.Subcommand](https://www.nuget.org/packages/Wolfgang.Template.Console.Subcommand) |
+| Wolfgang Console ETL Subcommand | `cwsubcmdetl` | Item template — adds an ETL-style subcommand built on Wolfgang.Etl.Abstractions | [Wolfgang.Template.Console.ETL-SubCommand](https://www.nuget.org/packages/Wolfgang.Template.Console.ETL-SubCommand) |
 
 ---
 
@@ -38,6 +57,7 @@ This template is designed for scalability, maintainability, and ease-of-use, whe
 - **Dependency Injection:** Built-in .NET DI with easy configuration.
 - **Flexible Configuration:** Supports single or environment-specific JSON configuration files.
 - **Error Handling:** Robust error catching and exit codes for integration in automation pipelines.
+- **Analyzer Enforcement:** Generated projects ship with AsyncFixer, Meziantou, Roslynator, and Sonar analyzers enabled, with warnings treated as errors in Release builds.
 - **Extensible:** Easily add new commands, services, or configuration sections.
 
 ---
@@ -51,22 +71,28 @@ This template is designed for scalability, maintainability, and ease-of-use, whe
 
 ### Installation
 
-Install the template from NuGet:
+Install the console application template from NuGet:
 
 ```sh
-dotnet new install <PackageID>
+dotnet new install Wolfgang.Template.Console
 ```
-> Replace `<PackageID>` with the actual NuGet package identifier for ConsoleAppTemplate.
 
-Create a new project using this template:
+Create a new project using the template:
 
 ```sh
 dotnet new cwconsole -n MyConsoleApp
 cd MyConsoleApp
 ```
 
-**Review Next Steps:**  
-After creating your project, be sure to review the `Instructions.md` file included in the root of your new project directory. This file provides detailed, project-specific setup steps and guidance for customizing your application.  
+To add more subcommands later, install the item templates as well:
+
+```sh
+dotnet new install Wolfgang.Template.Console.Subcommand
+dotnet new install Wolfgang.Template.Console.ETL-SubCommand
+```
+
+**Review Next Steps:**
+After creating your project, be sure to review the `Instructions.md` file included in the root of your new project directory. This file provides detailed, project-specific setup steps and guidance for customizing your application.
 > If you create your project using Visual Studio, the `Instructions.md` file will open automatically to help guide you through initial configuration and customization.
 
 Restore packages and build:
@@ -80,10 +106,10 @@ dotnet build
 
 The template uses JSON files for application and environment configuration.
 
-- **appsettings.json**: Main config file (default for all environments)
-- **appsettings.Development.json, appsettings.Production.json, etc.**: Environment-specific files (optional)
+- **AppSettings.json**: Main config file, used by default for all environments
+- **AppSettings.Development.json, AppSettings.Production.json, etc.**: Environment-specific files
 
-The configuration system will load the appropriate file based on the `DOTNET_ENVIRONMENT` variable.
+By default the generated app loads the single `AppSettings.json` file. To use one file per environment instead, change the `ConfigurationFileMethod.SingleFile` argument in `Program.cs` to `ConfigurationFileMethod.OneFilePerEnvironment`; the file is then selected by the `DOTNET_ENVIRONMENT` variable.
 
 **To set the environment (example for Windows):**
 ```sh
@@ -108,7 +134,7 @@ You can also publish the app and run the executable:
 
 ```sh
 dotnet publish -c Release
-./bin/Release/net8.0/MyConsoleApp.exe [options]
+./bin/Release/net8.0/publish/MyConsoleApp.exe [options]
 ```
 
 ### Command Line Options
@@ -119,11 +145,13 @@ The template supports a main command and subcommands. To view help:
 dotnet run -- --help
 ```
 
-Add new subcommands by creating classes and registering them in `Program.cs`.
+Add new subcommands by creating classes and registering them in `Program.cs` — or generate one with `dotnet new cwsubcmd`.
 
 ---
 
 ## Project Structure
+
+A project generated from `cwconsole` looks like:
 
 ```
 MyConsoleApp/
@@ -131,12 +159,21 @@ MyConsoleApp/
 ├── AppSettings.json
 ├── AppSettings.Development.json
 ├── AppSettings.Production.json
+├── Command/
+│   └── SampleCommand.cs
+├── Framework/
+│   └── (hosting, configuration, and console helpers)
+├── Model/
+│   └── SampleConfiguration.cs
 ├── Instructions.md
 └── ...
 ```
 
 - **Program.cs**: Entry point with main logic and configuration.
 - **AppSettings*.json**: Application configuration files.
+- **Command/**: Subcommand classes; add new commands here.
+- **Framework/**: Hosting and configuration extension helpers.
+- **Model/**: Configuration binding models.
 - **Instructions.md**: In-depth development and customization notes.
 
 ---
@@ -155,8 +192,8 @@ Example:
 
 ### Configuration Files
 
-- **Single File**: Use `appsettings.json` for all environments.
-- **Per Environment**: Use `appsettings.{Environment}.json` files.
+- **Single File**: Use `AppSettings.json` for all environments (the default).
+- **Per Environment**: Use `AppSettings.{Environment}.json` files by switching to `ConfigurationFileMethod.OneFilePerEnvironment`.
 
 See [Instructions.md](src/ConsoleAppTemplate/Content/Instructions.md) for detailed setup.
 
@@ -170,13 +207,7 @@ See [Instructions.md](src/ConsoleAppTemplate/Content/Instructions.md) for detail
 
 ## Contributing
 
-Contributions are welcome! Please fork the repo and submit a pull request for improvements or bug fixes.
-
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature/my-feature`)
-3. Commit your changes (`git commit -am 'Add new feature'`)
-4. Push to the branch (`git push origin feature/my-feature`)
-5. Open a pull request
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow, coding standards, and PR checklist.
 
 ---
 
@@ -190,8 +221,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 - [Serilog Documentation](https://serilog.net/)
 - [McMaster.Extensions.CommandLineUtils](https://github.com/natemcmaster/CommandLineUtils)
-- [Microsoft.Extensions.Hosting](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting)
-- [.NET Generic Host](https://docs.microsoft.com/en-us/dotnet/core/extensions/generic-host)
+- [Microsoft.Extensions.Hosting](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting)
+- [.NET Generic Host](https://learn.microsoft.com/en-us/dotnet/core/extensions/generic-host)
+- [Custom templates for dotnet new](https://learn.microsoft.com/en-us/dotnet/core/tools/custom-templates)
 
 ---
 
@@ -199,6 +231,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 For questions, please open an issue on GitHub.
 
-```
 For more in-depth developer notes and template usage, see [src/ConsoleAppTemplate/Content/Instructions.md](src/ConsoleAppTemplate/Content/Instructions.md).
-```
