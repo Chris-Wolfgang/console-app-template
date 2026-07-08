@@ -22,11 +22,11 @@
 	 <ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
 	 <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	 <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-	 <GenerateDocumentationFile>False</GenerateDocumentationFile>
+	 <GenerateDocumentationFile>True</GenerateDocumentationFile>
    </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="**\*;ProjectTemplate\**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;ProjectTemplate\**\bin\**;ProjectTemplate\**\obj\**;ProjectTemplate\**\.vs\**;ProjectTemplate\**\.git\**;" />
+    <Content Include="**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
