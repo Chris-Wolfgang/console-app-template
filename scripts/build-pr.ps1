@@ -59,15 +59,18 @@ function Write-Fail($message) {
 # ============================================================================
 Write-Step "Step 1: Restore and Build (Release)"
 
-$solutionPath = "src/ConsoleAppTemplate.sln"
+# This repo has no root .sln/.csproj — the solution lives at src/ConsoleAppTemplate.sln.
+# Pass it explicitly so the script is runnable from the repo root (otherwise dotnet
+# fails with MSB1003 "Specify a project or solution file").
+$SolutionPath = 'src/ConsoleAppTemplate.sln'
 
-dotnet restore $solutionPath
+dotnet restore $SolutionPath
 if ($LASTEXITCODE -ne 0) {
     Write-Fail "Restore failed"
     $failed += "Restore"
 }
 else {
-    dotnet build $solutionPath --no-restore --configuration Release
+    dotnet build $SolutionPath --no-restore --configuration Release
     if ($LASTEXITCODE -ne 0) {
         Write-Fail "Build failed"
         $failed += "Build"
@@ -225,7 +228,7 @@ if (-not $SkipSecurity) {
         --source-code . `
         --file-format text `
         --output-file devskim-results.txt `
-        --ignore-rule-ids DS176209,DS137138 `
+        --ignore-rule-ids DS176209 `
         --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**"
 
     if (Test-Path "devskim-results.txt") {
@@ -267,16 +270,28 @@ if (-not $SkipSecurity) {
             $env:PATH = "$dest;$env:PATH"
         }
         else {
-            $archive = "gitleaks_${version}_linux_x64.tar.gz"
+            # gitleaks ships separate darwin / linux builds, and on macOS we
+            # also have to pick between x64 (Intel) and arm64 (Apple Silicon).
+            # Without this branch the macOS path would download the Linux
+            # tarball and either fail to install or install an incompatible
+            # binary.
+            if ($IsMacOS) {
+                $arch = if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'arm64' } else { 'x64' }
+                $archive = "gitleaks_${version}_darwin_${arch}.tar.gz"
+            }
+            else {
+                $archive = "gitleaks_${version}_linux_x64.tar.gz"
+            }
             $url = "https://github.com/gitleaks/gitleaks/releases/download/v${version}/$archive"
-            $dest = Join-Path ([Environment]::GetFolderPath('UserProfile')) ".local/bin"
-            New-Item -ItemType Directory -Force -Path $dest | Out-Null
-            $tempDir = [IO.Path]::GetTempPath()
-            $tarball = Join-Path $tempDir $archive
-            Invoke-WebRequest -Uri $url -OutFile $tarball
-            tar xzf $tarball -C $dest gitleaks
-            Remove-Item $tarball -ErrorAction SilentlyContinue
-            $env:PATH = "${dest}:$env:PATH"
+            # Install to a user-writable location instead of /usr/local/bin
+            # (which would require sudo for most local dev shells). $HOME/.local/bin
+            # is on PATH by default on most Linux distros and macOS; if not, prepend it.
+            $localBin = Join-Path $HOME ".local/bin"
+            New-Item -ItemType Directory -Force -Path $localBin | Out-Null
+            curl -sSfL $url | tar xz -C $localBin gitleaks
+            if (-not ($env:PATH -split [IO.Path]::PathSeparator | Where-Object { $_ -eq $localBin })) {
+                $env:PATH = "$localBin$([IO.Path]::PathSeparator)$env:PATH"
+            }
         }
     }
 
