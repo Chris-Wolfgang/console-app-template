@@ -29,7 +29,7 @@ namespace ConsoleAppTemplate.Framework
             {
                 ConfigurationFileMethod.SingleFile => AddSingleConfigFile(builder, optional, reloadOnChange),
                 ConfigurationFileMethod.OneFilePerEnvironment => AddConfigFileForEnvironment(builder, optional, reloadOnChange),
-                _ => throw new ArgumentOutOfRangeException(nameof(method), method, message: null)
+                _ => throw new ArgumentOutOfRangeException(nameof(method), method, $"Unsupported {nameof(ConfigurationFileMethod)} value.")
             };
         }
 
