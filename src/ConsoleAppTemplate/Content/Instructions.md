@@ -91,14 +91,14 @@ separate config files, one for each environment.
 When loading settings from a config file, you can add an `IConfiguration` parameter to the OnExecute method and access the settings individually.
 
 ```csharp
-async Task<int> OnExecuteAsync(IConfiguration config)
+Task<int> OnExecuteAsync(IConfiguration config)
 {
 	// Get the setting from the config file
 	var setting = config["SettingName"];
 	
 	// Your code here
 
-	return ExitCode.Success;
+	return Task.FromResult(ExitCode.Success);
 }
 ```
 
@@ -140,7 +140,7 @@ Configuring dependency injection to load the settings from the config file into 
 
 Using the SmtpSettings in the OnExecute method
 ```csharp
-async Task<int> OnExecuteAsync(SmtpSettings smtpSettings)
+Task<int> OnExecuteAsync(SmtpSettings smtpSettings)
 {
 
 	var smtpClient = new SmtpClient(smtpSettings.Host, smtpSettings.Port)
@@ -151,7 +151,7 @@ async Task<int> OnExecuteAsync(SmtpSettings smtpSettings)
 
 	// Your code here
 
-	return ExitCode.Success;
+	return Task.FromResult(ExitCode.Success);
 }
 ```
 
@@ -257,7 +257,9 @@ A user can create multiple response files for different purposes, and then use t
 
 The `Framework/ConsoleColors.cs` helper defines ANSI escape codes for coloring and styling
 console output (foreground and background colors, bold, underline, etc.). Prefix any string
-you write to the console with a color code and end it with `ConsoleColors.Reset`:
+you write to the console with a color code and end it with `ConsoleColors.Reset`. For
+example, using the `IConsole console` parameter that is injected into your command's
+`OnExecuteAsync` method (`System.Console.WriteLine` works the same way):
 
 ```csharp
 console.WriteLine($"{ConsoleColors.Foreground.Green}Success!{ConsoleColors.Reset}");
