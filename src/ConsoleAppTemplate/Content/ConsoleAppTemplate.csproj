@@ -5,6 +5,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Treat warnings as errors in Release builds -->
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
 	<PackageVersion>0.1.0</PackageVersion>
 	<LangVersion>latest</LangVersion>
 	<Copyright>Copyright {copyright year} {author}</Copyright>

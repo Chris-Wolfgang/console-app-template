@@ -3,14 +3,6 @@ using Microsoft.Extensions.Hosting;
 
 namespace ConsoleAppTemplate.Framework
 {
-    internal enum ConfigurationFileMethod
-    {
-        SingleFile,
-        OneFilePerEnvironment
-    }
-
-
-
     internal static class IHostBuilderExtensions
     {
         /// <summary>
@@ -37,7 +29,7 @@ namespace ConsoleAppTemplate.Framework
             {
                 ConfigurationFileMethod.SingleFile => AddSingleConfigFile(builder, optional, reloadOnChange),
                 ConfigurationFileMethod.OneFilePerEnvironment => AddConfigFileForEnvironment(builder, optional, reloadOnChange),
-                _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(method), method, message: null)
             };
         }
 
@@ -51,7 +43,7 @@ namespace ConsoleAppTemplate.Framework
         )
          {
             builder
-                .ConfigureAppConfiguration((context, configurationBuilder) =>
+                .ConfigureAppConfiguration((_, configurationBuilder) =>
                 {
                     configurationBuilder
                         .SetBasePath(AppContext.BaseDirectory)
@@ -78,7 +70,7 @@ namespace ConsoleAppTemplate.Framework
             }
 
             builder
-                .ConfigureAppConfiguration((context, configurationBuilder) =>
+                .ConfigureAppConfiguration((_, configurationBuilder) =>
                 {
                     configurationBuilder
                         .SetBasePath(AppContext.BaseDirectory)
