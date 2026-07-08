@@ -21,6 +21,11 @@ on:
         required: false
         type: boolean
         default: true
+      overlay_canonical_docs_assets:
+        description: 'Before docfx build, overlay docfx_project/{public,versions.json,logo.svg,docfx.json} from origin/main onto the checked-out ref. Lets you backfill the canonical version-picker UI onto older tags whose original docfx_project predated it. Leave on for old-tag rebuilds; harmless no-op when running from main.'
+        required: false
+        type: boolean
+        default: true
   # Manual trigger for ad-hoc builds or dry-runs.
   # Leave 'version' blank to use the selected branch or tag name as the destination.
   workflow_dispatch:
@@ -37,6 +42,10 @@ on:
         description: 'Also deploy to the site root (/) and versions/latest/ (uncheck when rebuilding older versions)'
         type: boolean
         default: true
+      overlay_canonical_docs_assets:
+        description: 'Before docfx build, overlay docfx_project/{public,versions.json,logo.svg,docfx.json} from origin/main onto the checked-out ref. Lets you backfill the canonical version-picker UI onto older tags whose original docfx_project predated it. Leave on for old-tag rebuilds; harmless no-op when running from main.'
+        type: boolean
+        default: true
 
 permissions:
   contents: read  # Default to read-only; the build-and-deploy job overrides with write
@@ -51,10 +60,71 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0  # Full history needed to enumerate all v* tags
           persist-credentials: false
+
+      # When backfilling docs for a tag that predates the canonical
+      # version-picker assets, the checked-out tag has no
+      # docfx_project/public/version-picker.js and its docfx.json
+      # has no picker-bootstrap <script> in globalMetadata._appFooter
+      # — so the rebuilt docs would deploy without the dropdown.
+      #
+      # Overlay the canonical assets from origin/main onto whatever ref
+      # we just checked out. When triggered from main (release.yaml's
+      # workflow_call, or workflow_dispatch from main), this is a no-op
+      # because the files are already at main's content. When triggered
+      # from an older tag, this swaps just the docs-tooling files so
+      # the picker appears on the rebuilt versioned docs.
+      #
+      # Scope is deliberately narrow: only docs tooling files, never
+      # source/csproj/tests/scripts. Set
+      # overlay_canonical_docs_assets=false to skip (e.g. when
+      # intentionally rebuilding a tag's original docs config).
+      - name: Overlay canonical docs assets from origin/main
+        if: inputs.overlay_canonical_docs_assets != false
+        shell: pwsh
+        run: |
+          # The checkout above did fetch-depth: 0, so origin/main is
+          # already in the local refs — no fresh fetch needed.
+          $assets = @(
+            'docfx_project/public',
+            'docfx_project/versions.json',
+            'docfx_project/logo.svg',
+            'docfx_project/docfx.json'
+          )
+
+          # Detect whether the current HEAD already matches origin/main.
+          # When it does (push to main, workflow_dispatch from main),
+          # the overlay is a no-op and skipping it keeps the run log
+          # clean.
+          $headSha = (git rev-parse HEAD).Trim()
+          $mainSha = (git rev-parse origin/main).Trim()
+          if ($headSha -eq $mainSha) {
+            Write-Host "HEAD == origin/main — overlay is a no-op, skipping."
+            exit 0
+          }
+
+          Write-Host "Overlaying canonical docs assets from origin/main"
+          Write-Host "  HEAD = $headSha"
+          Write-Host "  main = $mainSha"
+          foreach ($path in $assets) {
+            # Use git ls-tree to check whether the path exists on main
+            # before trying to checkout — avoids spurious errors for
+            # repos that don't carry every asset yet.
+            $existsOnMain = (git ls-tree -r --name-only origin/main -- $path)
+            if (-not $existsOnMain) {
+              Write-Host "  skip: $path (not present on main)"
+              continue
+            }
+            git checkout origin/main -- $path
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to overlay $path from origin/main"
+              exit $LASTEXITCODE
+            }
+            Write-Host "  overlaid: $path"
+          }
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -112,8 +182,13 @@ jobs:
         continue-on-error: true
         shell: pwsh
         run: |
-          dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory ./coverage-raw 2>&1 | Out-Host
-          dotnet tool install -g dotnet-reportgenerator-globaltool 2>$null
+          # Coverage report only needs one TFM's worth of runs. The per-PR
+          # pr.yaml workflow already exercises every TFM across Stages 1/2/3,
+          # so re-running the full matrix during docs deploy multiplies job
+          # time and adds extra failure surface for older targets. Pin to
+          # net10.0 — the modern target that's always present in this fleet.
+          dotnet test --configuration Release --no-build --no-restore --framework net10.0 --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory ./coverage-raw 2>&1 | Out-Host
+          dotnet tool update -g dotnet-reportgenerator-globaltool 2>$null || dotnet tool install -g dotnet-reportgenerator-globaltool 2>$null
           $coverageFiles = @(Get-ChildItem -Path ./coverage-raw -Recurse -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue)
           if ($coverageFiles.Count -eq 0) {
             Write-Host "::notice::No coverage files generated - skipping coverage report step"
@@ -122,8 +197,30 @@ jobs:
           $reports = ($coverageFiles | ForEach-Object { $_.FullName }) -join ';'
           $outDir = "docfx_project/_site/coverage"
           New-Item -ItemType Directory -Force -Path $outDir | Out-Null
-          reportgenerator "-reports:$reports" "-targetdir:$outDir" "-reporttypes:Html;TextSummary"
-          Write-Host "Coverage report written to $outDir"
+
+          # Coverage TREND (T1, #65): ReportGenerator renders a historical line
+          # chart when given a -historydir containing prior snapshots. We persist
+          # that history under _site/coverage/history so it deploys to gh-pages,
+          # and restore the previously-published snapshots from gh-pages before
+          # generating, so the trend accumulates across releases instead of
+          # resetting each deploy. Best-effort: any failure here just yields a
+          # point-in-time report (the step is continue-on-error regardless).
+          $historyDir = "$outDir/history"
+          New-Item -ItemType Directory -Force -Path $historyDir | Out-Null
+          try {
+            git fetch --no-tags --depth=1 origin gh-pages 2>&1 | Out-Host
+            $prior = @(git ls-tree -r --name-only FETCH_HEAD 2>$null | Where-Object { $_ -like 'coverage/history/*' })
+            foreach ($path in $prior) {
+              $leaf = Split-Path $path -Leaf
+              git show "FETCH_HEAD:$path" 2>$null | Set-Content -Path (Join-Path $historyDir $leaf) -Encoding utf8NoBOM
+            }
+            Write-Host "Restored $($prior.Count) prior coverage-history snapshot(s)."
+          } catch {
+            Write-Host "::notice::Could not restore prior coverage history ($($_.Exception.Message)) - starting fresh."
+          }
+
+          reportgenerator "-reports:$reports" "-targetdir:$outDir" "-reporttypes:Html;TextSummary" "-historydir:$historyDir"
+          Write-Host "Coverage report (with trend) written to $outDir"
 
       - name: Generate versions.json
         # Produces versions.json consumed by the DocFX version-switcher dropdown.
@@ -205,8 +302,11 @@ jobs:
               $aId = $aIds[$i]
               $bId = $bIds[$i]
 
-              $aIsNum = [int]::TryParse($aId, [ref]([int]$null))
-              $bIsNum = [int]::TryParse($bId, [ref]([int]$null))
+              # TryParse needs [ref] to a real variable, not an expression.
+              # We don't use the out value (we re-parse below via [int]$aId).
+              $aOut = 0; $bOut = 0
+              $aIsNum = [int]::TryParse($aId, [ref]$aOut)
+              $bIsNum = [int]::TryParse($bId, [ref]$bOut)
 
               if ($aIsNum -and $bIsNum) {
                 $aVal = [int]$aId
@@ -251,30 +351,86 @@ jobs:
 
       - name: Verify previous versions preserved in versions.json
         # Initiative D6 — guard against accidentally wiping the version selector.
-        # Fetches the currently-deployed versions.json from gh-pages and confirms
+        # Fetches the currently-deployed versions.json from the published
+        # GitHub Pages URL (https://<owner>.github.io/<repo>/versions.json) and confirms
         # the newly-generated one has at least as many entries AND retains every
         # previously-published version label. If anything shrunk or went missing,
         # abort the deploy so the version selector cannot be wiped by accident.
+        # Only runs when an actual root-touching deploy is happening:
+        # - inputs.deploy_to_pages != false (otherwise it's a dry-run and
+        #   nothing deploys at all)
+        # - inputs.deploy_as_latest != false (otherwise the deploy writes
+        #   only versions/<dir>/ and never touches the root versions.json,
+        #   so there's nothing for the preservation guard to protect — a
+        #   transient Pages-fetch failure would block a legitimate rebuild)
+        if: inputs.deploy_to_pages != false && inputs.deploy_as_latest != false
+        env:
+          # github.event.repository is missing under workflow_call, so derive the
+          # repo name from github.repository ("owner/repo") instead — works under
+          # workflow_call, workflow_dispatch, and release triggers.
+          GITHUB_REPOSITORY: ${{ github.repository }}
         shell: pwsh
         run: |
           $newPath = 'docfx_project/_site/versions.json'
           if (-Not (Test-Path $newPath)) {
-            Write-Host "::notice::No new versions.json produced - skipping preservation check."
-            exit 0
-          }
-          $existingUrl = "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/versions.json"
-          try {
-            $existingRaw = (Invoke-WebRequest -Uri $existingUrl -UseBasicParsing -ErrorAction Stop).Content
-          } catch {
-            Write-Host "::notice::No existing versions.json at $existingUrl - first deploy, skipping preservation check."
-            exit 0
-          }
-          try {
-            $existing = $existingRaw | ConvertFrom-Json
-            $new = Get-Content $newPath -Raw | ConvertFrom-Json
-          } catch {
-            Write-Error "Failed to parse versions.json: $($_.Exception.Message)"
+            # This step only runs when deploy_to_pages != false, so a real
+            # deploy is about to happen. Missing newly-generated versions.json
+            # means the docfx generate step is broken — we can't verify that
+            # we're preserving previously-published versions. Failing here is
+            # safer than letting the deploy proceed and wipe the root with
+            # whatever (possibly empty) state.
+            Write-Host "::error::Newly-generated docfx_project/_site/versions.json is missing — docfx generation is broken. Refusing to deploy without a verified version manifest."
             exit 1
+          }
+          $repoName = ($env:GITHUB_REPOSITORY -split '/')[-1]
+          $existingUrl = "https://${{ github.repository_owner }}.github.io/$repoName/versions.json"
+          try {
+            # -UseBasicParsing is a Windows-PowerShell-5.1 flag; pwsh (PowerShell 7+)
+            # treats it as unsupported and would error. Omit it.
+            $existingRaw = (Invoke-WebRequest -Uri $existingUrl -ErrorAction Stop).Content
+          } catch {
+            # Distinguish 404 (legitimate "first deploy" - the published site
+            # has no versions.json yet) from any other failure (transient
+            # network, DNS, 5xx, rate-limit, GitHub Pages outage). Silently
+            # treating those as "first deploy" would allow a degraded run to
+            # wipe the published version selector with whatever this deploy
+            # produced. Only 404 is a safe signal to skip the preservation
+            # check; everything else aborts the deploy.
+            $statusCode = 0
+            if ($_.Exception.PSObject.Properties.Match('Response').Count -gt 0 -and $_.Exception.Response) {
+              try { $statusCode = [int]$_.Exception.Response.StatusCode } catch { $statusCode = 0 }
+            }
+            if ($statusCode -eq 404) {
+              Write-Host "::notice::No existing versions.json at $existingUrl (HTTP 404) - first deploy, skipping preservation check."
+              exit 0
+            }
+            Write-Error "Failed to fetch existing versions.json at $existingUrl (status=$statusCode): $($_.Exception.Message). Refusing to deploy - a transient fetch failure must not be treated as a first deploy because that path can wipe previously-published version entries."
+            exit 1
+          }
+          # Parse the newly-generated local manifest first. A failure here is
+          # fatal — it means docfx generation is broken.
+          try {
+            $new = Get-Content $newPath -Raw | ConvertFrom-Json -ErrorAction Stop
+          } catch {
+            Write-Error "Failed to parse newly-generated ${newPath}: $($_.Exception.Message). docfx generation is broken — refusing to deploy."
+            exit 1
+          }
+          # The fetch returned HTTP 200, but a freshly-created gh-pages branch
+          # (or a site still propagating its first deploy) can serve a generic
+          # GitHub 404 HTML page with status 200, or otherwise non-JSON content.
+          # Treat an existing body that isn't a parseable versions array the
+          # same as a 404 first deploy — there is no prior manifest to preserve
+          # — rather than aborting the very first deploy that would create
+          # versions.json.
+          try {
+            $existing = $existingRaw | ConvertFrom-Json -ErrorAction Stop
+          } catch {
+            Write-Host "::notice::Existing content at $existingUrl is not valid JSON (likely a 200 placeholder served on first deploy) — treating as first deploy, skipping preservation check."
+            exit 0
+          }
+          if (@($existing | Where-Object { $_.PSObject.Properties.Name -contains 'version' }).Count -eq 0) {
+            Write-Host "::notice::Existing versions.json at $existingUrl has no version entries (not a versions manifest) — treating as first deploy, skipping preservation check."
+            exit 0
           }
           $existingCount = @($existing).Count
           $newCount = @($new).Count
@@ -393,73 +549,133 @@ jobs:
               if ($LASTEXITCODE -ne 0) { throw "git remote add origin failed with exit code $LASTEXITCODE" }
             }
 
-            # Remove stale root files; preserve versions/, .git, .nojekyll, CNAME, dev
+            # Remove stale root files; preserve versions/, .git, .nojekyll, CNAME, dev.
             # ('dev' is where benchmark-action/github-action-benchmark stores its
             # chart + accumulated data.js — wiping it loses chart history on every release.)
-            Get-ChildItem -Path $WORK_DIR -Force | Where-Object {
-              $_.Name -notin @('.git', 'CNAME', '.nojekyll', 'versions', 'dev')
-            } | Remove-Item -Recurse -Force
+            # Gated on DEPLOY_AS_LATEST=true because the root is only repopulated
+            # (version-picker index.html, root versions.json, shared assets) in that
+            # branch below — a rebuild of an older version (deploy_as_latest=false)
+            # would otherwise strip the root and leave only /versions/<x>/ paths.
+            if ($env:DEPLOY_AS_LATEST -eq 'true') {
+              Get-ChildItem -Path $WORK_DIR -Force | Where-Object {
+                $_.Name -notin @('.git', 'CNAME', '.nojekyll', 'versions', 'dev')
+              } | Remove-Item -Recurse -Force
+            } else {
+              Write-Host "Skipping root cleanup — DEPLOY_AS_LATEST is not 'true', preserving existing site root."
+            }
 
             # Ensure .nojekyll exists so GitHub Pages does not run Jekyll
             New-Item -ItemType File -Path (Join-Path $WORK_DIR '.nojekyll') -Force | Out-Null
 
-            # Deploy versioned docs (real DocFX index.html — before version picker overwrites it)
+            # Deploy versioned docs (real DocFX index.html — before version picker
+            # overwrites it). Clear the destination first so files that were
+            # dropped from docfx output between releases don't linger forever.
             $versionedDir = Join-Path $WORK_DIR "versions/$($env:VERSION_DIR)"
-            New-Item -ItemType Directory -Force -Path $versionedDir | Out-Null
+            if (Test-Path -LiteralPath $versionedDir) {
+              Get-ChildItem -LiteralPath $versionedDir -Force | Remove-Item -Recurse -Force
+            } else {
+              New-Item -ItemType Directory -Force -Path $versionedDir | Out-Null
+            }
             Copy-Item -Path "$siteDir/*" -Destination $versionedDir -Recurse -Force
             Write-Host "✅ Copied docs to versions/$($env:VERSION_DIR)/"
 
             if ($env:DEPLOY_AS_LATEST -eq 'true') {
-              # Deploy to versions/latest/ (real DocFX index.html)
+              # Deploy to versions/latest/ (real DocFX index.html). Same clear-
+              # before-copy pattern as versions/<dir> above to prevent stale
+              # files from previous releases lingering when docfx output shrinks.
               $latestDir = Join-Path $WORK_DIR 'versions/latest'
-              New-Item -ItemType Directory -Force -Path $latestDir | Out-Null
+              if (Test-Path -LiteralPath $latestDir) {
+                Get-ChildItem -LiteralPath $latestDir -Force | Remove-Item -Recurse -Force
+              } else {
+                New-Item -ItemType Directory -Force -Path $latestDir | Out-Null
+              }
               Copy-Item -Path "$siteDir/*" -Destination $latestDir -Recurse -Force
               Write-Host "✅ Copied docs to versions/latest/"
 
-              # Generate version-picker index.html and overwrite _site/index.html.
-              # This happens AFTER the versioned copies above, so those directories
-              # retain the real DocFX landing page while the root gets the picker.
+              # Generate root index.html (meta-refresh → versions/latest/) and
+              # overwrite _site/index.html. The link is intentionally relative
+              # (`versions/latest/`, not `/versions/latest/`) so it resolves
+              # correctly under the GitHub Pages project path `/<repo>/`. This
+              # happens AFTER the versioned copies above, so those directories
+              # retain the real DocFX landing page while the root just redirects.
+              #
+              # Why inline rather than reading a template file: the only dynamic
+              # piece is the page title (repo name). The in-page version picker
+              # (docfx_project/public/version-picker.js) handles version
+              # switching from any docs page, so the root no longer needs to
+              # display a list of versions to pick from — a static meta-refresh
+              # + JS fallback + <noscript> link is all that's needed.
               $repoName = ($env:GITHUB_REPOSITORY -split '/')[-1]
               $title    = if ($repoName) { "$repoName Documentation" } else { "Documentation" }
-              $versions = Get-Content "$siteDir/versions.json" -Raw | ConvertFrom-Json
 
-              $listItems = foreach ($v in $versions) {
-                $liClass = if ($v.version -eq 'latest') { ' class="latest"' } else { '' }
-                $label   = if ($v.version -eq 'latest') { 'latest (stable)' } else { $v.version }
-                "      <li${liClass}><a href=`"$($v.url)`">$label</a></li>"
-              }
-              $listHtml = $listItems -join "`n"
-
-              if (-not (Test-Path '.github/version-picker-template.html')) {
-                # `throw` (not `exit 1`) so the outer try/finally cleanup runs.
-                throw ".github/version-picker-template.html not found; cannot generate root index.html."
-              }
-
-              $template = Get-Content '.github/version-picker-template.html' -Raw
-              $html = $template -replace '\{\{TITLE\}\}', $title `
-                                -replace '\{\{VERSION_LIST\}\}', $listHtml
+              # Build the HTML as a string array joined with LF. Avoids a
+              # PowerShell here-string whose unindented inner lines would
+              # break the surrounding YAML literal-block scalar (they'd
+              # drop below the block's required indentation and terminate
+              # the scalar prematurely).
+              $htmlLines = @(
+                '<!DOCTYPE html>',
+                '<html lang="en">',
+                '<head>',
+                '  <meta charset="UTF-8">',
+                '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
+                "  <title>$title</title>",
+                '  <meta http-equiv="refresh" content="0; url=versions/latest/">',
+                '  <link rel="canonical" href="versions/latest/">',
+                '  <style>',
+                '    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;',
+                '           background: #1e1e2e; color: #cdd6f4; display: flex; flex-direction: column;',
+                '           align-items: center; justify-content: center; padding: 3rem 1rem; min-height: 100vh; margin: 0; }',
+                '    a { color: #89b4fa; }',
+                '  </style>',
+                "  <script>setTimeout(function(){ window.location.replace('versions/latest/'); }, 0);</script>",
+                '</head>',
+                '<body>',
+                '  <p>Redirecting to the latest documentation&hellip;</p>',
+                '  <noscript><p><a href="versions/latest/">Continue to the latest documentation</a></p></noscript>',
+                '</body>',
+                '</html>'
+              )
+              $html = $htmlLines -join "`n"
               $html | Set-Content -Path "$siteDir/index.html" -Encoding utf8NoBOM
-              Write-Host "Generated version-picker index.html with $($versions.Count) version link(s)."
+              Write-Host "Generated root index.html (meta-refresh → versions/latest/)."
 
-              # Deploy version picker + shared assets to site root
+              # Deploy site-root assets (root index.html + picker JS at /public/, etc.)
               Copy-Item -Path "$siteDir/*" -Destination $WORK_DIR -Recurse -Force
-              Write-Host "✅ Copied version picker to site root"
+              Write-Host "✅ Copied site-root assets"
             }
 
-            # Single commit and push
+            # Single commit and push.
+            # `git diff --cached --quiet` exits 0 (no changes), 1 (changes
+            # exist), or >1 (error — e.g. cannot read index). Treat the
+            # three cases explicitly: commit only when there are changes
+            # (exit 1); on >1 abort the deploy with a clear error; on 0
+            # report "nothing to deploy" and exit cleanly.
             git -C $WORK_DIR add -A
             git -C $WORK_DIR diff --cached --quiet
-            if ($LASTEXITCODE -ne 0) {
+            $diffExit = $LASTEXITCODE
+            if ($diffExit -eq 1) {
               $msg = if ($env:DEPLOY_AS_LATEST -eq 'true') {
                 "docs: deploy $($env:VERSION_DIR) and update latest"
               } else {
                 "docs: deploy $($env:VERSION_DIR)"
               }
               git -C $WORK_DIR commit -m $msg
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "❌ git commit failed with exit code $LASTEXITCODE — aborting deploy."
+                throw "git commit failed"
+              }
               git -C $WORK_DIR push origin HEAD:gh-pages
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "❌ git push origin HEAD:gh-pages failed with exit code $LASTEXITCODE — deploy did not land."
+                throw "git push failed"
+              }
               Write-Host "✅ Documentation deployed in a single commit."
-            } else {
+            } elseif ($diffExit -eq 0) {
               Write-Host "ℹ️ No documentation changes to deploy."
+            } else {
+              Write-Error "❌ git diff --cached --quiet exited with $diffExit (error reading the staged index) — aborting deploy."
+              throw "git diff failed"
             }
 
             # Capture the deploy outcome before the finally block runs cleanup
