@@ -33,7 +33,7 @@ jobs:
     if: github.repository != 'Chris-Wolfgang/repo-template'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
@@ -58,7 +58,7 @@ jobs:
       has-projects: ${{ steps.check-projects.outputs.has-projects }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
@@ -156,10 +156,10 @@ jobs:
         id: check-projects
         run: |
           if git ls-files '*.csproj' '*.vbproj' '*.fsproj' | grep -q .; then
-            echo "has-projects=true" >> $GITHUB_OUTPUT
+            echo "has-projects=true" >> "$GITHUB_OUTPUT"
             echo "✅ Found .NET project files"
           else
-            echo "has-projects=false" >> $GITHUB_OUTPUT
+            echo "has-projects=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️  No .NET project files found - skipping build"
           fi
 
@@ -173,7 +173,7 @@ jobs:
     if: github.repository != 'Chris-Wolfgang/repo-template' && needs.detect-projects.outputs.has-projects == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
@@ -284,7 +284,7 @@ jobs:
     if: github.repository != 'Chris-Wolfgang/repo-template' && needs.detect-projects.outputs.has-projects == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
