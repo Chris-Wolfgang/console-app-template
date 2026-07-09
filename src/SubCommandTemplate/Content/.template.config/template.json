@@ -8,6 +8,7 @@
 	"sourceName": "SubCommandTemplate",
 	"description": "A preconfigured SubCommand for use with Wolfgang Console App Template",
 	"defaultName": "SubCommand",
+	"thirdPartyNotices": "https://github.com/Chris-Wolfgang/console-app-template/blob/main/THIRD-PARTY-NOTICES.md",
 	"macros": [
 	],
 

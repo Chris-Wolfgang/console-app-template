@@ -8,6 +8,7 @@
 	"sourceName": "EtlSubCommandTemplate",
 	"description": "A preconfigured SubCommand for use with Wolfgang Console App Template and configured for building ETLs using Wolfgang.Etl.Abstractions",
 	"defaultName": "EtlSubCommand",
+	"thirdPartyNotices": "https://github.com/Chris-Wolfgang/console-app-template/blob/main/THIRD-PARTY-NOTICES.md",
 	"macros": [
 	],
 
