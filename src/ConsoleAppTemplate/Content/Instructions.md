@@ -231,9 +231,9 @@ To configure a sub command, you will need to do the following:
 >**Tip**
 >
 >Add a `CancellationToken` parameter to `OnExecuteAsync` and pass it to your async calls —
-McMaster automatically wires it to Ctrl+C / host shutdown so your command stops gracefully.
-See `Command/SampleCommand.cs` for the pattern, including catching `OperationCanceledException`
-and returning `ExitCode.Canceled`.
+>McMaster automatically wires it to Ctrl+C / host shutdown so your command stops gracefully.
+>See `Command/SampleCommand.cs` for the pattern, including catching `OperationCanceledException`
+>and returning `ExitCode.Canceled`.
 
 1. Add properties to the class with the `[Argument]` and `[Option]` attributes the command line arguments to the class. 
 	```csharp 
