@@ -796,18 +796,27 @@ jobs:
           path: ./nuget-packages
 
       - name: Download coverage report artifact
+        # This repo has no test projects, so validate-release never uploads a
+        # release-coverage artifact and download-artifact hard-fails on the
+        # missing name (v0.5.0 second-run failure). Tolerate its absence; the
+        # zip step below only runs when the download actually produced files.
+        id: download-coverage
+        continue-on-error: true
         uses: actions/download-artifact@v8.0.1
         with:
           name: release-coverage
           path: ./release-coverage
 
       - name: Zip coverage report
+        if: steps.download-coverage.outcome == 'success'
         run: zip -r release-coverage.zip ./release-coverage
 
       - name: Attach artifacts to release
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b  # v3.0.1
         with:
           tag_name: ${{ github.event.release.tag_name }}
+          # release-coverage.zip is listed unconditionally but action-gh-release
+          # skips missing file patterns with a warning rather than failing.
           files: |
             ./nuget-packages/*.nupkg
             ./nuget-packages/*.bom.json
