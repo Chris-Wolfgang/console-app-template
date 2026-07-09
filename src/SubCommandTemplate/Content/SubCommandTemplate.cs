@@ -26,7 +26,8 @@ internal class SubCommandTemplate
     internal async Task<int> OnExecuteAsync
     (
         IConsole console,
-        ILogger<SubCommandTemplate> logger
+        ILogger<SubCommandTemplate> logger,
+        CancellationToken cancellationToken
     )
     {
         logger.LogDebug("Starting {Command}", GetType().Name);
@@ -37,8 +38,10 @@ internal class SubCommandTemplate
 
 
 
-            // TODO Your code here
+            // TODO Your code here - pass cancellationToken to your async calls so
+            // Ctrl+C / host shutdown stops the command gracefully
             await Task.Yield(); // Simulate doing work - remove once your code awaits something
+            cancellationToken.ThrowIfCancellationRequested();
 
         }
         catch (Exception e)

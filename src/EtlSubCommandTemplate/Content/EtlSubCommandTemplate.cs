@@ -57,7 +57,8 @@ internal class EtlSubCommandTemplate
     (
         IConsole console,
         ILoggerFactory loggerFactory,
-        ILogger<EtlSubCommandTemplate> logger
+        ILogger<EtlSubCommandTemplate> logger,
+        CancellationToken cancellationToken
     )
     {
         logger.LogDebug("Starting {Command}", GetType().Name);
@@ -94,9 +95,12 @@ internal class EtlSubCommandTemplate
             // TODO Create instances of the loader
             //var loader = new MyLoader< , Report>(loggerFactory.CreateLogger<MyLoader< ,Report>>());
 
-            // Execute the ETL process asynchronously
+            // Execute the ETL process asynchronously. Pass cancellationToken into
+            // your extractor/transformer/loader implementations so Ctrl+C / host
+            // shutdown stops the pipeline gracefully.
             // await ExecuteEtlAsync(extractor, transformer, loader, progress);
             await Task.Yield(); // Simulate doing work - remove once ExecuteEtlAsync above is uncommented
+            cancellationToken.ThrowIfCancellationRequested();
 
             logger.LogInformation("ETL process completed successfully.");
         }
