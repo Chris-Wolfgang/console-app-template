@@ -24,11 +24,27 @@ jobs:
     name: Validate Release Build
     runs-on: windows-latest
     if: github.repository != 'Chris-Wolfgang/repo-template'
+    outputs:
+      has-docfx: ${{ steps.detect-docfx.outputs.has-docfx }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
           persist-credentials: false
+
+      - name: Detect docfx project
+        # Gates the trigger-docs job below. This repo ships docfx_project/ as a
+        # placeholder (.gitkeep only, no docfx.json); calling docfx.yaml without
+        # a config fails the whole release run at `docfx metadata`.
+        id: detect-docfx
+        shell: pwsh
+        run: |
+          if (Test-Path "docfx_project/docfx.json") {
+            "has-docfx=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          } else {
+            Write-Host "::notice::No docfx_project/docfx.json - documentation build/deploy will be skipped."
+            "has-docfx=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
 
       - name: Validate release tag matches csproj version
         shell: pwsh
@@ -531,9 +547,19 @@ jobs:
             # Uninstall in reverse so install order doesn't leak across runs.
             for ($i = $cleanupQueue.Count - 1; $i -ge 0; $i--) {
               $nupkg = $cleanupQueue[$i]
-              dotnet new uninstall $nupkg 2>$null | Out-Null
+              dotnet new uninstall $nupkg 2>&1 | Out-Null
+              if ($LASTEXITCODE -ne 0) {
+                Write-Host "::warning::Cleanup: dotnet new uninstall $nupkg exited $LASTEXITCODE (ignored - does not affect the smoke-test result)"
+              }
             }
           }
+
+          # The v0.5.0 run failed HERE with no error output: pwsh reports the
+          # last native command's exit code as the step result, and the swallowed
+          # cleanup uninstall above returned 1 AFTER the smoke test had already
+          # passed. Success/failure is decided by the explicit exits in the try
+          # block; reaching this line means the smoke test succeeded.
+          exit 0
 
       - name: Generate SBOM (CycloneDX)
         if: steps.check-packages.outputs.has-packages == 'true'
@@ -747,6 +773,7 @@ jobs:
   trigger-docs:
     name: Build & Deploy Documentation
     needs: validate-release
+    if: needs.validate-release.outputs.has-docfx == 'true'
     permissions:
       contents: write  # Required by docfx.yaml to push to gh-pages branch
     uses: ./.github/workflows/docfx.yaml
