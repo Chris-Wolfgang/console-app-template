@@ -25,7 +25,7 @@ Projects generated from the templates in this repository reference the following
 | [AsyncFixer](https://www.nuget.org/packages/AsyncFixer) | MIT |
 | [Meziantou.Analyzer](https://www.nuget.org/packages/Meziantou.Analyzer) | MIT |
 | [Roslynator.Analyzers](https://www.nuget.org/packages/Roslynator.Analyzers) | Apache-2.0 |
-| [SonarAnalyzer.CSharp](https://www.nuget.org/packages/SonarAnalyzer.CSharp) | LGPL-3.0 |
+| [SonarAnalyzer.CSharp](https://www.nuget.org/packages/SonarAnalyzer.CSharp) | LGPL-3.0-only |
 
 ## Wolfgang.Template.Console.Subcommand (`cwsubcmd`)
 
