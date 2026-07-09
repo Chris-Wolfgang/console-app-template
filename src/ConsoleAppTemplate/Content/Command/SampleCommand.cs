@@ -71,7 +71,8 @@ internal class SampleCommand
         SampleConfiguration configuration,
         IConsole console,
         IReporter reporter,
-        ILogger<SampleCommand> logger
+        ILogger<SampleCommand> logger,
+        CancellationToken cancellationToken
     )
     {
         logger.LogInformation("Starting {Command}", GetType().Name);
@@ -83,12 +84,19 @@ internal class SampleCommand
         {
             // TODO Validate command line arguments
 
-            // TODO Your code here
+            // TODO Your code here - pass cancellationToken to your async calls so
+            // Ctrl+C / host shutdown stops the command gracefully
             console.WriteLine("Hello world!");
             await Task.Yield(); // Simulate doing work
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Note You can use the reporter to write to the console
             reporter.Warn("Sample console warning");
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("{Command} was canceled", GetType().Name);
+            return ExitCode.Canceled;
         }
         catch (Exception e)
         {
