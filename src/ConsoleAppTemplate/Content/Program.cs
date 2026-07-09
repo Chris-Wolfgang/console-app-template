@@ -28,8 +28,23 @@ namespace ConsoleAppTemplate
     )]
     [Subcommand(typeof(SampleCommand))]
     // TODO Add additional sub commands here
+    [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
     internal class Program
     {
+        /// <summary>
+        /// Supplies the value shown by the --version option. Reads the assembly's
+        /// informational version (set via the csproj Version/PackageVersion), falling
+        /// back to the assembly version when no informational version is present.
+        /// </summary>
+        private static string? GetVersion() => Assembly
+            .GetEntryAssembly()?
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion
+            ?? Assembly.GetEntryAssembly()?.GetName().Version?.ToString();
+
+
+
+
         private static async Task<int> Main(string[] args)
         {
             try
