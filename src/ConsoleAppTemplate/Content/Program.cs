@@ -36,11 +36,14 @@ namespace ConsoleAppTemplate
         /// informational version (set via the csproj Version/PackageVersion), falling
         /// back to the assembly version when no informational version is present.
         /// </summary>
-        private static string? GetVersion() => Assembly
-            .GetEntryAssembly()?
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion
-            ?? Assembly.GetEntryAssembly()?.GetName().Version?.ToString();
+        private static string GetVersion()
+        {
+            var assembly = Assembly.GetEntryAssembly();
+
+            return assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                ?? assembly?.GetName().Version?.ToString()
+                ?? "unknown";
+        }
 
 
 
