@@ -29,7 +29,7 @@ internal class SubCommandTemplate
         ILogger<SubCommandTemplate> logger
     )
     {
-        logger.LogDebug("Starting {command}", GetType().Name);
+        logger.LogDebug("Starting {Command}", GetType().Name);
 
         try
         {
@@ -38,6 +38,7 @@ internal class SubCommandTemplate
 
 
             // TODO Your code here
+            await Task.Yield(); // Simulate doing work - remove once your code awaits something
 
         }
         catch (Exception e)
@@ -47,7 +48,7 @@ internal class SubCommandTemplate
             return ExitCode.ApplicationError;
         }
 
-        logger.LogDebug("Completed {command}", GetType().Name);
+        logger.LogDebug("Completed {Command}", GetType().Name);
 
         return ExitCode.Success;
     }

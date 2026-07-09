@@ -54,7 +54,7 @@ namespace ConsoleAppTemplate
                     })
                     
                     // Configure dependency injection
-                    .ConfigureServices((context, serviceCollection) =>
+                    .ConfigureServices((_, serviceCollection) =>
                     {
                         serviceCollection
                             .AddSingleton<IReporter, ConsoleReporter>()
@@ -107,22 +107,24 @@ namespace ConsoleAppTemplate
 
             logger.LogDebug("Starting {Command}", GetType().Name);
 
+            // TODO Remove along with SampleConfiguration - demonstrates reading bound configuration
+            logger.LogDebug("CommandTimeout is {CommandTimeout}", sampleConfiguration.CommandTimeout);
+
 
             // TODO if you are not using sub commands then you can remove the
-            // two lines below
+            // three lines below
+            reporter.Warn("No sub command specified");
             application.ShowHelp();
             return ExitCode.Success;
 
 
-            // TODO If you are using sub commands then you can remove the
-            // lines below and use the code above
-            
-            // TODO Add your code here
-            reporter.Warn("Your code here");
-
-
-            // TODO Return 0 for success and any positive number for failure
-            return ExitCode.Success;
+            // TODO If you are not using sub commands then you can remove the
+            // lines above and add your code here, e.g.
+            //
+            //     reporter.Warn("Your code here");
+            //
+            //     // Return 0 for success and any positive number for failure
+            //     return ExitCode.Success;
         }
     }
 }

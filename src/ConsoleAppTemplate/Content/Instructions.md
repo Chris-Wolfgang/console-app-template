@@ -3,22 +3,28 @@
 
 ## Description  
 
+{description}
+
 
 ## Table of Contents  
 1. [Description](#description)  
-2. [Contents](#contents)  
-3. [To Do](#to-do)  
-4. [Project](#project)  
-5. [Program.cs](#programcs)  
-6. [Commandline Arguments](#commandline-arguments)  
+2. [TODOs / Checklist](#todos--checklist)  
+3. [Project](#project)  
+4. [Program.cs](#programcs)  
+5. [Setup Config Files](#setup-config-files)  
+6. [LaunchSettings.json](#launchsettingsjson)  
+7. [Configuring Your App for Use with the Commandline](#configuring-your-app-for-use-with-the-commandline)  
+8. [Console Colors](#console-colors)  
+9. [Logging](#logging)  
+10. [Credits](#credits)  
 
 
 # TODOs / Checklist
 
-There are a number of TODO in the code. Some of them are things you will need to do immediately,  
-for example, implementing "Your code here". Others are things that you should do before releasing,  
-your application. For example, adding descriptions to your application and sub commands. There are  
-some things that you may never do, for example,  
+There are a number of TODOs in the code. Some of them are things you will need to do immediately,  
+for example, implementing "Your code here". Others are things that you should do before releasing  
+your application, for example, adding descriptions to your application and sub commands. There are  
+some things that you may never do, for example, enabling response-file support.  
 
 To view the list of TODOs, in Visual Studio, under the View menu, select Task List.  
 
@@ -40,9 +46,9 @@ To view the list of TODOs, in Visual Studio, under the View menu, select Task Li
 
 1. Add a name for the application  
 1. Add a description of the application  
-1. Determine if you are using sub commands or not and update the OnExecute method accordingly. See Sub Commands section on this file for more information this.
-1. If you are not using sub commands, and using the OnExecute method with async code, consider changing the singature to `Task<int> OnExecuteAsync (...)`
-1. Determine if you are using a single `appSettings.json` file or one per environment. 
+1. Determine if you are using sub commands or not and update the OnExecute method accordingly. See the Sub Commands section in this file for more information on this.
+1. If you are not using sub commands, and using the OnExecute method with async code, consider changing the signature to `Task<int> OnExecuteAsync (...)`
+1. Determine if you are using a single `AppSettings.json` file or one per environment. 
 See [Setup Config Files](#setup-config-files) section in this file for more information on this.
 
 >**Note**
@@ -62,23 +68,23 @@ them to any defined sinks, write the exception directly to the console and retur
 
 ## Setup Config Files
 
-This template supports using a single appSettings.config file for all environments or 
+This template supports using a single AppSettings.json file for all environments or 
 separate config files, one for each environment. 
 
-### Single File (appSettings.json) vs One File Per Environment (appSettings.&lt;environment&gt;.json)
+### Single File (AppSettings.json) vs One File Per Environment (AppSettings.&lt;environment&gt;.json)
 1. If using a single file for all environments 
-	a. You will use the file named `appsettings.json` in the root of your project. 
-	a. You can safely delete the other json files, `appsettings.*.json`, i.e. `appsettings.Development.json`, `appsettings.Production.json` etc.
-	a. In the Program.cs file make sure that the line UseSingleEnvironment() is uncommented and that the line UseMultiEnvironment() is either commented out or removed
+	a. You will use the file named `AppSettings.json` in the root of your project. 
+	a. You can safely delete the other json files, `AppSettings.*.json`, i.e. `AppSettings.Development.json`, `AppSettings.Production.json` etc.
+	a. In the Program.cs file make sure `AddConfigurationFile` is called with `ConfigurationFileMethod.SingleFile`
 
 1. If using one file per environment
-	a. you can safely delete the file named `appsettings.json` in the root of your project. 
-	a. You will keep the other json files, `appsettings.*.json`, i.e. `appsettings.Development.json`, `appsettings.Production.json` etc.
-	a. Create a file named for each environment you want to use, i.e. `appsettings.Test.json`, `appsettings.Local.json` etc.
-	a. Make sure each file is set to copy to output directory., by right clicking on the file and selecting Properties
-	a. Make sure the Windows environment variable `DOTNET_ENVIRONMENT` is set to the environment you want to use. 
-	If the variabled does not exist, in blank or contains a value for which you don't have a config file for, an error will occur.
-	a. In the Program.cs file make sure that the line UseMultiEnvironment() is uncommented and that the line UseSingleEnvironment() is either commented out or removed
+	a. you can safely delete the file named `AppSettings.json` in the root of your project. 
+	a. You will keep the other json files, `AppSettings.*.json`, i.e. `AppSettings.Development.json`, `AppSettings.Production.json` etc.
+	a. Create a file named for each environment you want to use, i.e. `AppSettings.Test.json`, `AppSettings.Local.json` etc.
+	a. Make sure each file is set to copy to output directory, by right clicking on the file and selecting Properties
+	a. Make sure the environment variable `DOTNET_ENVIRONMENT` is set to the environment you want to use. 
+	If the variable does not exist, is blank or contains a value for which you don't have a config file, an error will occur.
+	a. In the Program.cs file make sure `AddConfigurationFile` is called with `ConfigurationFileMethod.OneFilePerEnvironment`
 
 ### Loading Settings Into Classes 
 
@@ -91,6 +97,8 @@ Task<int> OnExecuteAsync(IConfiguration config)
 	var setting = config["SettingName"];
 	
 	// Your code here
+
+	return Task.FromResult(ExitCode.Success);
 }
 ```
 
@@ -113,27 +121,20 @@ Class to store the SMTP settings from the config file
 ```csharp
 internal class SmtpSettings
 {
-	public string Host { get; set; }
+	public string Host { get; set; } = string.Empty;
 	public int Port { get; set; }
-	public string UserName { get; set; }
-	public string Password { get; set; }
+	public string UserName { get; set; } = string.Empty;
+	public string Password { get; set; } = string.Empty;
 	public int Timeout { get; set; }
 }	
 ```
 
-Configuring dependency inject to load the settings from the config file into the SmptSettings so it can be used later
+Configuring dependency injection to load the settings from the config file into the SmtpSettings class so it can be used later. The template ships a
+`BindConfigSection` helper (see `Framework/IServiceCollectionExtensions.cs`) that does the section lookup and throws a clear error when the section is missing — the same pattern `Program.cs` uses for `SampleConfiguration`:
 ```csharp
-.ConfigureServices((context, collection) =>
+.ConfigureServices((_, collection) =>
 {
-    collection.AddSingleton<SampleConfiguration>(provider =>
-    {
-        // Get the configuration from the host builder
-        var config = provider.GetService<IConfiguration>();
-                        
-        // Load SampleConfiguration section from the config file
-        var sc =  config.GetSection("SampleConfiguration").Get<SampleConfiguration>();
-            return sc;
-    });
+    collection.BindConfigSection<SmtpSettings>("Smtp");
 })
 ```
 
@@ -149,6 +150,8 @@ Task<int> OnExecuteAsync(SmtpSettings smtpSettings)
 	};
 
 	// Your code here
+
+	return Task.FromResult(ExitCode.Success);
 }
 ```
 
@@ -225,7 +228,7 @@ To configure a sub command, you will need to do the following:
 		[Argument(0, Description = "The name and path of the source file")]
 		public string SourcePath { get; set; }
 
-		[Argument(1, Description = "TThe name and path of the destination file")]
+		[Argument(1, Description = "The name and path of the destination file")]
 		public string DestinationPath { get; set; }
 
 		[Option("-c|--count", Description = "The rows to parse.")]
@@ -250,13 +253,28 @@ A response file allows users to save frequently used combinations of command lin
 A user can create multiple response files for different purposes, and then use the appropriate response file when running the application.
 	
 
+# Console Colors
+
+The `Framework/ConsoleColors.cs` helper defines ANSI escape codes for coloring and styling
+console output (foreground and background colors, bold, underline, etc.). Prefix any string
+you write to the console with a color code and end it with `ConsoleColors.Reset`. For
+example, using the `IConsole console` parameter that is injected into your command's
+`OnExecuteAsync` method (`System.Console.WriteLine` works the same way):
+
+```csharp
+console.WriteLine($"{ConsoleColors.Foreground.Green}Success!{ConsoleColors.Reset}");
+```
+
+If you don't need colored output you can safely delete the file.
+
+
 # Logging
 
 This template is configured to use the [Serilog](https://serilog.net/) logging library.
 Serilog is a logging library that allows you to log to multiple sinks, including the console, file, and other sinks.
 Additional sinks can be found at [Serilog Site]( https://github.com/serilog/serilog/wiki/provided-sinks)
 
-Logging is implemented so that is can be customized via the config file rather than through code.
+Logging is implemented so that it can be customized via the config file rather than through code.
 This allows you to have different settings for different environments if you are using one file per environment. 
 It also allows you to change the logging settings to provide more or less detail as situations arise, 
 without the need to recompile the application.
@@ -298,7 +316,7 @@ configuration in the `WriteTo` section, but it will not be used.
 
 This section is used to specify the minimum level of logging that you want to see. 
 This affects all sinks, and is the minimum level of logging that will be written to
-the sinks. You can customize the minimum level for each sink, independantly, 
+the sinks. You can customize the minimum level for each sink, independently, 
 but you can only raise the level, never lower it. 
 
 For example, you can make the Console sink

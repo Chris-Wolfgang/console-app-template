@@ -15,7 +15,7 @@
     <NoDefaultExcludes>true</NoDefaultExcludes>
     <Copyright>Chris Wolfgang 2025-2026</Copyright>
     <PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
-    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIcon>SubCmd-Template-icon.png</PackageIcon>
@@ -26,12 +26,12 @@
    </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="**\*;ProjectTemplate\**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;ProjectTemplate\**\bin\**;ProjectTemplate\**\obj\**;ProjectTemplate\**\.vs\**;ProjectTemplate\**\.git\**;" />
+    <Content Include="**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\ReadMe.md">
+    <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
