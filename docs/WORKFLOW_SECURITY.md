@@ -41,11 +41,12 @@ A malicious PR could modify these files to disable security checks.
 - `BannedSymbols.txt` - Banned API usage rules
 - `*.globalconfig` - Global analyzer configuration
 - `*.ruleset` - Code analysis rulesets
-- `.github/workflows/*.yml` and `.github/workflows/*.yaml` - Workflow definitions
+
+Workflow definitions (`.github/workflows/*`) are not fetched or overwritten — they don't need to be, because `pull_request_target` already executes the workflow YAML from `main`; a PR branch's workflow edits never run against PRs.
 
 In addition to the overwrite step, a separate "Detect protected configuration file changes" step in `pr.yaml` causes the PR to fail if any of these files differ from `main`, signalling that a maintainer must manually review the change. Dependabot is exempted (its bumps to `Directory.Build.props` are legitimate).
 
-**Implementation** (in jobs that consume project source — e.g. `detect-projects`, `Build & Validate Templates`, and the security scans; *not* the `secrets-scan` job, which only fetches `.gitleaks.toml`). Note: this repo is a `dotnet new` template host, so the PR workflow runs `Build & Validate Templates` rather than the test-matrix stages used by library repos.
+**Implementation** (in jobs that consume project source — e.g. `detect-projects`, `Build & Validate Templates`, and the security scans; *not* the `secrets-scan` job, which scans the PR checkout directly and fetches no configuration files). Note: this repo is a `dotnet new` template host, so the PR workflow runs `Build & Validate Templates` rather than the test-matrix stages used by library repos.
 ```yaml
 - name: Fetch trusted configuration files from main branch
   run: |
@@ -62,8 +63,6 @@ In addition to the overwrite step, a separate "Detect protected configuration fi
       "BannedSymbols.txt"
       "*.globalconfig"
       "*.ruleset"
-      ".github/workflows/*.yml"
-      ".github/workflows/*.yaml"
     )
     
     # Copy each configuration file from main branch if it exists

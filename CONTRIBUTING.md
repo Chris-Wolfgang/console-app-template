@@ -166,6 +166,8 @@ Alternatively, run `pwsh ./scripts/build-pr.ps1` from the repo root — it wraps
 
 ### Run Tests
 
+This repo currently has no test projects (it is a `dotnet new` template pack — `pr.yaml` documents "No test stage"), so the commands below are a no-op today. They are the standard invocation once test projects are added under `tests/`:
+
 ```bash
 # Run all unit tests
 dotnet test src/ConsoleAppTemplate.sln --configuration Release

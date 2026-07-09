@@ -11,7 +11,7 @@ The release workflow triggers when you **publish a GitHub Release** and implemen
 - ✅ Builds and deploys versioned documentation to GitHub Pages
 - ✅ Attaches release artifacts to the GitHub Release
 
-> **Note**: this repo is a `dotnet new` template host. The workflow ships the **template pack** itself; it does not run test-matrix stages or a 90 % coverage gate that would only make sense for a library/source repo. If you copy this guide into a library repo, update this overview to reflect that repo's `release.yaml` jobs.
+> **Note**: this repo is a `dotnet new` template host with no test suite. The workflow's test and coverage-gate steps detect that no `*Test*.csproj` exists under `tests/` and skip themselves with a notice rather than failing the release. In a library repo those same steps are hard requirements — if you copy this guide there, update this overview to reflect that repo's `release.yaml` jobs.
 
 ## Required Configuration
 
@@ -43,12 +43,13 @@ Ensure the following settings are enabled:
   - **Single developer repos:** 0 approvals (default)
   - **Multi-developer repos:** 1+ approvals (recommended)
 - ✅ **Require status checks to pass before merging**
-  - Required checks should include the following status check contexts:
-    - "Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate"
-    - "Stage 2: Windows Tests (.NET 5.0-10.0, Framework 4.6.2-4.8.1)"
-    - "Stage 3: macOS Tests (.NET 6.0-10.0)"
+  - Required checks should include this repo's PR workflow job names:
+    - "Secrets Scan (gitleaks)"
+    - "Detect .NET Projects"
+    - "Build & Validate Templates"
     - "Security Scan (DevSkim)"
-    - "Security Scan (CodeQL)"
+    - "CodeQL"
+  - (Library repos use their Stage 1/2/3 test-matrix job names instead.)
 - ✅ **Require branches to be up to date before merging**
 - ✅ **Require conversation resolution before merging**
 - ✅ **Do not allow bypassing the above settings** (recommended, even for admins)
