@@ -93,9 +93,9 @@ internal class SampleCommand
             // Note You can use the reporter to write to the console
             reporter.Warn("Sample console warning");
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException e)
         {
-            logger.LogWarning("{Command} was canceled", GetType().Name);
+            logger.LogWarning(e, "{Command} was canceled", GetType().Name);
             return ExitCode.Canceled;
         }
         catch (Exception e)
