@@ -33,8 +33,26 @@ namespace ConsoleAppTemplate
     // TODO If you prefer explicit registration, remove the AddConvention call in Main
     // and list each command here instead:
     // [Subcommand(typeof(SampleCommand))]
+    [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
     internal class Program
     {
+        /// <summary>
+        /// Supplies the value shown by the --version option. Reads the assembly's
+        /// informational version (set via the csproj Version/PackageVersion), falling
+        /// back to the assembly version when no informational version is present.
+        /// </summary>
+        private static string GetVersion()
+        {
+            var assembly = Assembly.GetEntryAssembly();
+
+            return assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                ?? assembly?.GetName().Version?.ToString()
+                ?? "unknown";
+        }
+
+
+
+
         private static async Task<int> Main(string[] args)
         {
             try
