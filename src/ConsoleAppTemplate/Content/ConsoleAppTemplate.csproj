@@ -7,6 +7,10 @@
     <Nullable>enable</Nullable>
     <!-- Treat warnings as errors in Release builds -->
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <!-- The TODO comments are this template's guided setup checklist (see Instructions.md).
+         MA0026 (Meziantou) and S1135 (Sonar) flag them; remove this NoWarn once you have
+         worked through the TODOs. -->
+    <NoWarn>$(NoWarn);MA0026;S1135</NoWarn>
 	<PackageVersion>0.1.0</PackageVersion>
 	<LangVersion>latest</LangVersion>
 	<Copyright>Copyright {copyright year} {author}</Copyright>
