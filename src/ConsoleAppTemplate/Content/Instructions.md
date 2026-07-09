@@ -216,7 +216,8 @@ To configure a sub command, you will need to do the following:
 1. You can name the class whatever you want, but it is recommended to name it a verb followed by the word Command. i.e. ExportCommand, FormatCommand, etc.
 1. Add the [Command] attribute to the class and set the Name and Description properties
 1. That's it for wiring - commands are **registered automatically**. Every class in the
-   assembly decorated with `[Command]` is discovered at startup and added as a subcommand
+   assembly decorated with `[Command]` - except the root `Program` class, which is the
+   application itself - is discovered at startup and added as a subcommand
    (see `Framework/AutoRegisterCommandsConvention.cs`). The subcommand name comes from the
    `[Command]` attribute's `Name` when set, otherwise from the class name with a trailing
    "Command" removed and lower-cased (ExportCommand becomes `export`). If you prefer

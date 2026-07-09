@@ -1,6 +1,6 @@
 ﻿// NOTE: If your application was created from the Wolfgang Console App template this
 // command is registered automatically at startup (AutoRegisterCommandsConvention).
-// In an app without that convention, add [Subcommand(typeof(<this class>))] to Program.
+// In an app without that convention, add [Subcommand(typeof(SubCommandTemplate))] to Program.
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 

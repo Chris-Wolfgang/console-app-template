@@ -4,7 +4,7 @@
 //
 // NOTE: If your application was created from the Wolfgang Console App template this
 // command is registered automatically at startup (AutoRegisterCommandsConvention).
-// In an app without that convention, add [Subcommand(typeof(<this class>))] to Program.
+// In an app without that convention, add [Subcommand(typeof(EtlSubCommandTemplate))] to Program.
 
 using System.ComponentModel.DataAnnotations;
 using McMaster.Extensions.CommandLineUtils;

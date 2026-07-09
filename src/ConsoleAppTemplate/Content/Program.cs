@@ -27,9 +27,9 @@ namespace ConsoleAppTemplate
         ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
     )]
     // Sub commands are discovered and registered automatically - every class in this
-    // assembly decorated with [Command] becomes a subcommand (see
-    // Framework/AutoRegisterCommandsConvention.cs). Just add a new command class (e.g.
-    // via 'dotnet new cwsubcmd') and it is picked up on the next run.
+    // assembly decorated with [Command], other than this Program class itself, becomes
+    // a subcommand (see Framework/AutoRegisterCommandsConvention.cs). Just add a new
+    // command class (e.g. via 'dotnet new cwsubcmd') and it is picked up on the next run.
     // TODO If you prefer explicit registration, remove the AddConvention call in Main
     // and list each command here instead:
     // [Subcommand(typeof(SampleCommand))]

@@ -6,8 +6,9 @@ namespace ConsoleAppTemplate.Framework;
 
 /// <summary>
 /// Discovers every class in this assembly decorated with <see cref="CommandAttribute"/>
-/// and registers it as a subcommand of the root application, so new commands (for
-/// example ones added with <c>dotnet new cwsubcmd</c>) work without editing Program.cs.
+/// (other than the root <see cref="Program"/> class itself) and registers it as a
+/// subcommand of the root application, so new commands (for example ones added with
+/// <c>dotnet new cwsubcmd</c>) work without editing Program.cs.
 /// </summary>
 /// <remarks>
 /// The subcommand name is taken from <see cref="CommandAttribute.Name"/> when set;
@@ -38,16 +39,17 @@ internal class AutoRegisterCommandsConvention : IConvention
 
         var commandTypes = typeof(Program).Assembly
             .GetTypes()
-            .Where
-            (
-                type => type is { IsClass: true, IsAbstract: false }
-                    && type != typeof(Program)
-                    && type.GetCustomAttribute<CommandAttribute>() is not null
-            );
+            .Where(type => type is { IsClass: true, IsAbstract: false } && type != typeof(Program))
+            .Select(type => (Type: type, Attribute: type.GetCustomAttribute<CommandAttribute>()))
+            .Where(candidate => candidate.Attribute is not null);
 
-        foreach (var type in commandTypes)
+        foreach (var (type, attribute) in commandTypes)
         {
-            var name = type.GetCustomAttribute<CommandAttribute>()!.Name ?? DeriveName(type.Name);
+            // An empty or whitespace Name on the attribute would register an
+            // unusable command - fall back to the derived name instead.
+            var name = string.IsNullOrWhiteSpace(attribute!.Name)
+                ? DeriveName(type.Name)
+                : attribute.Name;
 
             if (context.Application.Commands.Any(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)))
             {
