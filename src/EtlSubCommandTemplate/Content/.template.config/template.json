@@ -8,12 +8,21 @@
 	"sourceName": "EtlSubCommandTemplate",
 	"description": "A preconfigured SubCommand for use with Wolfgang Console App Template and configured for building ETLs using Wolfgang.Etl.Abstractions",
 	"defaultName": "EtlSubCommand",
+	"thirdPartyNotices": "https://github.com/Chris-Wolfgang/console-app-template/blob/main/THIRD-PARTY-NOTICES.md",
 	"macros": [
 	],
 
 	"tags": {
 		"language": "C#",
 		"type": "item"
+	},
+
+	"forms": {
+		"toResponseFileHandling": {
+			"identifier": "replace",
+			"pattern": "^(Line|Space)Separated$",
+			"replacement": "ParseArgsAs$1Separated"
+		}
 	},
 
 	"symbols": {
@@ -50,30 +59,33 @@
 
 		"response-file": {
 			"type": "parameter",
-			"description": "Response file support. Command line arguments can be added to a response file and the response can be passed in as though each argument was manually typed at the commandline",
+			"description": "Response file support. A response file is a text file of command line arguments that users can pass as @file.rsp instead of typing each argument at the command line",
 			"datatype": "choice",
 			"choices": [
 				{
 					"choice": "Disabled",
-					"description": "Disabled",
-					"displayName": "Disabled - No response file support.",
-					"documentation": ""
+					"displayName": "Disabled",
+					"description": "No response file support"
 				},
 				{
-					"choice": "ParseArgsAsLineSeparated",
-					"description": "Line separated",
-					"displayName": "Line separated - Each argument is on a new line.",
-					"documentation": ""
+					"choice": "LineSeparated",
+					"displayName": "Line separated",
+					"description": "Each argument in the response file is on its own line"
 				},
 				{
-					"choice": "ParseArgsAsSpaceSeparated",
-					"description": "Space separated",
-					"displayName": "Space separated - All arguments are on a single line in separated by spaces.",
-					"documentation": ""
+					"choice": "SpaceSeparated",
+					"displayName": "Space separated",
+					"description": "All arguments in the response file are on a single line, separated by spaces"
 				}
 			],
-			"replaces": "ParseArgsAsSpaceSeparated",
-			"defaultValue": "ParseArgsAsLineSeparated"
+			"defaultValue": "LineSeparated"
+		},
+
+		"response-file-handling": {
+			"type": "derived",
+			"valueSource": "response-file",
+			"valueTransform": "toResponseFileHandling",
+			"replaces": "ParseArgsAsSpaceSeparated"
 		}
 	},
 	"primaryOutputs": [
