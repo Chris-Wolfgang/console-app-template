@@ -5,12 +5,20 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Treat warnings as errors in Release builds -->
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <!-- Suppressions for intentional template scaffolding - remove entries as you
+         work through the TODOs and adopt or delete the starter helpers:
+         MA0026/S1135 - the TODO comments are the template's guided setup checklist (see Instructions.md)
+         MA0004 - console apps have no SynchronizationContext; bare await is idiomatic here
+         S1144  - starter helpers (e.g. ConsoleColors) ship unreferenced until you use them
+         S125   - the guidance comments include example code blocks -->
+    <NoWarn>$(NoWarn);MA0026;S1135;MA0004;S1144;S125</NoWarn>
 	<PackageVersion>0.1.0</PackageVersion>
 	<LangVersion>latest</LangVersion>
 	<Copyright>Copyright {copyright year} {author}</Copyright>
-	<Description>A template for building console applications with command line parsing, logging, dependency injection, error handling </Description>
-	<Author>{author}</Author>
-	<Authors>Chris Wolfgang</Authors>
+	<Description>{description}</Description>
+	<Authors>{author}</Authors>
 	<PackageReadmeFile>ReadMe.md</PackageReadmeFile>
 	<RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
@@ -27,11 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\ReadMe.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\Console-Template-icon.png">
+    <None Include="Console-Template-icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
@@ -79,6 +83,8 @@
     </None>
     <None Update="ReadMe.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 

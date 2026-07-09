@@ -28,7 +28,8 @@ internal class EtlSubCommandTemplate
     /// <summary>
     /// The maximum number of items to process. If not specified, all items will be processed.
     /// </summary>
-    [Range(0, int.MaxValue, ErrorMessage = "Current item count cannot be less than 0.")]
+    [Option(Description = "The maximum number of items to process. If not specified, all items will be processed")]
+    [Range(0, int.MaxValue, ErrorMessage = "Maximum item count cannot be less than 0.")]
     public int? MaxItemCount { get; set; }
 
 
@@ -37,7 +38,8 @@ internal class EtlSubCommandTemplate
     /// The number of items to skip before starting to process. This is useful for pagination or skipping initial items.
     /// If not specified, no items will be skipped.
     /// </summary>
-    [Range(0, int.MaxValue, ErrorMessage = "Current item count cannot be less than 0.")]
+    [Option(Description = "The number of items to skip before starting to process. If not specified, no items will be skipped")]
+    [Range(0, int.MaxValue, ErrorMessage = "Skip item count cannot be less than 0.")]
     public int? SkipItemCount { get; set; }
 
 
@@ -58,7 +60,7 @@ internal class EtlSubCommandTemplate
         ILogger<EtlSubCommandTemplate> logger
     )
     {
-        logger.LogDebug("Starting {command}", GetType().Name);
+        logger.LogDebug("Starting {Command}", GetType().Name);
 
         try
         {
@@ -71,7 +73,7 @@ internal class EtlSubCommandTemplate
             (
                 report =>
                 {
-                    logger.LogDebug("Current count: {count}", report.CurrentItemCount);
+                    logger.LogDebug("Current count: {Count}", report.CurrentItemCount);
                     console.WriteLine($"Current count: {report.CurrentItemCount}");
                 }
             );
@@ -94,6 +96,7 @@ internal class EtlSubCommandTemplate
 
             // Execute the ETL process asynchronously
             // await ExecuteEtlAsync(extractor, transformer, loader, progress);
+            await Task.Yield(); // Simulate doing work - remove once ExecuteEtlAsync above is uncommented
 
             logger.LogInformation("ETL process completed successfully.");
         }
@@ -104,7 +107,7 @@ internal class EtlSubCommandTemplate
             return ExitCode.ApplicationError;
         }
 
-        logger.LogDebug("Completed {command}", GetType().Name);
+        logger.LogDebug("Completed {Command}", GetType().Name);
 
         return ExitCode.Success;
     }

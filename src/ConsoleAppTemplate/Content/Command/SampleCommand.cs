@@ -76,6 +76,9 @@ internal class SampleCommand
     {
         logger.LogInformation("Starting {Command}", GetType().Name);
 
+        // TODO Remove along with SampleConfiguration - demonstrates reading bound configuration
+        logger.LogDebug("CommandTimeout is {CommandTimeout}", configuration.CommandTimeout);
+
         try
         {
             // TODO Validate command line arguments
