@@ -26,8 +26,13 @@ namespace ConsoleAppTemplate
         // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
         ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
     )]
-    [Subcommand(typeof(SampleCommand))]
-    // TODO Add additional sub commands here
+    // Sub commands are discovered and registered automatically - every class in this
+    // assembly decorated with [Command] becomes a subcommand (see
+    // Framework/AutoRegisterCommandsConvention.cs). Just add a new command class (e.g.
+    // via 'dotnet new cwsubcmd') and it is picked up on the next run.
+    // TODO If you prefer explicit registration, remove the AddConvention call in Main
+    // and list each command here instead:
+    // [Subcommand(typeof(SampleCommand))]
     internal class Program
     {
         private static async Task<int> Main(string[] args)
@@ -66,7 +71,11 @@ namespace ConsoleAppTemplate
 
                             ;
                     })
-                    .RunCommandLineApplicationAsync<Program>(args);
+                    .RunCommandLineApplicationAsync<Program>
+                    (
+                        args,
+                        application => application.Conventions.AddConvention(new AutoRegisterCommandsConvention())
+                    );
             }
             catch (Exception e)
             {

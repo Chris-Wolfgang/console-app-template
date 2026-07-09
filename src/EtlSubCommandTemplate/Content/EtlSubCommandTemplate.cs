@@ -1,6 +1,10 @@
 ﻿// NOTE: This class depends on Wolfgang.Etl.Abstractions
 // TODO Please run the following in your project folder:
 //   dotnet add package Wolfgang.Etl.Abstractions
+//
+// NOTE: If your application was created from the Wolfgang Console App template this
+// command is registered automatically at startup (AutoRegisterCommandsConvention).
+// In an app without that convention, add [Subcommand(typeof(<this class>))] to Program.
 
 using System.ComponentModel.DataAnnotations;
 using McMaster.Extensions.CommandLineUtils;
