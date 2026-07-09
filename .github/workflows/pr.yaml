@@ -200,7 +200,11 @@ jobs:
             $exists = git cat-file -e "main-branch:$configFile" 2>&1
             if ($LASTEXITCODE -eq 0) {
               Write-Host "  ✓ Copying $configFile from main branch"
-              git show "main-branch:$configFile" | Out-File -FilePath $configFile -Encoding UTF8NoBOM -NoNewline
+              # Out-File -NoNewline concatenates ALL pipeline lines into one giant
+              # line, silently corrupting the fetched file (an unparseable
+              # .editorconfig makes every analyzer fall back to default severity).
+              # Set-Content writes the lines joined with proper newlines.
+              git show "main-branch:$configFile" | Set-Content -Path $configFile -Encoding utf8NoBOM
             } else {
               Write-Host "  ℹ️  $configFile not found in main branch, skipping"
             }
