@@ -294,7 +294,15 @@ jobs:
     name: "Template Smoke (${{ matrix.os }}, SDK ${{ matrix.sdk }})"
     runs-on: ${{ matrix.os }}
     needs: detect-projects
-    if: github.repository != 'Chris-Wolfgang/repo-template' && needs.detect-projects.outputs.has-projects == 'true'
+    # Same-repo PRs only: under pull_request_target secrets are available to
+    # the workflow, and this job goes beyond building PR code - it RUNS the
+    # generated app. Skipping forked PRs closes the exfiltration path; a
+    # maintainer can re-run the smoke matrix after pulling a fork's changes
+    # into a same-repo branch.
+    if: >-
+      github.repository != 'Chris-Wolfgang/repo-template' &&
+      needs.detect-projects.outputs.has-projects == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     strategy:
       fail-fast: false
       matrix:
@@ -326,32 +334,38 @@ jobs:
             10.0.x
 
       - name: Pack the console template
+        # Packing is the repo's side of the workflow (the release pipeline does
+        # it with the repo's SDK), so it deliberately runs on the newest SDK.
         run: dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --configuration Release --output ./smoke-packages
+
+      - name: Pin consumer workspace to SDK ${{ matrix.sdk }}
+        # Everything a USER does - dotnet new install, instantiate, build, run -
+        # happens inside ./smoke, whose global.json pins the SDK under test.
+        # Runners preinstall several SDKs and dotnet uses the newest otherwise,
+        # which would defeat the matrix (including the template engine itself,
+        # which also ships with the SDK).
+        shell: bash
+        run: |
+          mkdir -p ./smoke
+          cat > ./smoke/global.json <<'EOF'
+          { "sdk": { "version": "${{ matrix.sdk }}.100", "rollForward": "latestFeature" } }
+          EOF
+          cd smoke && echo "Consumer-side SDK in use: $(dotnet --version)"
 
       - name: Install template and instantiate a project
         shell: bash
+        working-directory: ./smoke
         run: |
-          dotnet new install ./smoke-packages/Wolfgang.Template.Console.*.nupkg
+          dotnet new install ../smoke-packages/Wolfgang.Template.Console.*.nupkg
           dotnet new cwconsole -n SmokeApp -o ./smoke-app
 
-      - name: Pin the generated project to SDK ${{ matrix.sdk }}
-        # Runners preinstall several SDKs and dotnet uses the newest, which
-        # would defeat the matrix. A global.json in the generated project
-        # pins the build to the SDK under test.
-        shell: bash
-        run: |
-          cat > ./smoke-app/global.json <<'EOF'
-          { "sdk": { "version": "${{ matrix.sdk }}.100", "rollForward": "latestFeature" } }
-          EOF
-          cd smoke-app && echo "SDK in use: $(dotnet --version)"
-
       - name: Build generated project (Release)
-        working-directory: ./smoke-app
+        working-directory: ./smoke/smoke-app
         run: dotnet build SmokeApp.csproj --configuration Release
 
       - name: Run generated app
         shell: bash
-        working-directory: ./smoke-app
+        working-directory: ./smoke/smoke-app
         run: |
           dotnet run --project SmokeApp.csproj -c Release --no-build -- --version
           dotnet run --project SmokeApp.csproj -c Release --no-build -- --help | grep -q "sample" || { echo "::error::auto-registered 'sample' subcommand missing from --help output"; exit 1; }
