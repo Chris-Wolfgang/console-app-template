@@ -387,14 +387,23 @@ builds an OCI image directly from the project:
 dotnet publish -c Release /t:PublishContainer
 ```
 
-The image is created in your local container store (e.g. Docker), named after the
-project, using a `mcr.microsoft.com/dotnet/runtime` base image that matches your
-target framework. Customize it with csproj properties as needed:
+>**Note**
+>
+>Publishing to the local container store requires a container engine (Docker or
+>Podman) to be installed and running - without one, `PublishContainer` fails.
+>Alternatively, push straight to a registry with `-p:ContainerRegistry=<registry>`,
+>which needs no local engine.
+
+The image is created in your local container store, named after the project, using a
+`mcr.microsoft.com/dotnet/runtime` base image that matches your target framework.
+Customize it with csproj properties as needed:
 
 ```xml
-<ContainerRepository>my-app</ContainerRepository>
-<ContainerImageTags>1.0.0;latest</ContainerImageTags>
-<ContainerBaseImage>mcr.microsoft.com/dotnet/runtime:8.0</ContainerBaseImage>
+<PropertyGroup>
+    <ContainerRepository>my-app</ContainerRepository>
+    <ContainerImageTags>1.0.0;latest</ContainerImageTags>
+    <ContainerBaseImage>mcr.microsoft.com/dotnet/runtime:8.0</ContainerBaseImage>
+</PropertyGroup>
 ```
 
 See [SDK container publishing](https://learn.microsoft.com/en-us/dotnet/core/containers/sdk-publish)
