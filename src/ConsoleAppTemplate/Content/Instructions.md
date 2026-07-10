@@ -16,7 +16,8 @@
 7. [Configuring Your App for Use with the Commandline](#configuring-your-app-for-use-with-the-commandline)  
 8. [Console Colors](#console-colors)  
 9. [Logging](#logging)  
-10. [Credits](#credits)  
+10. [Containerizing Your App](#containerizing-your-app)  
+11. [Credits](#credits)  
 
 
 # TODOs / Checklist
@@ -375,6 +376,40 @@ properties which will be written to the logs.
 
 
 
+
+
+# Containerizing Your App
+
+You do not need a Dockerfile to run this application as a container. The .NET SDK
+builds an OCI image directly from the project:
+
+```sh
+dotnet publish -c Release /t:PublishContainer
+```
+
+>**Note**
+>
+>Publishing to the local container store requires a container engine (Docker or
+>Podman) to be installed and running - without one, `PublishContainer` fails.
+>Alternatively, push straight to a registry with `-p:ContainerRegistry=<registry>`,
+>which needs no local engine.
+
+The image is created in your local container store, named after the project, using a
+`mcr.microsoft.com/dotnet/runtime` base image that matches your target framework.
+Customize it with csproj properties as needed:
+
+```xml
+<PropertyGroup>
+    <ContainerRepository>my-app</ContainerRepository>
+    <ContainerImageTags>1.0.0;latest</ContainerImageTags>
+    <ContainerBaseImage>mcr.microsoft.com/dotnet/runtime:8.0</ContainerBaseImage>
+</PropertyGroup>
+```
+
+See [SDK container publishing](https://learn.microsoft.com/en-us/dotnet/core/containers/sdk-publish)
+for all options. If your CI/CD pipeline requires an explicit Dockerfile instead, the standard
+multi-stage .NET pattern is documented at
+[Containerize a .NET app](https://learn.microsoft.com/en-us/dotnet/core/docker/build-container).
 
 
 # Credits
