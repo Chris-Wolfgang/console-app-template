@@ -237,6 +237,14 @@ To configure a sub command, you will need to do the following:
 >See `Command/SampleCommand.cs` for the pattern, including catching `OperationCanceledException`
 >and returning `ExitCode.Canceled`.
 
+You can also scaffold a subcommand with the item templates: `dotnet new cwsubcmd` for a
+plain command or `dotnet new cwsubcmdetl` for an ETL command. Both detect your project's
+namespace automatically **as long as the project has been restored** (run `dotnet restore`
+or build once first) — the namespace binds to the project's `RootNamespace` via MSBuild,
+which is only available after restore. If you run the item template on a brand-new,
+un-restored project, the class is generated with a placeholder namespace (`MyApp.Command`);
+either restore first, or pass `--DefaultNamespaceFallback <YourRootNamespace>`.
+
 1. Add properties to the class with the `[Argument]` and `[Option]` attributes the command line arguments to the class. 
 	```csharp 
 	internal class SampleCommand
