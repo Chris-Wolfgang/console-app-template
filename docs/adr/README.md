@@ -20,6 +20,7 @@ Format: [Michael Nygard's ADR style](https://cognitect.com/blog/2011/11/15/docum
 
 ## Adding an ADR
 
-Copy the format of an existing record, take the next number, and add a row to
-the index. Keep it short — an ADR is a paragraph of context and a paragraph of
+Copy [`TEMPLATE.md`](TEMPLATE.md), name it `NNNN-short-title.md` with the next
+number, fill in Status/Context/Decision/Consequences, and add a row to the index
+above. Keep it short — an ADR is a paragraph of context and a paragraph of
 decision, not a design doc.
