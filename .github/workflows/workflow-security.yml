@@ -1,9 +1,13 @@
-name: Workflow Security Audit (zizmor)
+name: Workflow Security Audit (zizmor + actionlint)
 
-# Static security audit of the GitHub Actions workflows themselves (issue #221).
-# zizmor catches the Actions-specific footguns the other scanners don't:
-# unpinned actions, template injection, credential persistence, dangerous
-# triggers. Runs on workflow changes, on push to main, and weekly.
+# Static audit of the GitHub Actions workflows themselves (issue #221).
+# - zizmor catches Actions-specific SECURITY footguns the other scanners don't:
+#   unpinned actions, template injection, credential persistence, dangerous triggers.
+# - actionlint catches CORRECTNESS bugs: workflow syntax, expression typos, bad
+#   glob/cron, and (via shellcheck, preinstalled on the runner) shell issues in
+#   run: steps.
+# Both tool versions are pinned so the gate stays reproducible. Runs on workflow
+# changes, on push to main, and weekly.
 
 on:
   pull_request:
@@ -41,4 +45,23 @@ jobs:
           # log but don't gate. Tighten --min-severity later if the noise floor
           # allows. Intentional accepted findings are annotated inline with
           # `# zizmor: ignore[<audit>]` in the workflow they apply to.
-          pipx run zizmor --min-severity=high .github/workflows/
+          # Version pinned so a new zizmor release can't change the gate under us.
+          pipx run zizmor==1.26.1 --min-severity=high .github/workflows/
+
+  actionlint:
+    name: "actionlint (Actions linter)"
+    runs-on: ubuntu-latest
+    if: github.repository != 'Chris-Wolfgang/repo-template'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Run actionlint
+        run: |
+          # Pinned binary (reproducible); shellcheck is preinstalled on the runner
+          # so actionlint's shell-script checks run too.
+          curl -sSfL https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz \
+            | tar xz actionlint
+          ./actionlint -color
