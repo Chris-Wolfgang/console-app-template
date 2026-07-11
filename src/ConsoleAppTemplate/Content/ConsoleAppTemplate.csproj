@@ -9,11 +9,13 @@
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
     <!-- Suppressions for intentional template scaffolding - remove entries as you
          work through the TODOs and adopt or delete the starter helpers:
-         MA0026/S1135 - the TODO comments are the template's guided setup checklist (see Instructions.md)
-         MA0004 - console apps have no SynchronizationContext; bare await is idiomatic here
-         S1144  - starter helpers (e.g. ConsoleColors) ship unreferenced until you use them
-         S125   - the guidance comments include example code blocks -->
-    <NoWarn>$(NoWarn);MA0026;S1135;MA0004;S1144;S125</NoWarn>
+         MA0026/S1135  - the TODO comments are the template's guided setup checklist (see Instructions.md)
+         MA0004/CA2007 - console apps have no SynchronizationContext, so ConfigureAwait(false)
+                         is unnecessary (Meziantou's MA0004 and the built-in .NET CA2007 are the
+                         same rule; CA2007 is enabled by default on newer SDKs)
+         S1144         - starter helpers (e.g. ConsoleColors) ship unreferenced until you use them
+         S125          - the guidance comments include example code blocks -->
+    <NoWarn>$(NoWarn);MA0026;S1135;MA0004;CA2007;S1144;S125</NoWarn>
     <!-- CS9057: McMaster.Extensions.CommandLineUtils ships a source generator built
          against the newest Roslyn (.NET 10 SDK). Building this net8.0 project with the
          .NET 8 SDK's older compiler skips that generator with a CS9057 warning, which
