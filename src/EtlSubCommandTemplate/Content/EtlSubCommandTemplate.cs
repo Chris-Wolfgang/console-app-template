@@ -72,9 +72,12 @@ internal class EtlSubCommandTemplate
             // TODO: Validate the command options here if necessary
 
             // TODO Build the pipeline and run it. Uncomment and fill in the types
-            // below. A Progress<Report> reporter surfaces item counts as it runs,
-            // and passing cancellationToken lets Ctrl+C / host shutdown stop the
-            // pipeline gracefully.
+            // below. A Progress<Report> reporter surfaces item counts as it runs.
+            // For graceful Ctrl+C / host shutdown, have your extractor/transformer/
+            // loader implementations observe cancellationToken - e.g. pass it into
+            // their constructors and check it while producing or consuming items.
+            // (The ETL abstraction methods themselves don't take a token, which is
+            // why ExecuteEtlAsync below doesn't forward one.)
             //
             // var progress = new Progress<Report>(report =>
             // {
