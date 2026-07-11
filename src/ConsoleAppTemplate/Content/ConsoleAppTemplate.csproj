@@ -14,6 +14,14 @@
          S1144  - starter helpers (e.g. ConsoleColors) ship unreferenced until you use them
          S125   - the guidance comments include example code blocks -->
     <NoWarn>$(NoWarn);MA0026;S1135;MA0004;S1144;S125</NoWarn>
+    <!-- CS9057: McMaster.Extensions.CommandLineUtils ships a source generator built
+         against the newest Roslyn (.NET 10 SDK). Building this net8.0 project with the
+         .NET 8 SDK's older compiler skips that generator with a CS9057 warning, which
+         TreatWarningsAsErrors would turn into a build failure. The template uses
+         reflection-based command parsing, not the generator, so skipping it is harmless;
+         suppress the warning so the app builds on the documented-minimum .NET 8 SDK.
+         On the .NET 10 SDK the generator runs normally and this suppression is a no-op. -->
+    <NoWarn>$(NoWarn);CS9057</NoWarn>
 	<PackageVersion>0.1.0</PackageVersion>
 	<LangVersion>latest</LangVersion>
 	<Copyright>Copyright {copyright year} {author}</Copyright>
