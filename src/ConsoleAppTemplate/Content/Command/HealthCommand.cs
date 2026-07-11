@@ -42,30 +42,46 @@ internal class HealthCommand
     {
         logger.LogInformation("Starting {Command}", GetType().Name);
 
-        var checks = new List<HealthCheckResult>
+        try
         {
-            CheckConfigurationLoaded(configuration),
-            await CheckLogDirectoryWritableAsync(configuration, cancellationToken)
+            var checks = new List<HealthCheckResult>
+            {
+                CheckConfigurationLoaded(configuration),
+                await CheckLogDirectoryWritableAsync(configuration, cancellationToken)
 
-            // TODO Add your own checks here - e.g. database connectivity, downstream
-            // API reachability, or required files/directories. Return a HealthCheckResult
-            // from each so it appears in both the text and --json output below.
-        };
+                // TODO Add your own checks here - e.g. database connectivity, downstream
+                // API reachability, or required files/directories. Return a HealthCheckResult
+                // from each so it appears in both the text and --json output below.
+            };
 
-        var healthy = checks.TrueForAll(c => c.Passed);
+            cancellationToken.ThrowIfCancellationRequested();
 
-        if (Json)
-        {
-            WriteJson(console, checks, healthy);
+            var healthy = checks.TrueForAll(c => c.Passed);
+
+            if (Json)
+            {
+                WriteJson(console, checks, healthy);
+            }
+            else
+            {
+                WriteText(console, checks);
+            }
+
+            logger.LogInformation("Completed {Command} - {Status}", GetType().Name, healthy ? "healthy" : "unhealthy");
+
+            return healthy ? ExitCode.Success : ExitCode.ApplicationError;
         }
-        else
+        catch (OperationCanceledException e)
         {
-            WriteText(console, checks);
+            logger.LogWarning(e, "{Command} was canceled", GetType().Name);
+            return ExitCode.Canceled;
         }
-
-        logger.LogInformation("Completed {Command} - {Status}", GetType().Name, healthy ? "healthy" : "unhealthy");
-
-        return healthy ? ExitCode.Success : ExitCode.ApplicationError;
+        catch (Exception e)
+        {
+            logger.LogCritical(e, "Unhandled error: {Message}", e.Message);
+            await console.Error.WriteLineAsync(e.Message);
+            return ExitCode.ApplicationError;
+        }
     }
 
 
@@ -77,12 +93,9 @@ internal class HealthCommand
     {
         var loaded = configuration.GetChildren().Any();
 
-        return new HealthCheckResult
-        (
-            "configuration",
-            loaded,
-            loaded ? "Configuration loaded" : "No configuration sections found"
-        );
+        return loaded
+            ? HealthCheckResult.Pass("configuration", "Configuration loaded")
+            : HealthCheckResult.Fail("configuration", "No configuration sections found");
     }
 
 
@@ -97,21 +110,25 @@ internal class HealthCommand
         CancellationToken cancellationToken
     )
     {
-        var logDirectory = ResolveLogDirectory(configuration);
+        // The resolve is inside the try because a malformed configured path can make
+        // Path.GetDirectoryName throw (ArgumentException / PathTooLongException).
+        var logDirectory = "logs";
 
         try
         {
+            logDirectory = ResolveLogDirectory(configuration);
+
             Directory.CreateDirectory(logDirectory);
 
             var probe = Path.Combine(logDirectory, $".health-probe-{Guid.NewGuid():N}.tmp");
             await File.WriteAllTextAsync(probe, string.Empty, cancellationToken);
             File.Delete(probe);
 
-            return new HealthCheckResult("log-directory", true, $"Log directory writable ({logDirectory})");
+            return HealthCheckResult.Pass("log-directory", $"Log directory writable ({logDirectory})");
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
         {
-            return new HealthCheckResult("log-directory", false, $"Log directory not writable ({logDirectory}): {e.Message}");
+            return HealthCheckResult.Fail("log-directory", $"Log directory not writable ({logDirectory}): {e.Message}");
         }
     }
 
@@ -166,5 +183,12 @@ internal class HealthCommand
 
 
 
-    private sealed record HealthCheckResult(string Name, bool Passed, string Detail);
+    private sealed record HealthCheckResult(string Name, bool Passed, string Detail)
+    {
+        public static HealthCheckResult Pass(string name, string detail) => new(name, Passed: true, detail);
+
+
+
+        public static HealthCheckResult Fail(string name, string detail) => new(name, Passed: false, detail);
+    }
 }
