@@ -113,6 +113,57 @@ deploy keys you didn't add, ruleset/branch-protection changes, or a leaked PAT.
 
 ---
 
+## 4. Ownership & access
+
+Fill these in for this repo so a responder knows who to reach and who can act.
+
+- **Repo owner / account holder:** `<name / GitHub handle>`
+- **Admin / bypass access (can override the ruleset):** `<handles>` — keep this
+  list minimal; every admin is a recovery path *and* an attack surface.
+- **NuGet.org package owners** for `Wolfgang.Template.*`: `<accounts>`
+- **Break-glass recovery contacts** (account recovery, org owner): `<who to ping>`
+- **Where secrets live:** repo *Settings → Secrets and variables → Actions*
+  (`NUGET_API_KEY`); the NuGet key itself is managed on NuGet.org.
+
+## 5. Quarterly review (preventive)
+
+Run this every quarter (and after any personnel/access change) so recovery stays
+fast and the blast radius stays small:
+
+- [ ] **NuGet API key** — still scoped to `Wolfgang.Template.*`, *push*-only, and
+  not past its expiry; rotate if it's within a month of expiring.
+- [ ] **Admin/bypass list** (Section 4) is current — remove anyone who no longer
+  needs it.
+- [ ] **Collaborators, deploy keys, webhooks, OAuth/GitHub apps** — nothing
+  unexpected (*Settings* → the respective pages).
+- [ ] **2FA** still enforced on the owning account; recovery codes stored safely.
+- [ ] **Ruleset** on `main` intact (required checks, review, non-fast-forward,
+  deletion protection).
+- [ ] **This runbook** is still accurate — the publish model, secret names, and
+  contacts above match reality.
+
+## 6. Notifying downstream consumers
+
+If a compromise reached a **published** package (a rogue version shipped, or a key
+that could have), tell consumers promptly. Post to the repo's Releases / Security
+advisories and anywhere the package is announced. Template:
+
+> **Security notice — `Wolfgang.Template.Console` `<version(s)>`**
+>
+> On `<date>` we identified `<what happened: e.g. a compromised publish key / an
+> unauthorized package version>`. Affected version(s): `<list>`. These have been
+> `<unlisted / deprecated>` on NuGet.org.
+>
+> **What to do:** `<e.g. avoid/upgrade off the affected versions; the template is
+> a dev-time scaffold, so already-generated projects are unaffected>`.
+>
+> **What we did:** rotated the publish credentials, audited the release pipeline,
+> and `<re-published a verified build as <version> / …>`.
+>
+> Questions: `<contact>`.
+
+---
+
 ## Quick reference
 
 | If this is compromised | Revoke first | Then |
