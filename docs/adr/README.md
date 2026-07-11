@@ -17,6 +17,7 @@ Format: [Michael Nygard's ADR style](https://cognitect.com/blog/2011/11/15/docum
 | [0002](0002-automatic-command-registration.md) | Automatic command registration via an IConvention | Accepted |
 | [0003](0003-item-template-namespace-auto-detection.md) | Item-template namespace auto-detection with a coalesce fallback | Accepted |
 | [0004](0004-template-pack-ci-adaptations.md) | Template-pack CI/release adaptations | Accepted |
+| [0005](0005-pr-trigger-pull-request.md) | `pr.yaml` diverges from canonical: `pull_request`, no fork-safety apparatus | Accepted |
 
 ## Adding an ADR
 
