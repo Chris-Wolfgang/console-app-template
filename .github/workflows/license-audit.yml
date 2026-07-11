@@ -59,7 +59,9 @@ jobs:
 
       - name: Install nuget-license
         run: |
-          dotnet tool install --global nuget-license
+          # Pinned so the gate is reproducible - a new nuget-license release can't
+          # silently change how licenses are resolved/validated under us.
+          dotnet tool install --global nuget-license --version 4.0.14
           echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
       - name: Restore dependencies
