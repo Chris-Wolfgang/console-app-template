@@ -35,9 +35,25 @@
 			"defaultValue": "EtlSubCommand"
 		},
 
-		"DefaultNamespace": {
+		"RootNamespaceBind": {
 			"type": "bind",
-			"binding": "msbuild:RootNamespace",
+			"binding": "msbuild:RootNamespace"
+		},
+
+		"DefaultNamespaceFallback": {
+			"type": "parameter",
+			"datatype": "text",
+			"description": "Root namespace for the generated command, used only when the project's namespace cannot be auto-detected (for example, running from the CLI before the project has been restored). The class is placed in <namespace>.Command. Tip: restore or build the project first and the namespace is detected automatically - no need to set this.",
+			"defaultValue": "MyApp"
+		},
+
+		"DefaultNamespace": {
+			"type": "generated",
+			"generator": "coalesce",
+			"parameters": {
+				"sourceVariableName": "RootNamespaceBind",
+				"fallbackVariableName": "DefaultNamespaceFallback"
+			},
 			"replaces": "{DefaultNamespace}"
 		},
 

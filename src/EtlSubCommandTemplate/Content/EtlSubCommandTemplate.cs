@@ -60,7 +60,6 @@ internal class EtlSubCommandTemplate
     internal async Task<int> OnExecuteAsync
     (
         IConsole console,
-        ILoggerFactory loggerFactory,
         ILogger<EtlSubCommandTemplate> logger,
         CancellationToken cancellationToken
     )
@@ -71,39 +70,34 @@ internal class EtlSubCommandTemplate
         {
             // TODO: Validate the command options here if necessary
 
-
-
-            // Create a progress reporter to report the current count of items processed
-            var progress = new Progress<Report>
-            (
-                report =>
-                {
-                    logger.LogDebug("Current count: {Count}", report.CurrentItemCount);
-                    console.WriteLine($"Current count: {report.CurrentItemCount}");
-                }
-            );
-
-
-            // TODO Create instances of the extractor
-            //var extractor = new MyExtractor< ,Report>(loggerFactory.CreateLogger<MyExtractor<, Report>>())
-            //{
-            //    MaximumItemCount = MaxItemCount ?? int.MaxValue,
-            //    SkipItemCount = SkipItemCount ?? 0
-            //};
-
-            
-            // TODO Create instances of the transformer
+            // TODO Build the pipeline and run it. Uncomment and fill in the types
+            // below. A Progress<Report> reporter surfaces item counts as it runs.
+            // For graceful Ctrl+C / host shutdown, have your extractor/transformer/
+            // loader implementations observe cancellationToken - e.g. pass it into
+            // their constructors and check it while producing or consuming items.
+            // (The ETL abstraction methods themselves don't take a token, which is
+            // why ExecuteEtlAsync below doesn't forward one.)
+            //
+            // To create the typed loggers below, add an `ILoggerFactory loggerFactory`
+            // parameter to this method - McMaster injects it by type.
+            //
+            // var progress = new Progress<Report>(report =>
+            // {
+            //     logger.LogDebug("Current count: {Count}", report.CurrentItemCount);
+            //     console.WriteLine($"Current count: {report.CurrentItemCount}");
+            // });
+            //
+            // var extractor = new MyExtractor< , Report>(loggerFactory.CreateLogger<MyExtractor< , Report>>())
+            // {
+            //     MaximumItemCount = MaxItemCount ?? int.MaxValue,
+            //     SkipItemCount = SkipItemCount ?? 0
+            // };
             // var transformer = new MyTransformer< , , Report>(loggerFactory.CreateLogger<MyTransformer< , , Report>>());
-
-
-            // TODO Create instances of the loader
-            //var loader = new MyLoader< , Report>(loggerFactory.CreateLogger<MyLoader< ,Report>>());
-
-            // Execute the ETL process asynchronously. Pass cancellationToken into
-            // your extractor/transformer/loader implementations so Ctrl+C / host
-            // shutdown stops the pipeline gracefully.
+            // var loader = new MyLoader< , Report>(loggerFactory.CreateLogger<MyLoader< , Report>>());
+            //
             // await ExecuteEtlAsync(extractor, transformer, loader, progress);
-            await Task.Yield(); // Simulate doing work - remove once ExecuteEtlAsync above is uncommented
+
+            await Task.Yield(); // Simulate doing work - remove once the ETL pipeline above is uncommented
             cancellationToken.ThrowIfCancellationRequested();
 
             logger.LogInformation("ETL process completed successfully.");
@@ -121,7 +115,7 @@ internal class EtlSubCommandTemplate
     }
 
 
-    internal async Task ExecuteEtlAsync<TSource, TDestination, TProgress>
+    internal static Task ExecuteEtlAsync<TSource, TDestination, TProgress>
     (
         IExtractWithProgressAsync<TSource,TProgress> extractor,
         ITransformAsync<TSource, TDestination> transformer,
@@ -131,6 +125,6 @@ internal class EtlSubCommandTemplate
     {
         var item = extractor.ExtractAsync(reporter);
         var transformedItems = transformer.TransformAsync(item);
-        await loader.LoadAsync(transformedItems);
+        return loader.LoadAsync(transformedItems);
     }
 }
