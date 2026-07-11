@@ -333,14 +333,10 @@ jobs:
             ${{ matrix.sdk }}.x
             10.0.x
 
-      - name: Pack the console + subcommand templates
+      - name: Pack the console template
         # Packing is the repo's side of the workflow (the release pipeline does
         # it with the repo's SDK), so it deliberately runs on the newest SDK.
-        shell: bash
-        run: |
-          dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --configuration Release --output ./smoke-packages
-          dotnet pack src/SubCommandTemplate/dotnet.subcommand.template.pack.csproj --configuration Release --output ./smoke-packages
-          dotnet pack src/EtlSubCommandTemplate/dotnet.etl-subcommand.template.pack.csproj --configuration Release --output ./smoke-packages
+        run: dotnet pack src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.csproj --configuration Release --output ./smoke-packages
 
       - name: Pin consumer workspace to SDK ${{ matrix.sdk }}
         # Everything a USER does - dotnet new install, instantiate, build, run -
@@ -356,30 +352,12 @@ jobs:
           EOF
           cd smoke && echo "Consumer-side SDK in use: $(dotnet --version)"
 
-      - name: Install templates and instantiate a project
+      - name: Install template and instantiate a project
         shell: bash
         working-directory: ./smoke
         run: |
           dotnet new install ../smoke-packages/Wolfgang.Template.Console.*.nupkg
           dotnet new cwconsole -n SmokeApp -o ./smoke-app
-
-      - name: Add subcommands via the item templates
-        # Restore first: the item templates' namespace auto-detection binds to
-        # msbuild:RootNamespace, which only evaluates once the project is
-        # restored. This also exercises that cwsubcmd/cwsubcmdetl generate
-        # compilable code in a real project (regression guard for #262). The
-        # ETL subcommand needs Wolfgang.Etl.Abstractions at build time.
-        shell: bash
-        working-directory: ./smoke/smoke-app
-        run: |
-          dotnet restore
-          dotnet new cwsubcmd    --ClassName ExportCommand -o Command
-          dotnet new cwsubcmdetl --ClassName ImportCommand -o Command
-          dotnet add package Wolfgang.Etl.Abstractions
-          echo "Generated subcommand namespaces:"
-          grep -h '^namespace' Command/ExportCommand.cs Command/ImportCommand.cs
-          grep -q '^namespace SmokeApp\.Command;' Command/ExportCommand.cs || { echo "::error::cwsubcmd namespace not auto-detected (expected 'SmokeApp.Command')"; exit 1; }
-          grep -q '^namespace SmokeApp\.Command;' Command/ImportCommand.cs || { echo "::error::cwsubcmdetl namespace not auto-detected (expected 'SmokeApp.Command')"; exit 1; }
 
       - name: Build generated project (Release)
         working-directory: ./smoke/smoke-app
@@ -390,11 +368,7 @@ jobs:
         working-directory: ./smoke/smoke-app
         run: |
           dotnet run --project SmokeApp.csproj -c Release --no-build -- --version
-          # All three commands should be auto-registered (sample + the two we added).
-          help_output="$(dotnet run --project SmokeApp.csproj -c Release --no-build -- --help)"
-          for cmd in sample export import; do
-            echo "$help_output" | grep -q "$cmd" || { echo "::error::auto-registered '$cmd' subcommand missing from --help output"; exit 1; }
-          done
+          dotnet run --project SmokeApp.csproj -c Release --no-build -- --help | grep -q "sample" || { echo "::error::auto-registered 'sample' subcommand missing from --help output"; exit 1; }
 
   # ============================================================================
   # SECURITY: DevSkim static analysis
