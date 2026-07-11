@@ -118,8 +118,26 @@
 				"format": "yyyy"
 			},
 			"replaces": "{copyright year}"
+		},
+
+		"HealthCheck": {
+			"type": "parameter",
+			"datatype": "bool",
+			"description": "Include a 'health' subcommand that validates runtime dependencies and configuration (with a --json flag for container health probes).",
+			"defaultValue": "false"
 		}
 	},
+
+	"sources": [
+		{
+			"modifiers": [
+				{
+					"condition": "(!HealthCheck)",
+					"exclude": [ "Command/HealthCommand.cs" ]
+				}
+			]
+		}
+	],
 
 	"primaryOutputs": [
 		{ 
