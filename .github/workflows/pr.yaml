@@ -375,7 +375,9 @@ jobs:
           dotnet restore
           dotnet new cwsubcmd    --ClassName ExportCommand -o Command
           dotnet new cwsubcmdetl --ClassName ImportCommand -o Command
-          dotnet add package Wolfgang.Etl.Abstractions
+          # Pin the version so an upstream release can't make the matrix
+          # non-deterministic (fail a PR unrelated to template changes).
+          dotnet add package Wolfgang.Etl.Abstractions --version 0.15.0
           echo "Generated subcommand namespaces:"
           grep -h '^namespace' Command/ExportCommand.cs Command/ImportCommand.cs
           grep -q '^namespace SmokeApp\.Command;' Command/ExportCommand.cs || { echo "::error::cwsubcmd namespace not auto-detected (expected 'SmokeApp.Command')"; exit 1; }
@@ -391,9 +393,12 @@ jobs:
         run: |
           dotnet run --project SmokeApp.csproj -c Release --no-build -- --version
           # All three commands should be auto-registered (sample + the two we added).
+          # Match command-list lines ("  <name>   <description>") anchored at the
+          # start rather than a bare substring, so a command name appearing inside a
+          # description can't produce a false positive.
           help_output="$(dotnet run --project SmokeApp.csproj -c Release --no-build -- --help)"
           for cmd in sample export import; do
-            echo "$help_output" | grep -q "$cmd" || { echo "::error::auto-registered '$cmd' subcommand missing from --help output"; exit 1; }
+            echo "$help_output" | grep -qE "^[[:space:]]+${cmd}([[:space:]]|\$)" || { echo "::error::auto-registered '$cmd' subcommand missing from the --help command list"; exit 1; }
           done
 
   # ============================================================================
