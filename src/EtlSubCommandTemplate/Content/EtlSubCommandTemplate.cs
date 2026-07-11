@@ -60,7 +60,6 @@ internal class EtlSubCommandTemplate
     internal async Task<int> OnExecuteAsync
     (
         IConsole console,
-        ILoggerFactory loggerFactory,
         ILogger<EtlSubCommandTemplate> logger,
         CancellationToken cancellationToken
     )
@@ -78,6 +77,9 @@ internal class EtlSubCommandTemplate
             // their constructors and check it while producing or consuming items.
             // (The ETL abstraction methods themselves don't take a token, which is
             // why ExecuteEtlAsync below doesn't forward one.)
+            //
+            // To create the typed loggers below, add an `ILoggerFactory loggerFactory`
+            // parameter to this method - McMaster injects it by type.
             //
             // var progress = new Progress<Report>(report =>
             // {
