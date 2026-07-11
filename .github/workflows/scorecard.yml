@@ -25,6 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository != 'Chris-Wolfgang/repo-template'
     permissions:
+      # A job-level permissions block REPLACES the workflow-level read-all, so
+      # every scope the job needs must be listed here explicitly.
+      contents: read           # Scorecard + checkout read the repo
+      actions: read            # Scorecard reads workflow files (Token-Permissions / Dangerous-Workflow checks)
       security-events: write   # upload the SARIF to Code Scanning
     steps:
       - name: Checkout code
