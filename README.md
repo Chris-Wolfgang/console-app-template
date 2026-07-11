@@ -205,6 +205,30 @@ See [Instructions.md](src/ConsoleAppTemplate/Content/Instructions.md) for detail
 
 ---
 
+## Security posture
+
+This repo runs [OpenSSF Scorecard](https://scorecard.dev/) (weekly + on push to `main`)
+to grade its security posture — branch protection, pinned dependencies, token
+permissions, dangerous-workflow patterns, and more. Results upload as SARIF to
+**Security → Code scanning**, alongside the other scanners (gitleaks, CodeQL, DevSkim,
+InspectCode, and zizmor for workflow security).
+
+- **Target score floor:** **≥ 7.0 / 10.** Investigate and address any check that
+  drops the aggregate below that; the per-check breakdown is in Code Scanning.
+- **Public badge / dashboard:** off by default (the score stays private in Code
+  Scanning). To publish to the public OpenSSF dashboard and enable the badge below,
+  set `publish_results: true` in [`.github/workflows/scorecard.yml`](.github/workflows/scorecard.yml)
+  (and add `id-token: write` to that job) — a deliberate "make our posture public"
+  decision. Once enabled, add:
+
+  ```markdown
+  [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Chris-Wolfgang/console-app-template/badge)](https://scorecard.dev/viewer/?uri=github.com/Chris-Wolfgang/console-app-template)
+  ```
+
+See [SECURITY.md](SECURITY.md) for how to report a vulnerability.
+
+---
+
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow, coding standards, and PR checklist.
