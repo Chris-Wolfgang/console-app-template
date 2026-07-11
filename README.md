@@ -4,7 +4,7 @@ A robust set of .NET templates for building console applications with modern dev
 
 [![NuGet](https://img.shields.io/nuget/v/Wolfgang.Template.Console.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Wolfgang.Template.Console)
 [![NuGet downloads](https://img.shields.io/nuget/dt/Wolfgang.Template.Console.svg?logo=nuget&label=downloads)](https://www.nuget.org/packages/Wolfgang.Template.Console)
-[![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/console-app-template/pr.yaml?event=pull_request_target&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/console-app-template/actions/workflows/pr.yaml)
+[![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/console-app-template/pr.yaml?event=pull_request&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/console-app-template/actions/workflows/pr.yaml)
 [![Release](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/console-app-template/release.yaml?label=release&logo=github)](https://github.com/Chris-Wolfgang/console-app-template/actions/workflows/release.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg)](https://dotnet.microsoft.com/)
