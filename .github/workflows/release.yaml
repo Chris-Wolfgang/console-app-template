@@ -380,6 +380,10 @@ jobs:
     name: Pack & Validate NuGet
     needs: validate-release
     runs-on: windows-latest
+    permissions:
+      contents: read
+      id-token: write       # mint the OIDC token the attestation is signed with
+      attestations: write   # write the SLSA build-provenance attestation
     outputs:
       has-packages: ${{ steps.check-packages.outputs.has-packages }}
     steps:
@@ -594,6 +598,18 @@ jobs:
             }
           }
 
+
+      # SLSA build-provenance attestation (issue #206). Records a signed,
+      # verifiable statement that these exact .nupkg files were built by this
+      # workflow at this commit. Stored in GitHub's attestation store (not
+      # embedded in the package — that would be NuGet package signing, which
+      # needs a code-signing certificate and is tracked separately). Consumers
+      # verify with: gh attestation verify <pkg>.nupkg --repo ${{ github.repository }}
+      - name: Attest build provenance for NuGet packages
+        if: steps.check-packages.outputs.has-packages == 'true'
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-path: 'nuget-packages/*.nupkg'
 
       - name: Upload NuGet packages
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
