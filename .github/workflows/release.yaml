@@ -28,7 +28,7 @@ jobs:
       has-docfx: ${{ steps.detect-docfx.outputs.has-docfx }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
@@ -101,7 +101,7 @@ jobs:
           }
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: |
             3.1.x
@@ -370,7 +370,7 @@ jobs:
 
       - name: Upload coverage report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: release-coverage
           path: CoverageReport/
@@ -384,12 +384,12 @@ jobs:
       has-packages: ${{ steps.check-packages.outputs.has-packages }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: |
             3.1.x
@@ -410,6 +410,11 @@ jobs:
       - name: Pack NuGet packages
         id: check-packages
         shell: pwsh
+        env:
+          # Pass the tag through an env var rather than inlining ${{ }} in the
+          # script - avoids template-injection (a release tag name is
+          # attacker-influenceable input). Matches validate-release above.
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
           # Create output directory for NuGet packages
           $packagesPath = Join-Path $PWD 'nuget-packages'
@@ -438,7 +443,7 @@ jobs:
           # <PackageVersion> is baked into the .csproj. Tags conventionally
           # carry a leading 'v' (e.g. v0.6.0) — strip it before passing to
           # `dotnet pack /p:PackageVersion=...`.
-          $rawTag = '${{ github.event.release.tag_name }}'
+          $rawTag = $env:RELEASE_TAG_NAME
           $packageVersion = $rawTag -replace '^v', ''
           Write-Host "Using PackageVersion=$packageVersion (from tag $rawTag)" -ForegroundColor Cyan
 
@@ -591,7 +596,7 @@ jobs:
 
 
       - name: Upload NuGet packages
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: nuget-packages
           path: ./nuget-packages/
@@ -610,7 +615,7 @@ jobs:
     if: github.repository != 'Chris-Wolfgang/repo-template'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
@@ -627,7 +632,7 @@ jobs:
 
       - name: Setup .NET
         if: steps.check.outputs.found == 'true'
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           # Install the same SDK set as validate-release so dotnet build can
           # compile every TFM the solution targets (some test projects span
@@ -705,7 +710,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: |
             3.1.x
@@ -717,7 +722,7 @@ jobs:
             10.0.x
 
       - name: Download packages
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: nuget-packages
           path: ./packages
@@ -790,7 +795,7 @@ jobs:
       contents: write  # Required to upload assets to the GitHub Release
     steps:
       - name: Download NuGet packages artifact
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: nuget-packages
           path: ./nuget-packages
@@ -802,7 +807,7 @@ jobs:
         # zip step below only runs when the download actually produced files.
         id: download-coverage
         continue-on-error: true
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-coverage
           path: ./release-coverage
