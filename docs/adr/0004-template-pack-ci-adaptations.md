@@ -1,7 +1,7 @@
 # 0004 — Template-pack CI/release adaptations
 
 - **Status:** Accepted
-- **Date:** 2026-07-09
+- **Date:** 2026-07-09 (amended 2026-07-11: added decision 5, the PR trigger)
 
 ## Context
 
@@ -31,6 +31,16 @@ Adapt the canonical workflows to the template-pack shape rather than fork them:
    across OS × SDK. This is the only place the generated app is exercised the way
    a user would, in the environment a user gets (no `.editorconfig` → analyzer
    defaults; the user's SDK).
+5. **PR trigger — `pull_request`, not `pull_request_target`.** The canonical
+   `pr.yaml` uses `pull_request_target` and a fork-safety apparatus (explicit
+   `refs/pull/*/head` checkouts, fetching config files from `main`, and a
+   "protected configuration file" guard) whose entire purpose is to run untrusted
+   **fork** PRs safely. This repo's PRs come from same-repo branches (single
+   maintainer), so that model is complexity with no benefit — and it costs real
+   friction (a `dangerous-triggers` suppression, protected-file-PR splits, and CI
+   validating `main`'s config instead of the PR's). We switched to plain
+   `pull_request` and removed the fork-only apparatus, keeping every job and its
+   name (so the branch ruleset's required checks still match).
 
 ## Consequences
 
@@ -42,3 +52,7 @@ Adapt the canonical workflows to the template-pack shape rather than fork them:
   minimum. See ADR 0001.
 - Coverage/perf/mutation-style CI that presumes a test suite or benchmarkable code
   is **not applicable** to this repo and belongs in the code-bearing repos.
+- Decision 5 is a deliberate *divergence* from canonical (not just an adaptation):
+  the `pull_request` trigger is the right default for a single-maintainer repo, but
+  a repo that accepts fork PRs should keep `pull_request_target` and the fork-safety
+  apparatus. Re-syncing `pr.yaml` from `repo-template` must preserve this choice.
