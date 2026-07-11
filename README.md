@@ -225,7 +225,8 @@ InspectCode, and zizmor for workflow security).
   [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Chris-Wolfgang/console-app-template/badge)](https://scorecard.dev/viewer/?uri=github.com/Chris-Wolfgang/console-app-template)
   ```
 
-See [SECURITY.md](SECURITY.md) for how to report a vulnerability.
+See the [Threat Model](docs/THREAT-MODEL.md) for the STRIDE analysis behind these
+controls, and [SECURITY.md](SECURITY.md) for how to report a vulnerability.
 
 ---
 
