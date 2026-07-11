@@ -72,9 +72,11 @@ deploy keys you didn't add, ruleset/branch-protection changes, or a leaked PAT.
    `repo.add_member`, `secret_scanning.*`, `actions.*`, new deploy keys, and any
    `git.push` you didn't make.
 5. **Verify repository integrity:**
-   - **Branch protection / ruleset** on `main` intact (the "Protect main branch"
-     ruleset — required status checks, Copilot review, non-fast-forward, deletion
-     protection). Re-apply if tampered.
+   - **Branch protection / ruleset** on `main` intact — verify the repo's
+     branch-protection ruleset still enforces its required status checks, review
+     requirement, non-fast-forward, and deletion protection (see the repo's setup
+     docs for the current checklist rather than a hard-coded name/config).
+     Re-apply if tampered.
    - **Collaborators / teams** — remove anyone unexpected.
    - **Deploy keys & webhooks** (*Settings* → *Deploy keys* / *Webhooks*) — delete
      anything you didn't add.
@@ -102,8 +104,10 @@ deploy keys you didn't add, ruleset/branch-protection changes, or a leaked PAT.
   key in the first place).
 - **`persist-credentials: false`** on workflow checkouts (prevents the checkout
   token leaking into the working tree / artifacts).
-- **`pull_request_target` runs from `main`** and checks out PR code with a
-  read-only token — untrusted PR code can't exfiltrate secrets.
+- **Least-privilege PR workflows** — PR checks run with a `contents: read` token
+  and `persist-credentials: false`, so PR code has no write scope; the safety is
+  the minimal permissions and not handing secrets to PR-controlled code (not the
+  trigger alone), and risky jobs are skipped for untrusted contributors.
 - **Consider OIDC trusted publishing** to eliminate the long-lived `NUGET_API_KEY`
   entirely (short-lived, workflow-scoped tokens; nothing to leak or rotate).
 
