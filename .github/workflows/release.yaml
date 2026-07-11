@@ -604,7 +604,9 @@ jobs:
       # workflow at this commit. Stored in GitHub's attestation store (not
       # embedded in the package — that would be NuGet package signing, which
       # needs a code-signing certificate and is tracked separately). Consumers
-      # verify with: gh attestation verify <pkg>.nupkg --repo ${{ github.repository }}
+      # verify with:
+      #   gh attestation verify <pkg>.nupkg --repo Chris-Wolfgang/console-app-template
+      # (literal owner/repo - a ${{ }} expression wouldn't expand when copied to a shell)
       - name: Attest build provenance for NuGet packages
         if: steps.check-packages.outputs.has-packages == 'true'
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
