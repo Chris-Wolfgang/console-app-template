@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING:** the `--response-file` template parameter's choice values were shortened —
+  `ParseArgsAsLineSeparated` → `LineSeparated`, `ParseArgsAsSpaceSeparated` → `SpaceSeparated`
+  (default is now `LineSeparated`). Scripts/CI that pin the old values must update. See the
+  [Migration Guide](docs/MIGRATION.md).
+
 ### Deprecated
 
 ### Removed
