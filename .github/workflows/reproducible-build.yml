@@ -1,0 +1,69 @@
+name: Reproducible build
+
+# Verifies the template packages are reproducible (issue #214): packing the same
+# source twice must produce a byte-identical template PAYLOAD.
+#
+# Caveat: the .nupkg *wrapper* is not byte-identical, and no MSBuild setting
+# (Deterministic / ContinuousIntegrationBuild) changes that — NuGet stamps each
+# package with a random OPC core-properties part (`*.psmdcp`) and build-time zip
+# timestamps. Those are packaging metadata, not content. This check therefore
+# compares the extracted payload with that OPC metadata excluded; if the payload
+# ever diverges, something nondeterministic leaked into a package.
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - '.github/workflows/reproducible-build.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - '.github/workflows/reproducible-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify package reproducibility
+    runs-on: ubuntu-latest
+    if: github.repository != 'Chris-Wolfgang/repo-template'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Pack each template twice and compare payloads
+        run: |
+          set -euo pipefail
+          fail=0
+          # Wipe all build intermediates so each pack is a fresh build, not an
+          # incremental reuse of the previous one - a real reproducibility test.
+          clean() { find src -type d \( -name bin -o -name obj \) -prune -exec rm -rf {} +; }
+          for proj in src/*/*.template.pack.csproj; do
+            name=$(basename "$proj")
+            echo "::group::$name"
+            rm -rf out-a out-b x-a x-b
+            clean; dotnet pack "$proj" -c Release -o out-a > /dev/null
+            clean; dotnet pack "$proj" -c Release -o out-b > /dev/null
+            unzip -oq out-a/*.nupkg -d x-a
+            unzip -oq out-b/*.nupkg -d x-b
+            # Exclude NuGet's OPC metadata: the random *.psmdcp part and the
+            # _rels/.rels that references it by that random name.
+            if diff -r -x '*.psmdcp' -x '.rels' x-a x-b; then
+              echo "reproducible: $name payload is byte-identical across builds"
+            else
+              echo "::error::$name payload differs between builds - something nondeterministic leaked in"
+              fail=1
+            fi
+            echo "::endgroup::"
+          done
+          exit "$fail"
