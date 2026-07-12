@@ -721,11 +721,19 @@ jobs:
           Write-Host "Documentation built successfully - release may proceed"
 
   # Publish to NuGet (only if validation passed)
+  # Publish to NuGet via Trusted Publishing (OIDC) — no long-lived NUGET_API_KEY.
+  # Requires a Trusted Publishing policy on nuget.org for owner=Chris-Wolfgang,
+  # repo=console-app-template, workflow=release.yaml, for each package id.
+  # NuGet/login exchanges the workflow's OIDC token for a ~1-hour temporary key,
+  # so it MUST run immediately before the push (not at job start).
   publish-nuget:
     name: Publish to NuGet.org
     needs: [pack-and-validate, verify-docs-build]
     if: needs.pack-and-validate.outputs.has-packages == 'true'
     runs-on: windows-latest
+    permissions:
+      id-token: write   # required for OIDC token issuance to nuget.org
+      contents: read
     steps:
       - name: Setup .NET
         uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
@@ -745,22 +753,16 @@ jobs:
           name: nuget-packages
           path: ./packages
 
-      - name: Validate NuGet API key
-        shell: pwsh
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          if ([string]::IsNullOrEmpty($env:NUGET_API_KEY)) {
-            Write-Error "❌ NUGET_API_KEY secret not configured!"
-            Write-Host "Please add it in: Repository Settings → Secrets and variables → Actions → New repository secret"
-            exit 1
-          }
-          Write-Host "✅ NUGET_API_KEY is configured" -ForegroundColor Green
+      - name: NuGet login (OIDC → temporary API key)
+        uses: NuGet/login@ebc737b6fc418a6ca0073cf116ec8dc156d8b81e # v1
+        id: nuget-login
+        with:
+          user: Chris-Wolfgang
 
       - name: Publish to NuGet
         shell: pwsh
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
           $packages = Get-ChildItem -Path './packages' -Filter '*.nupkg' -ErrorAction SilentlyContinue
           
