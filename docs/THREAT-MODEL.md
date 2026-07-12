@@ -32,7 +32,7 @@ template — that's their threat model (see the "consumer inherits" notes below)
 | **R**epudiation | "We didn't publish that version" | Releases are tag-driven and logged; provenance attestation ties each package to a workflow run + commit. |
 | **I**nfo disclosure | A secret committed into a template payload and shipped | **gitleaks** secret scan on every PR + secret scanning/push protection on the repo. |
 | **D**oS | n/a | Not a served asset; NuGet hosts the package. |
-| **E**levation | A compromised publish key ships a rogue version | Least-privilege NuGet key (scoped, push-only, expiring); **OIDC trusted publishing** is the recommended upgrade (no long-lived key); see [DISASTER-RECOVERY.md](DISASTER-RECOVERY.md). |
+| **E**levation | A compromised publish key ships a rogue version | Publishing uses **OIDC trusted publishing** (`NuGet/login`): no long-lived key exists — the workflow trades its OIDC token for a ~1-hour key scoped to publishing these package ids from this repo, so there is nothing to steal or rotate. |
 
 ### 2. Publish / CI pipeline
 
@@ -41,7 +41,7 @@ template — that's their threat model (see the "consumer inherits" notes below)
 | **S**poofing | A PR from a fork runs with write scope | PRs use `pull_request` with `contents: read` and no secret exposure to PR code (see [ADR 0005](adr/0005-pr-trigger-pull-request.md)). |
 | **T**ampering | A moved action tag pulls in malicious code; workflow-YAML injection | **All actions SHA-pinned**; **zizmor** + **actionlint** gate the workflows (template injection, unpinned uses, dangerous triggers); template tag values passed via `env:` not inline `${{ }}`. |
 | **R**epudiation | Unattributed changes to workflows/config | Branch ruleset on `main` (required checks, review, non-fast-forward, deletion protection); audit log. |
-| **I**nfo disclosure | `NUGET_API_KEY` leaked into logs/artifacts | `persist-credentials: false` on checkouts; secrets referenced only where needed; OIDC removes the long-lived key entirely. |
+| **I**nfo disclosure | A publish secret leaked into logs/artifacts | No long-lived publish secret exists — OIDC issues a ~1-hour token per run; `persist-credentials: false` on checkouts; least-privilege `GITHUB_TOKEN`. |
 | **D**oS | n/a | — |
 | **E**levation | An over-scoped `GITHUB_TOKEN` | Workflow-level `contents: read`; jobs opt into the minimum extra scope (e.g. `attestations: write`, `security-events: write`) only where required. |
 
