@@ -45,12 +45,15 @@ jobs:
         run: |
           set -euo pipefail
           fail=0
+          # Wipe all build intermediates so each pack is a fresh build, not an
+          # incremental reuse of the previous one - a real reproducibility test.
+          clean() { find src -type d \( -name bin -o -name obj \) -prune -exec rm -rf {} +; }
           for proj in src/*/*.template.pack.csproj; do
             name=$(basename "$proj")
             echo "::group::$name"
             rm -rf out-a out-b x-a x-b
-            dotnet pack "$proj" -c Release -o out-a > /dev/null
-            dotnet pack "$proj" -c Release -o out-b > /dev/null
+            clean; dotnet pack "$proj" -c Release -o out-a > /dev/null
+            clean; dotnet pack "$proj" -c Release -o out-b > /dev/null
             unzip -oq out-a/*.nupkg -d x-a
             unzip -oq out-b/*.nupkg -d x-b
             # Exclude NuGet's OPC metadata: the random *.psmdcp part and the
