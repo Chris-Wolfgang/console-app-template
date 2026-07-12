@@ -11,7 +11,8 @@
 #   ./snapshot.sh --check    (default) regenerate and diff against the golden; nonzero on drift
 #   ./snapshot.sh --update             regenerate and overwrite the golden (run after an intended change)
 #
-# Runs on Linux/macOS and Windows git-bash (needs: dotnet, sha256sum, sed, find).
+# Runs on Linux/macOS and Windows git-bash (needs: dotnet, sed, find, and
+# sha256sum or shasum).
 set -euo pipefail
 
 MODE="${1:---check}"
@@ -25,23 +26,23 @@ PACK_PROJECT="$REPO_ROOT/src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.
 APP_NAME="SnapshotApp"
 
 work="$(mktemp -d)"
-# Only uninstall on exit if WE installed the template — don't clobber a
-# contributor's pre-existing global cwconsole install.
-had_template=0
-if dotnet new uninstall 2>/dev/null | grep -q 'Wolfgang.Template.Console'; then
-  had_template=1
-fi
-cleanup() {
-  if [ "$had_template" -eq 0 ]; then
-    dotnet new uninstall Wolfgang.Template.Console > /dev/null 2>&1 || true
-  fi
-  rm -rf "$work"
-}
+cleanup() { rm -rf "$work"; }
 trap cleanup EXIT
 
-echo "Packing + installing cwconsole..."
+# Portable SHA-256: Linux has `sha256sum`; macOS/BSD has `shasum -a 256`.
+sha256() { if command -v sha256sum > /dev/null 2>&1; then sha256sum; else shasum -a 256; fi; }
+
+echo "Packing cwconsole..."
 dotnet pack "$PACK_PROJECT" -c Release -o "$work/pkg" > /dev/null
-dotnet new install "$work"/pkg/*.nupkg --force > /dev/null
+
+# Isolate the dotnet CLI home so `dotnet new install` uses a throwaway template
+# hive under $work — it never touches (or overwrites) the contributor's global
+# `dotnet new` templates, and nothing needs uninstalling afterwards.
+export DOTNET_CLI_HOME="$work/cli-home"
+mkdir -p "$DOTNET_CLI_HOME"
+
+echo "Installing + generating in an isolated template hive..."
+dotnet new install "$work"/pkg/*.nupkg > /dev/null
 
 echo "Generating project..."
 mkdir -p "$work/gen"
@@ -62,9 +63,9 @@ manifest="$work/manifest.txt"
 while IFS= read -r -d '' f; do
   rel="${f#"$work/gen/"}"
   if grep -Iq . "$f"; then
-    hash="$(sed -E 's/(Copyright )[0-9]{4}/\1YYYY/g' "$f" | sha256sum | cut -d' ' -f1)"
+    hash="$(sed -E 's/(Copyright )[0-9]{4}/\1YYYY/g' "$f" | sha256 | cut -d' ' -f1)"
   else
-    hash="$(sha256sum "$f" | cut -d' ' -f1)"
+    hash="$(sha256 < "$f" | cut -d' ' -f1)"
   fi
   printf '%s  %s\n' "$hash" "$rel" >> "$manifest"
 done < <(find "$work/gen" -type f -not -path '*/logs/*' -print0)
