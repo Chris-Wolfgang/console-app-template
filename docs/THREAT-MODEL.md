@@ -55,7 +55,12 @@ template — that's their threat model (see the "consumer inherits" notes below)
 
 ## Maintaining this model
 
-Revisit when the attack surface changes — a new publish mechanism, a new template
-that reads untrusted input, or accepting fork PRs (which would flip the ADR-0005
-decision and re-introduce the fork-safety controls). Keep each row tied to a
-concrete control or an explicit "consumer owns this".
+- **Review cadence:** revisit at least **annually** and on **every release**, and
+  immediately when the attack surface changes — a new publish mechanism, a new
+  template that reads untrusted input, or accepting fork PRs (which would flip the
+  [ADR-0005](adr/0005-pr-trigger-pull-request.md) decision and re-introduce the
+  fork-safety controls).
+- **Act on findings:** any threat this review surfaces that isn't already covered
+  becomes a tracked GitHub issue (labelled `security`), so it's followed up rather
+  than living only in this document.
+- Keep each row tied to a concrete control or an explicit "consumer owns this".
