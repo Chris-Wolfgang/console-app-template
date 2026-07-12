@@ -20,6 +20,7 @@ on:
     branches: [main]
     paths:
       - 'src/ConsoleAppTemplate/Content/**'
+      - 'src/ConsoleAppTemplate/**/*.csproj'
       - 'tests/snapshots/**'
       - '.github/workflows/snapshot.yml'
   workflow_dispatch:

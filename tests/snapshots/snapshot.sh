@@ -11,7 +11,7 @@
 #   ./snapshot.sh --check    (default) regenerate and diff against the golden; nonzero on drift
 #   ./snapshot.sh --update             regenerate and overwrite the golden (run after an intended change)
 #
-# Runs on Linux/macOS and Windows git-bash (needs: dotnet, unzip-free, sha256sum).
+# Runs on Linux/macOS and Windows git-bash (needs: dotnet, sha256sum, sed, find).
 set -euo pipefail
 
 MODE="${1:---check}"
@@ -25,7 +25,18 @@ PACK_PROJECT="$REPO_ROOT/src/ConsoleAppTemplate/dotnet.consoleapp.template.pack.
 APP_NAME="SnapshotApp"
 
 work="$(mktemp -d)"
-cleanup() { dotnet new uninstall Wolfgang.Template.Console > /dev/null 2>&1 || true; rm -rf "$work"; }
+# Only uninstall on exit if WE installed the template — don't clobber a
+# contributor's pre-existing global cwconsole install.
+had_template=0
+if dotnet new uninstall 2>/dev/null | grep -q 'Wolfgang.Template.Console'; then
+  had_template=1
+fi
+cleanup() {
+  if [ "$had_template" -eq 0 ]; then
+    dotnet new uninstall Wolfgang.Template.Console > /dev/null 2>&1 || true
+  fi
+  rm -rf "$work"
+}
 trap cleanup EXIT
 
 echo "Packing + installing cwconsole..."
@@ -39,15 +50,24 @@ mkdir -p "$work/gen"
 # check and will catch a genuine generation failure as a diff.
 ( cd "$work/gen" && dotnet new cwconsole -n "$APP_NAME" > /dev/null 2>&1 ) || true
 
-# Build the manifest. Normalize the one dynamic value the template injects: the
-# copyright year (a `now` generator), so the snapshot doesn't churn every January.
+# Build the manifest, one `sha256␠relative/path` line per file.
+# - `logs/` is excluded: those are gitignored runtime artifacts, not committed
+#   template content, so a clean checkout (and published package) never ships them.
+# - Text files: normalize the injected copyright year (a `now` generator) so the
+#   snapshot doesn't churn every January.
+# - Binary files (the icons): hash the raw bytes — running them through `sed` is
+#   unsafe and gives platform-dependent results.
 manifest="$work/manifest.txt"
 : > "$manifest"
 while IFS= read -r -d '' f; do
   rel="${f#"$work/gen/"}"
-  hash="$(sed -E 's/(Copyright )[0-9]{4}/\1YYYY/g' "$f" | sha256sum | cut -d' ' -f1)"
+  if grep -Iq . "$f"; then
+    hash="$(sed -E 's/(Copyright )[0-9]{4}/\1YYYY/g' "$f" | sha256sum | cut -d' ' -f1)"
+  else
+    hash="$(sha256sum "$f" | cut -d' ' -f1)"
+  fi
   printf '%s  %s\n' "$hash" "$rel" >> "$manifest"
-done < <(find "$work/gen" -type f -print0)
+done < <(find "$work/gen" -type f -not -path '*/logs/*' -print0)
 LC_ALL=C sort -o "$manifest" "$manifest"
 
 if [ "$MODE" = "--update" ]; then
