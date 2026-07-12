@@ -31,9 +31,9 @@ generated code is identical; only the value you pass on the command line changed
 
 The default also changed from `ParseArgsAsLineSeparated` to `LineSeparated`.
 
-**Action:** if you scaffold from a script/CI that passes `--response-file
-ParseArgsAs…`, update the value. Interactive users who pick from the prompt are
-unaffected.
+**Action:** if you scaffold from a script/CI that passes
+`--response-file ParseArgsAs…`, update the value. Interactive users who pick from
+the prompt are unaffected.
 
 ---
 
