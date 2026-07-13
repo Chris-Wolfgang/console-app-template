@@ -4,7 +4,7 @@ A robust set of .NET templates for building console applications with modern dev
 
 [![NuGet](https://img.shields.io/nuget/v/Wolfgang.Template.Console.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Wolfgang.Template.Console)
 [![NuGet downloads](https://img.shields.io/nuget/dt/Wolfgang.Template.Console.svg?logo=nuget&label=downloads)](https://www.nuget.org/packages/Wolfgang.Template.Console)
-[![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/console-app-template/pr.yaml?event=pull_request_target&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/console-app-template/actions/workflows/pr.yaml)
+[![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/console-app-template/pr.yaml?event=pull_request&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/console-app-template/actions/workflows/pr.yaml)
 [![Release](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/console-app-template/release.yaml?label=release&logo=github)](https://github.com/Chris-Wolfgang/console-app-template/actions/workflows/release.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -205,6 +205,31 @@ See [Instructions.md](src/ConsoleAppTemplate/Content/Instructions.md) for detail
 
 ---
 
+## Security posture
+
+This repo runs [OpenSSF Scorecard](https://scorecard.dev/) (weekly + on push to `main`)
+to grade its security posture — branch protection, pinned dependencies, token
+permissions, dangerous-workflow patterns, and more. Results upload as SARIF to
+**Security → Code scanning**, alongside the other scanners (gitleaks, CodeQL, DevSkim,
+InspectCode, and zizmor for workflow security).
+
+- **Target score floor:** **≥ 7.0 / 10.** Investigate and address any check that
+  drops the aggregate below that; the per-check breakdown is in Code Scanning.
+- **Public badge / dashboard:** off by default (the score stays private in Code
+  Scanning). To publish to the public OpenSSF dashboard and enable the badge below,
+  set `publish_results: true` in [`.github/workflows/scorecard.yml`](.github/workflows/scorecard.yml)
+  (and add `id-token: write` to that job) — a deliberate "make our posture public"
+  decision. Once enabled, add:
+
+  ```markdown
+  [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Chris-Wolfgang/console-app-template/badge)](https://scorecard.dev/viewer/?uri=github.com/Chris-Wolfgang/console-app-template)
+  ```
+
+See the [Threat Model](docs/THREAT-MODEL.md) for the STRIDE analysis behind these
+controls, and [SECURITY.md](SECURITY.md) for how to report a vulnerability.
+
+---
+
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow, coding standards, and PR checklist.
@@ -219,6 +244,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## References & Further Reading
 
+- [CHANGELOG](CHANGELOG.md) · [Migration Guide](docs/MIGRATION.md) (breaking template changes)
 - [Serilog Documentation](https://serilog.net/)
 - [McMaster.Extensions.CommandLineUtils](https://github.com/natemcmaster/CommandLineUtils)
 - [Microsoft.Extensions.Hosting](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting)

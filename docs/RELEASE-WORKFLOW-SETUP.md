@@ -17,19 +17,25 @@ The release workflow triggers when you **publish a GitHub Release** and implemen
 
 Complete the following one-time setup so that the workflow can publish releases:
 
-### Add NuGet API Key Secret
+### Configure Trusted Publishing (OIDC)
 
-**Location:** Settings → Secrets and variables → Actions → New repository secret
+Publishing uses **NuGet Trusted Publishing** — no long-lived `NUGET_API_KEY` secret.
+The workflow presents a GitHub OIDC token and `NuGet/login` exchanges it for a
+short-lived (~1 hour) key at push time.
 
-1. Click **"New repository secret"**
-2. **Name:** `NUGET_API_KEY`
-3. **Value:** Your NuGet.org API key
-   - Get your key from [NuGet.org Account → API Keys](https://www.nuget.org/account/apikeys)
-   - Recommended scopes: **Push new packages and package versions**
-   - Set expiration date (recommended: 1 year)
-4. Click **"Add secret"**
+**One-time setup on nuget.org** (Account → Trusted Publishing), one policy **per
+package id** (`Wolfgang.Template.Console`, `Wolfgang.Template.Console.Subcommand`,
+`Wolfgang.Template.Console.ETL-SubCommand`):
 
-**What this does:** Allows the workflow to authenticate with NuGet.org and publish packages. The workflow validates this secret exists before attempting to publish.
+1. **Repository owner:** `Chris-Wolfgang`
+2. **Repository:** `console-app-template`
+3. **Workflow file:** `release.yaml`
+4. (Optional) restrict to the environment/branch you release from.
+
+**What this does:** the `publish-nuget` job (with `permissions: id-token: write`)
+mints an OIDC token; `NuGet/login` trades it for a temporary key scoped to these
+packages from this repo. Nothing long-lived is stored, so there is no key to leak
+or rotate. (If you previously configured a `NUGET_API_KEY` secret, delete it.)
 
 ### Verify Branch Protection Rules
 
@@ -86,9 +92,9 @@ The workflow triggers automatically when the release is published.
    - ✅ Auto-passes if packages are valid
 
 3. **Job 3: publish-nuget** (1-2 minutes)
-   - Validates NUGET_API_KEY secret
+   - Logs in via OIDC trusted publishing (`NuGet/login` → temporary key)
    - Publishes packages to NuGet.org automatically
-   - ✅ Auto-completes if secret is valid
+   - ✅ Auto-completes if the trusted-publishing policy matches this repo/workflow
 
 ### Monitoring the Workflow
 
@@ -98,14 +104,16 @@ The workflow triggers automatically when the release is published.
 
 ## Troubleshooting
 
-### "NUGET_API_KEY secret not configured" Error
+### Trusted-publishing login fails (401 / no matching policy)
 
-**Problem:** The `publish-nuget` job fails with secret validation error.
+**Problem:** The `publish-nuget` job fails at `NuGet/login` or `dotnet nuget push`
+with an unauthorized / no-matching-trusted-publishing-policy error.
 
 **Solution:**
-1. Verify the secret name is exactly `NUGET_API_KEY` (case-sensitive)
-2. Re-add the secret in Settings → Secrets → Actions
-3. Re-run the workflow from the Actions tab (do not re-publish the release)
+1. Confirm a Trusted Publishing policy exists on nuget.org for **each** package id,
+   with owner `Chris-Wolfgang`, repo `console-app-template`, workflow `release.yaml`.
+2. Confirm the `publish-nuget` job has `permissions: id-token: write`.
+3. Re-run the workflow from the Actions tab (do not re-publish the release).
 
 ### Tests Fail on Specific Framework
 
@@ -192,7 +200,7 @@ Before creating a production GitHub Release (e.g., `v1.0.0`):
 ┌─────────────────────────────────────────────────────────────┐
 │  Job 3: publish-nuget (Windows)                             │
 │  • Download packages                                        │
-│  • Validate NUGET_API_KEY                                   │
+│  • NuGet/login (OIDC → temporary key)                       │
 │  • Publish to NuGet.org automatically                       │
 └─────────────────────────────────────────────────────────────┘
 ```

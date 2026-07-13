@@ -1,6 +1,8 @@
 {
     "symbolInfo": {
-
-
+        "HealthCheck": {
+            "longName": "health-check",
+            "shortName": ""
+        }
     }
 }
