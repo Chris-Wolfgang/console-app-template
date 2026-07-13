@@ -47,7 +47,7 @@ internal class HealthCommand
             var checks = new List<HealthCheckResult>
             {
                 CheckConfigurationLoaded(configuration),
-                await CheckLogDirectoryWritableAsync(configuration, cancellationToken)
+                await CheckLogDirectoryWritableAsync(configuration, cancellationToken),
 
                 // TODO Add your own checks here - e.g. database connectivity, downstream
                 // API reachability, or required files/directories. Return a HealthCheckResult
