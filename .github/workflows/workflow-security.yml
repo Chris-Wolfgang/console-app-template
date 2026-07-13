@@ -59,9 +59,15 @@ jobs:
           persist-credentials: false
 
       - name: Run actionlint
+        env:
+          ACTIONLINT_VERSION: "1.7.7"
+          ACTIONLINT_SHA256: "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757"
         run: |
-          # Pinned binary (reproducible); shellcheck is preinstalled on the runner
-          # so actionlint's shell-script checks run too.
-          curl -sSfL https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz \
-            | tar xz actionlint
+          # Pinned binary, checksum-verified before extraction (don't pipe curl
+          # straight into tar - verify integrity first). shellcheck is preinstalled
+          # on the runner so actionlint's shell-script checks run too.
+          tarball="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/${tarball}" -o "$tarball"
+          echo "${ACTIONLINT_SHA256}  ${tarball}" | sha256sum -c -
+          tar xzf "$tarball" actionlint
           ./actionlint -color
