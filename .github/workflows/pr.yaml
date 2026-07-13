@@ -183,6 +183,11 @@ jobs:
             sdk: "8.0"
           - os: macos-latest
             sdk: "8.0"
+          # ARM64 Linux (free runner for public repos). The generated app is pure
+          # managed .NET, so this is a low-signal but near-zero-cost proof that it
+          # packs/installs/builds/runs on ARM64 too.
+          - os: ubuntu-24.04-arm
+            sdk: "8.0"
           - os: ubuntu-latest
             sdk: "9.0"
           - os: ubuntu-latest
