@@ -1,0 +1,54 @@
+name: OSSF Scorecard
+
+# Automated security-posture scoring (issue #220). OpenSSF Scorecard grades the
+# repo against a checklist (branch protection, pinned dependencies, token
+# permissions, dangerous workflow patterns, ...) and uploads the results as SARIF
+# to GitHub Code Scanning (Security → Code scanning). It complements the point
+# tools already here: gitleaks (secrets), CodeQL/DevSkim/InspectCode (code),
+# zizmor (workflow security) — Scorecard scores the *posture*, not the code.
+
+on:
+  # Re-score when branch-protection / ruleset settings change.
+  branch_protection_rule:
+  schedule:
+    - cron: '20 5 * * 1'  # weekly Monday 05:20 UTC
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege at the top; the analysis job elevates only what it needs.
+permissions: read-all
+
+jobs:
+  analysis:
+    name: "Scorecard analysis"
+    runs-on: ubuntu-latest
+    if: github.repository != 'Chris-Wolfgang/repo-template'
+    permissions:
+      # A job-level permissions block REPLACES the workflow-level read-all, so
+      # every scope the job needs must be listed here explicitly.
+      contents: read           # Scorecard + checkout read the repo
+      actions: read            # Scorecard reads workflow files (Token-Permissions / Dangerous-Workflow checks)
+      security-events: write   # upload the SARIF to Code Scanning
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
+        with:
+          results_file: scorecard-results.sarif
+          results_format: sarif
+          # publish_results: false keeps the score private (Code Scanning only).
+          # Set to true to publish to the public OpenSSF dashboard and enable the
+          # Scorecard badge — that also requires adding `id-token: write` to this
+          # job's permissions. Left off by default; flipping it on is a
+          # deliberate "make our security posture public" decision.
+          publish_results: false
+
+      - name: Upload SARIF to Code Scanning
+        uses: github/codeql-action/upload-sarif@02c5e83432fe5497fd85b873b6c9f16a8578e1d9 # v3
+        with:
+          sarif_file: scorecard-results.sarif

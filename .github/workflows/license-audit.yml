@@ -1,0 +1,94 @@
+name: License audit
+
+# Fails the build if any dependency the GENERATED app ships carries a
+# non-permissive license (issue #216). The template's whole point is that
+# people take the generated project and distribute their own binaries — so its
+# transitive dependency licenses are the users' distribution risk, not ours to
+# hand-wave.
+#
+# Scope = the generated app's runtime dependency graph
+# (src/ConsoleAppTemplate/Content/ConsoleAppTemplate.csproj, --include-transitive).
+#
+# The four analyzers (AsyncFixer, Meziantou.Analyzer, Roslynator.Analyzers,
+# SonarAnalyzer.CSharp) are `PrivateAssets=all` — build-time only, never
+# distributed with the compiled app — so they are excluded from the audit.
+# This matters: SonarAnalyzer.CSharp ships under the Sonar Source-Available
+# License (non-permissive), which is fine for a dev-time analyzer but would
+# (correctly) fail a permissive-only allowlist if it were treated as shipped.
+#
+# As of this writing the shipped graph is 38 MIT + 10 Apache-2.0 — all clean.
+
+on:
+  pull_request:
+    paths:
+      - 'src/ConsoleAppTemplate/Content/ConsoleAppTemplate.csproj'
+      - '.github/workflows/license-audit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/ConsoleAppTemplate/Content/ConsoleAppTemplate.csproj'
+      - '.github/workflows/license-audit.yml'
+  schedule:
+    - cron: '30 6 * * 1'  # weekly Monday 06:30 UTC — catches a dependency relicensing
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Audit dependency licenses
+    runs-on: ubuntu-latest
+    env:
+      PROJECT: src/ConsoleAppTemplate/Content/ConsoleAppTemplate.csproj
+      # Permissive licenses only. GPL/AGPL/LGPL/MPL and other copyleft or
+      # source-available terms are intentionally absent — a hit fails the job.
+      ALLOWED_LICENSES: 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;MS-PL;0BSD'
+      # Build-time analyzers (PrivateAssets=all) — not distributed, excluded from the audit.
+      IGNORED_PACKAGES: 'AsyncFixer;Meziantou.Analyzer;Roslynator.Analyzers;SonarAnalyzer.CSharp'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install nuget-license
+        run: |
+          # Pinned so the gate is reproducible - a new nuget-license release can't
+          # silently change how licenses are resolved/validated under us.
+          dotnet tool install --global nuget-license --version 4.0.14
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Restore dependencies
+        run: dotnet restore "$PROJECT"
+
+      - name: Full license report (artifact)
+        run: |
+          nuget-license -i "$PROJECT" -t -ignore "$IGNORED_PACKAGES" \
+            -o JsonPretty -fo license-report.json
+          nuget-license -i "$PROJECT" -t -ignore "$IGNORED_PACKAGES" \
+            -o Markdown -fo license-report.md || true
+
+      - name: Enforce allowlist
+        run: |
+          # -err returns only violations; a non-empty result + non-zero exit fails the job.
+          nuget-license -i "$PROJECT" -t \
+            -a "$ALLOWED_LICENSES" \
+            -ignore "$IGNORED_PACKAGES" \
+            -err -o Table
+
+      - name: Upload license report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: license-report
+          path: |
+            license-report.json
+            license-report.md
+          if-no-files-found: warn
+          retention-days: 90

@@ -1,0 +1,73 @@
+name: Workflow Security Audit (zizmor + actionlint)
+
+# Static audit of the GitHub Actions workflows themselves (issue #221).
+# - zizmor catches Actions-specific SECURITY footguns the other scanners don't:
+#   unpinned actions, template injection, credential persistence, dangerous triggers.
+# - actionlint catches CORRECTNESS bugs: workflow syntax, expression typos, bad
+#   glob/cron, and (via shellcheck, preinstalled on the runner) shell issues in
+#   run: steps.
+# Both tool versions are pinned so the gate stays reproducible. Runs on workflow
+# changes, on push to main, and weekly.
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+  schedule:
+    - cron: '30 5 * * 1'  # weekly Monday 05:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    name: "zizmor (Actions security audit)"
+    runs-on: ubuntu-latest
+    if: github.repository != 'Chris-Wolfgang/repo-template'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        env:
+          # zizmor uses the token for its online checks (e.g. verifying an
+          # action ref is a real tag). Read-only; the workflow grants no more.
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Fail on high-severity findings; lower-severity notes surface in the
+          # log but don't gate. Tighten --min-severity later if the noise floor
+          # allows. Intentional accepted findings are annotated inline with
+          # `# zizmor: ignore[<audit>]` in the workflow they apply to.
+          # Version pinned so a new zizmor release can't change the gate under us.
+          pipx run zizmor==1.26.1 --min-severity=high .github/workflows/
+
+  actionlint:
+    name: "actionlint (Actions linter)"
+    runs-on: ubuntu-latest
+    if: github.repository != 'Chris-Wolfgang/repo-template'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Run actionlint
+        env:
+          ACTIONLINT_VERSION: "1.7.7"
+          ACTIONLINT_SHA256: "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757"
+        run: |
+          # Pinned binary, checksum-verified before extraction (don't pipe curl
+          # straight into tar - verify integrity first). shellcheck is preinstalled
+          # on the runner so actionlint's shell-script checks run too.
+          tarball="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/${tarball}" -o "$tarball"
+          echo "${ACTIONLINT_SHA256}  ${tarball}" | sha256sum -c -
+          tar xzf "$tarball" actionlint
+          ./actionlint -color
