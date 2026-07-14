@@ -58,6 +58,7 @@ The templates are designed for scalability, maintainability, and ease-of-use, wh
 - **Flexible Configuration:** Supports single or environment-specific JSON configuration files.
 - **Error Handling:** Robust error catching and exit codes for integration in automation pipelines.
 - **Analyzer Enforcement:** Generated projects ship with AsyncFixer, Meziantou, Roslynator, and Sonar analyzers enabled, with warnings treated as errors in Release builds.
+- **Optional OpenTelemetry:** Generate with `--otel` to wire OpenTelemetry tracing + metrics (console exporter by default; set `OpenTelemetry:OtlpEndpoint` in AppSettings to export via OTLP to Jaeger, Grafana, Azure Monitor, etc.).
 - **Extensible:** Easily add new commands, services, or configuration sections.
 
 ---
