@@ -132,6 +132,20 @@
 			"datatype": "bool",
 			"description": "Include a 'cli-surface' subcommand that emits a deterministic JSON manifest of the app's CLI arguments, plus a baseline-diff script and CI workflow to catch breaking changes to your published CLI contract.",
 			"defaultValue": "false"
+		},
+
+		"otel": {
+			"type": "parameter",
+			"datatype": "bool",
+			"description": "Include OpenTelemetry tracing + metrics (console exporter by default; OTLP endpoint configurable via AppSettings).",
+			"defaultValue": "false"
+		},
+
+		"top-level": {
+			"type": "parameter",
+			"datatype": "bool",
+			"description": "Use top-level statements for the entry point (Program.cs with no explicit Main). The default keeps the classic 'static Task<int> Main' form. Functionality is identical either way.",
+			"defaultValue": "false"
 		}
 	},
 
@@ -145,6 +159,19 @@
 				{
 					"condition": "(!cli-contract)",
 					"exclude": [ "Command/CliSurfaceCommand.cs", "cli-contract/**", ".github/workflows/cli-contract.yml" ]
+				},
+				{
+					"condition": "(!otel)",
+					"exclude": [ "Framework/Telemetry.cs", "Framework/OpenTelemetryHostBuilderExtensions.cs" ]
+				},
+				{
+					"condition": "(!top-level)",
+					"exclude": [ "Program.TopLevel.cs" ]
+				},
+				{
+					"condition": "(top-level)",
+					"exclude": [ "Program.cs" ],
+					"rename": { "Program.TopLevel.cs": "Program.cs" }
 				}
 			]
 		}
