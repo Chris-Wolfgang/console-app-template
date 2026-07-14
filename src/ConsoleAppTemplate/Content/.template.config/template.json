@@ -127,6 +127,13 @@
 			"defaultValue": "false"
 		},
 
+		"otel": {
+			"type": "parameter",
+			"datatype": "bool",
+			"description": "Include OpenTelemetry tracing + metrics (console exporter by default; OTLP endpoint configurable via AppSettings).",
+			"defaultValue": "false"
+		},
+
 		"top-level": {
 			"type": "parameter",
 			"datatype": "bool",
@@ -141,6 +148,10 @@
 				{
 					"condition": "(!HealthCheck)",
 					"exclude": [ "Command/HealthCommand.cs" ]
+				},
+				{
+					"condition": "(!otel)",
+					"exclude": [ "Framework/Telemetry.cs", "Framework/OpenTelemetryHostBuilderExtensions.cs" ]
 				},
 				{
 					"condition": "(!top-level)",
