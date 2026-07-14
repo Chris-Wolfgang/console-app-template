@@ -37,6 +37,29 @@
 	<PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
   </PropertyGroup>
 
+  <!-- Companion test/benchmark projects live under tests/ and benchmarks/ and are
+       separate projects with their own references; keep their sources out of this app. -->
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <Compile Remove="benchmarks/**/*.cs" />
+  </ItemGroup>
+
+  <!--#if (unit-tests)-->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ConsoleAppTemplate.Tests" />
+  </ItemGroup>
+  <!--#endif-->
+  <!--#if (integration-tests)-->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ConsoleAppTemplate.IntegrationTests" />
+  </ItemGroup>
+  <!--#endif-->
+  <!--#if (benchmarks)-->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ConsoleAppTemplate.Benchmarks" />
+  </ItemGroup>
+  <!--#endif-->
+
   <ItemGroup>
     <Content Include="Console-Template-icon.ico" />
   </ItemGroup>
