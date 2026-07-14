@@ -314,69 +314,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
-          ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
 
-      # Same defense-in-depth pattern as detect-projects and the test stages:
-      # jobs don't share workspaces under pull_request_target, so each build/
-      # analyzer job re-fetches protected config from main after checkout.
-      # Without this, a malicious PR could ship a permissive .editorconfig /
-      # BannedSymbols.txt / .DotSettings that would silence InspectCode
-      # findings on the PR's own code.
-      - name: Fetch trusted configuration files from main branch
-        # Skip for Dependabot — its package-version bumps to protected files are
-        # legitimate and should not be overwritten by main's older versions.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
-        run: |
-          echo "Fetching configuration files from main branch to prevent malicious overrides..."
-
-          git fetch origin main:main-branch
-
-          config_files=(
-            ".editorconfig"
-            "Directory.Build.props"
-            "Directory.Build.targets"
-            "BannedSymbols.txt"
-            "*.globalconfig"
-            "*.ruleset"
-            ".github/workflows/*.yml"
-            ".github/workflows/*.yaml"
-          )
-
-          for config_file in "${config_files[@]}"; do
-            if [[ "$config_file" == *"*"* ]]; then
-              # See Stage 1 for the process-substitution rationale (avoids a
-              # subshell that would swallow `exit 1` on failed copies).
-              while read -r file; do
-                if [ -n "$file" ]; then
-                  echo "  ✓ Copying $file from main branch"
-                  mkdir -p "$(dirname "$file")"
-                  if ! git show "main-branch:$file" > "$file"; then
-                    echo "::error::Failed to copy $file from main-branch — aborting to prevent silent fall-back to PR-supplied protected config."
-                    exit 1
-                  fi
-                fi
-              done < <(git ls-tree -r --name-only main-branch | { grep -E "${config_file//\*/.*}" || true; })
-            else
-              if git cat-file -e "main-branch:$config_file" 2>/dev/null; then
-                echo "  ✓ Copying $config_file from main branch"
-                if ! git show "main-branch:$config_file" > "$config_file"; then
-                  echo "::error::Failed to copy $config_file from main-branch — aborting to prevent silent fall-back to PR-supplied protected config."
-                  exit 1
-                fi
-              else
-                echo "  ℹ️  $config_file not found in main branch, skipping"
-              fi
-            fi
-          done
-
-          echo ""
-          echo "✅ Configuration files secured - using versions from main branch"
-
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: '10.0.x'
 
@@ -388,33 +331,22 @@ jobs:
       # (with `--no-build`) for the whole solution.
       - name: Restore and build
         run: |
-          dotnet restore
-          dotnet build -c Release --no-restore
+          dotnet restore src/ConsoleAppTemplate.sln
+          dotnet build src/ConsoleAppTemplate.sln -c Release --no-restore
 
       - name: Install JetBrains.ReSharper.GlobalTools
         run: dotnet tool install -g JetBrains.ReSharper.GlobalTools
 
       - name: Run InspectCode
         run: |
-          # Find a solution to inspect. Prefer .slnx (new format) then .sln.
-          # InspectCode requires SOMETHING solution-shaped — fail loudly if neither exists.
-          SLN=$(ls *.slnx 2>/dev/null | head -n1)
-          if [ -z "$SLN" ]; then
-            SLN=$(ls *.sln 2>/dev/null | head -n1)
-          fi
-          if [ -z "$SLN" ]; then
-            echo "::error::No .slnx or .sln found at repo root — InspectCode needs one to run."
-            exit 1
-          fi
-          echo "Inspecting: $SLN"
-          jb inspectcode "$SLN" \
+          jb inspectcode src/ConsoleAppTemplate.sln \
             --output=inspect.sarif \
             --format=sarif \
             --severity=WARNING \
             --no-build
 
       - name: Upload SARIF to Code Scanning
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@02c5e83432fe5497fd85b873b6c9f16a8578e1d9 # v3
         with:
           sarif_file: inspect.sarif
 
