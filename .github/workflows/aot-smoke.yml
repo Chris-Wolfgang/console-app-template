@@ -49,11 +49,12 @@ jobs:
         env:
           DOTNET_CLI_HOME: ${{ runner.temp }}/cli-home
         run: |
-          gen="$RUNNER_TEMP/gen"
-          mkdir -p "$gen"
-          cd "$gen"
+          # `dotnet new` generates into the current directory, so create and enter the
+          # project folder first (it does not create a subfolder named after -n).
+          app="$RUNNER_TEMP/gen/SmokeAot"
+          mkdir -p "$app"
+          cd "$app"
           dotnet new cwconsole-aot -n SmokeAot
-          cd SmokeAot
           dotnet publish -c Release -r linux-x64
 
       - name: Run the native binary and assert output
