@@ -37,6 +37,13 @@
 	<PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
   </PropertyGroup>
 
+  <!-- Program.TopLevel.cs is the alternate top-level-statements entry point, emitted
+       (renamed to Program.cs) only when the project is generated with the top-level
+       option. It is never compiled alongside the default Main-based Program.cs. -->
+  <ItemGroup>
+    <Compile Remove="Program.TopLevel.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <Content Include="Console-Template-icon.ico" />
   </ItemGroup>
