@@ -45,6 +45,7 @@ The templates are designed for scalability, maintainability, and ease-of-use, wh
 | Template | Short name | Type | NuGet package |
 |----------|------------|------|---------------|
 | Wolfgang Console App | `cwconsole` | Project template — a complete console application | [Wolfgang.Template.Console](https://www.nuget.org/packages/Wolfgang.Template.Console) |
+| Wolfgang Console App (Native AOT) | `cwconsole-aot` | Project template — a native-AOT-ready console app using System.CommandLine | [Wolfgang.Template.Console.Aot](https://www.nuget.org/packages/Wolfgang.Template.Console.Aot) |
 | Wolfgang Console Subcommand | `cwsubcmd` | Item template — adds a new subcommand class to an existing app | [Wolfgang.Template.Console.Subcommand](https://www.nuget.org/packages/Wolfgang.Template.Console.Subcommand) |
 | Wolfgang Console ETL Subcommand | `cwsubcmdetl` | Item template — adds an ETL-style subcommand built on Wolfgang.Etl.Abstractions | [Wolfgang.Template.Console.ETL-SubCommand](https://www.nuget.org/packages/Wolfgang.Template.Console.ETL-SubCommand) |
 
@@ -58,6 +59,7 @@ The templates are designed for scalability, maintainability, and ease-of-use, wh
 - **Flexible Configuration:** Supports single or environment-specific JSON configuration files.
 - **Error Handling:** Robust error catching and exit codes for integration in automation pipelines.
 - **Analyzer Enforcement:** Generated projects ship with AsyncFixer, Meziantou, Roslynator, and Sonar analyzers enabled, with warnings treated as errors in Release builds.
+- **Native AOT variant:** `cwconsole-aot` scaffolds a reflection-free console app (System.CommandLine + generic host + source-generated configuration binding) that publishes as a small, fast, self-contained native executable via `dotnet publish -r <rid>`.
 - **Extensible:** Easily add new commands, services, or configuration sections.
 
 ---
