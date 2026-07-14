@@ -1,4 +1,3 @@
-#if (otel)
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +14,10 @@ namespace ConsoleAppTemplate.Framework;
 /// configured by default; set <c>OpenTelemetry:OtlpEndpoint</c> in AppSettings to
 /// also export via OTLP (Jaeger, Grafana, Azure Monitor, Datadog, …).
 /// </summary>
+/// <remarks>
+/// This file is only generated when the template is created with <c>--otel</c>
+/// (see .template.config/template.json), so it needs no in-source conditional.
+/// </remarks>
 internal static class OpenTelemetryHostBuilderExtensions
 {
     /// <summary>
@@ -27,7 +30,19 @@ internal static class OpenTelemetryHostBuilderExtensions
 
         return builder.ConfigureServices((context, services) =>
         {
+            // Parse the optional OTLP endpoint once (reused by both signals). An invalid
+            // value is a configuration mistake, so fail fast with a clear message rather
+            // than a bare UriFormatException from deep inside the exporter setup.
             var otlpEndpoint = context.Configuration["OpenTelemetry:OtlpEndpoint"];
+            Uri? otlpUri = null;
+            if (!string.IsNullOrWhiteSpace(otlpEndpoint)
+                && !Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out otlpUri))
+            {
+                throw new InvalidOperationException
+                (
+                    $"Configuration value 'OpenTelemetry:OtlpEndpoint' is not a valid absolute URI: '{otlpEndpoint}'."
+                );
+            }
 
             services.AddOpenTelemetry()
                 .ConfigureResource(resource => resource.AddService(Telemetry.ServiceName))
@@ -35,21 +50,20 @@ internal static class OpenTelemetryHostBuilderExtensions
                 {
                     tracing.AddSource(Telemetry.ServiceName);
                     tracing.AddConsoleExporter();
-                    if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+                    if (otlpUri is not null)
                     {
-                        tracing.AddOtlpExporter(exporter => exporter.Endpoint = new Uri(otlpEndpoint));
+                        tracing.AddOtlpExporter(exporter => exporter.Endpoint = otlpUri);
                     }
                 })
                 .WithMetrics(metrics =>
                 {
                     metrics.AddMeter(Telemetry.ServiceName);
                     metrics.AddConsoleExporter();
-                    if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+                    if (otlpUri is not null)
                     {
-                        metrics.AddOtlpExporter(exporter => exporter.Endpoint = new Uri(otlpEndpoint));
+                        metrics.AddOtlpExporter(exporter => exporter.Endpoint = otlpUri);
                     }
                 });
         });
     }
 }
-#endif
