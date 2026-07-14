@@ -58,6 +58,7 @@ The templates are designed for scalability, maintainability, and ease-of-use, wh
 - **Flexible Configuration:** Supports single or environment-specific JSON configuration files.
 - **Error Handling:** Robust error catching and exit codes for integration in automation pipelines.
 - **Analyzer Enforcement:** Generated projects ship with AsyncFixer, Meziantou, Roslynator, and Sonar analyzers enabled, with warnings treated as errors in Release builds.
+- **Optional CLI-contract snapshot:** Generate with `--cli-contract` to add a `cli-surface` subcommand that emits a deterministic JSON manifest of your published CLI arguments, plus a baseline-diff script and CI workflow that fail the build when a rename/removal breaks that contract.
 - **Extensible:** Easily add new commands, services, or configuration sections.
 
 ---

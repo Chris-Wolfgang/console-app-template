@@ -1,0 +1,30 @@
+# Fails the build when the app's CLI surface drifts from the committed baseline in
+# cli-contract/cli-surface.baseline.json - i.e. an option or subcommand was renamed or
+# removed, which breaks scripts and pipelines that call this app. When a change is
+# intentional, refresh the baseline locally with:
+#   pwsh cli-contract/check-cli-contract.ps1 -Update    (or) cli-contract/check-cli-contract.sh --update
+# and commit the updated baseline, noting the change in your release notes.
+name: CLI contract
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  cli-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Check CLI surface against baseline
+        run: ./cli-contract/check-cli-contract.sh
