@@ -62,9 +62,12 @@ jobs:
           bin="$(find "$RUNNER_TEMP/gen/SmokeAot" -type f -name SmokeAot -path '*publish*' | head -n1)"
           echo "Native binary: $bin"
           file "$bin"
+          # The app also logs an "info" line to stdout, so match on the greeting
+          # line rather than the whole output.
           out="$("$bin" --name CI)"
           echo "Output: $out"
-          if [ "$out" != "Hello, CI!" ]; then
-            echo "::error::Unexpected output from native AOT binary: '$out' (expected 'Hello, CI!')"
+          if ! printf '%s\n' "$out" | grep -qx 'Hello, CI!'; then
+            echo "::error::Native AOT binary did not print the expected 'Hello, CI!' line. Full output:"
+            printf '%s\n' "$out"
             exit 1
           fi
