@@ -127,6 +127,27 @@
 			"defaultValue": "false"
 		},
 
+		"unit-tests": {
+			"type": "parameter",
+			"datatype": "bool",
+			"description": "Include a companion xUnit unit-test project under tests/ (with InternalsVisibleTo so the app's internal types are testable).",
+			"defaultValue": "false"
+		},
+
+		"integration-tests": {
+			"type": "parameter",
+			"datatype": "bool",
+			"description": "Include a companion xUnit integration-test project under tests/ that exercises the app's real composition (config binding + DI).",
+			"defaultValue": "false"
+		},
+
+		"benchmarks": {
+			"type": "parameter",
+			"datatype": "bool",
+			"description": "Include a companion BenchmarkDotNet project under benchmarks/ for measuring the performance of the app's hot paths.",
+			"defaultValue": "false"
+		},
+
 		"cli-contract": {
 			"type": "parameter",
 			"datatype": "bool",
@@ -155,6 +176,18 @@
 				{
 					"condition": "(!HealthCheck)",
 					"exclude": [ "Command/HealthCommand.cs" ]
+				},
+				{
+					"condition": "(!unit-tests)",
+					"exclude": [ "tests/ConsoleAppTemplate.Tests/**" ]
+				},
+				{
+					"condition": "(!integration-tests)",
+					"exclude": [ "tests/ConsoleAppTemplate.IntegrationTests/**" ]
+				},
+				{
+					"condition": "(!benchmarks)",
+					"exclude": [ "benchmarks/**" ]
 				},
 				{
 					"condition": "(!cli-contract)",

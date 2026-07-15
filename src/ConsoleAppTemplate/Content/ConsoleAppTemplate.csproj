@@ -37,12 +37,31 @@
 	<PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
   </PropertyGroup>
 
-  <!-- Program.TopLevel.cs is the alternate top-level-statements entry point, emitted
-       (renamed to Program.cs) only when the project is generated with the top-level
-       option. It is never compiled alongside the default Main-based Program.cs. -->
+  <!-- Companion test/benchmark projects live under tests/ and benchmarks/ (separate
+       projects with their own references), and Program.TopLevel.cs is the alternate
+       top-level-statements entry point (emitted, renamed to Program.cs, only with the
+       top-level option). Keep all of these out of the default app compilation. -->
   <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <Compile Remove="benchmarks/**/*.cs" />
     <Compile Remove="Program.TopLevel.cs" />
   </ItemGroup>
+
+  <!--#if (unit-tests)-->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ConsoleAppTemplate.Tests" />
+  </ItemGroup>
+  <!--#endif-->
+  <!--#if (integration-tests)-->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ConsoleAppTemplate.IntegrationTests" />
+  </ItemGroup>
+  <!--#endif-->
+  <!--#if (benchmarks)-->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ConsoleAppTemplate.Benchmarks" />
+  </ItemGroup>
+  <!--#endif-->
 
   <ItemGroup>
     <Content Include="Console-Template-icon.ico" />
