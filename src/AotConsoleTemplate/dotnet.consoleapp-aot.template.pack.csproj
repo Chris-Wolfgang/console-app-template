@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageVersion>0.6.0</PackageVersion>
+    <PackageId>Wolfgang.Template.Console.Aot</PackageId>
+    <Title>Wolfgang Console App (Native AOT)</Title>
+    <Authors>Chris Wolfgang</Authors>
+    <Description>Template for a native-AOT-ready C# console application using System.CommandLine, the generic host and source-generated configuration binding</Description>
+    <PackageTags>dotnet-new;templates;console-app;aot;system.commandline;Chris Wolfgang</PackageTags>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <Copyright>Chris Wolfgang 2025-2026</Copyright>
+    <PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;" />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+</Project>

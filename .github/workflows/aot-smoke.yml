@@ -1,0 +1,73 @@
+# Native AOT smoke test for the cwconsole-aot template (issue #211).
+#
+# Packs the AOT template, generates a project from it, publishes a *native* executable
+# with Native AOT on Ubuntu (which has the required C toolchain), runs the binary and
+# asserts its output. This proves end to end that the template stays AOT-compilable -
+# something the analyzer-only check in a normal build cannot fully guarantee.
+name: AOT smoke
+
+on:
+  pull_request:
+    paths:
+      - 'src/AotConsoleTemplate/**'
+      - '.github/workflows/aot-smoke.yml'
+  push:
+    branches: [ main, vNext ]
+    paths:
+      - 'src/AotConsoleTemplate/**'
+      - '.github/workflows/aot-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  aot-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install Native AOT prerequisites
+        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+
+      - name: Pack the cwconsole-aot template
+        run: dotnet pack src/AotConsoleTemplate/dotnet.consoleapp-aot.template.pack.csproj -c Release -o "$RUNNER_TEMP/pkg"
+
+      - name: Install the template into an isolated hive
+        env:
+          DOTNET_CLI_HOME: ${{ runner.temp }}/cli-home
+        run: |
+          mkdir -p "$DOTNET_CLI_HOME"
+          dotnet new install "$RUNNER_TEMP"/pkg/*.nupkg
+
+      - name: Generate a project + publish native
+        env:
+          DOTNET_CLI_HOME: ${{ runner.temp }}/cli-home
+        run: |
+          # `dotnet new` generates into the current directory, so create and enter the
+          # project folder first (it does not create a subfolder named after -n).
+          app="$RUNNER_TEMP/gen/SmokeAot"
+          mkdir -p "$app"
+          cd "$app"
+          dotnet new cwconsole-aot -n SmokeAot
+          dotnet publish -c Release -r linux-x64
+
+      - name: Run the native binary and assert output
+        run: |
+          bin="$(find "$RUNNER_TEMP/gen/SmokeAot" -type f -name SmokeAot -path '*publish*' | head -n1)"
+          echo "Native binary: $bin"
+          file "$bin"
+          # The app also logs an "info" line to stdout, so match on the greeting
+          # line rather than the whole output.
+          out="$("$bin" --name CI)"
+          echo "Output: $out"
+          if ! printf '%s\n' "$out" | grep -qx 'Hello, CI!'; then
+            echo "::error::Native AOT binary did not print the expected 'Hello, CI!' line. Full output:"
+            printf '%s\n' "$out"
+            exit 1
+          fi
