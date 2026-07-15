@@ -148,6 +148,13 @@
 			"defaultValue": "false"
 		},
 
+		"cli-contract": {
+			"type": "parameter",
+			"datatype": "bool",
+			"description": "Include a 'cli-surface' subcommand that emits a deterministic JSON manifest of the app's CLI arguments, plus a baseline-diff script and CI workflow to catch breaking changes to your published CLI contract.",
+			"defaultValue": "false"
+		},
+
 		"otel": {
 			"type": "parameter",
 			"datatype": "bool",
@@ -181,6 +188,10 @@
 				{
 					"condition": "(!benchmarks)",
 					"exclude": [ "benchmarks/**" ]
+				},
+				{
+					"condition": "(!cli-contract)",
+					"exclude": [ "Command/CliSurfaceCommand.cs", "cli-contract/**", ".github/workflows/cli-contract.yml" ]
 				},
 				{
 					"condition": "(!otel)",
