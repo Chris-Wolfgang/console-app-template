@@ -59,6 +59,8 @@ The templates are designed for scalability, maintainability, and ease-of-use, wh
 - **Error Handling:** Robust error catching and exit codes for integration in automation pipelines.
 - **Analyzer Enforcement:** Generated projects ship with AsyncFixer, Meziantou, Roslynator, and Sonar analyzers enabled, with warnings treated as errors in Release builds.
 - **Optional companion projects:** Generate with `--unit-tests`, `--integration-tests`, and/or `--benchmarks` to scaffold a matching xUnit unit-test project, an xUnit integration-test project, and a BenchmarkDotNet project — each referencing the app (with `InternalsVisibleTo` so internal types are reachable).
+- **Optional OpenTelemetry:** Generate with `--otel` to wire OpenTelemetry tracing + metrics (console exporter by default; set `OpenTelemetry:OtlpEndpoint` in AppSettings to export via OTLP to Jaeger, Grafana, Azure Monitor, etc.).
+- **Entry-point style:** Defaults to the classic `static Task<int> Main`; pass `--top-level` to generate a top-level-statements `Program.cs` instead (no explicit `Main`). Functionality is identical either way.
 - **Extensible:** Easily add new commands, services, or configuration sections.
 
 ---

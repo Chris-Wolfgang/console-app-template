@@ -37,11 +37,14 @@
 	<PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
   </PropertyGroup>
 
-  <!-- Companion test/benchmark projects live under tests/ and benchmarks/ and are
-       separate projects with their own references; keep their sources out of this app. -->
+  <!-- Companion test/benchmark projects live under tests/ and benchmarks/ (separate
+       projects with their own references), and Program.TopLevel.cs is the alternate
+       top-level-statements entry point (emitted, renamed to Program.cs, only with the
+       top-level option). Keep all of these out of the default app compilation. -->
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
     <Compile Remove="benchmarks/**/*.cs" />
+    <Compile Remove="Program.TopLevel.cs" />
   </ItemGroup>
 
   <!--#if (unit-tests)-->
@@ -100,6 +103,14 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.9" />
   </ItemGroup>
+
+  <!--#if (otel)-->
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.16.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.16.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.16.0" />
+  </ItemGroup>
+  <!--#endif-->
 
   <ItemGroup>
     <None Update="AppSettings.Development.json">
