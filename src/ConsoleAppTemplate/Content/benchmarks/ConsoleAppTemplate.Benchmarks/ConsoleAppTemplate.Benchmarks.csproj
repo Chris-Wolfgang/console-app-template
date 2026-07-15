@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- BenchmarkDotNet requires a Release build to produce meaningful numbers.
+         Run it from the benchmarks/ConsoleAppTemplate.Benchmarks folder with:
+         dotnet run -c Release -->
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reference the app so you can benchmark its real types. Internals are visible
+         via InternalsVisibleTo in the app csproj when a test/benchmark flag is enabled. -->
+    <ProjectReference Include="..\..\ConsoleAppTemplate.csproj" />
+  </ItemGroup>
+
+</Project>

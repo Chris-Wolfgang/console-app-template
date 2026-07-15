@@ -59,6 +59,10 @@ The templates are designed for scalability, maintainability, and ease-of-use, wh
 - **Flexible Configuration:** Supports single or environment-specific JSON configuration files.
 - **Error Handling:** Robust error catching and exit codes for integration in automation pipelines.
 - **Analyzer Enforcement:** Generated projects ship with AsyncFixer, Meziantou, Roslynator, and Sonar analyzers enabled, with warnings treated as errors in Release builds.
+- **Optional companion projects:** Generate with `--unit-tests`, `--integration-tests`, and/or `--benchmarks` to scaffold a matching xUnit unit-test project, an xUnit integration-test project, and a BenchmarkDotNet project — each referencing the app (with `InternalsVisibleTo` so internal types are reachable).
+- **Optional CLI-contract snapshot:** Generate with `--cli-contract` to add a `cli-surface` subcommand that emits a deterministic JSON manifest of your published CLI arguments, plus a baseline-diff script and CI workflow that fail the build when a rename/removal breaks that contract.
+- **Optional OpenTelemetry:** Generate with `--otel` to wire OpenTelemetry tracing + metrics (console exporter by default; set `OpenTelemetry:OtlpEndpoint` in AppSettings to export via OTLP to Jaeger, Grafana, Azure Monitor, etc.).
+- **Entry-point style:** Defaults to the classic `static Task<int> Main`; pass `--top-level` to generate a top-level-statements `Program.cs` instead (no explicit `Main`). Functionality is identical either way.
 - **Native AOT variant:** `cwconsole-aot` scaffolds a reflection-free console app (System.CommandLine + generic host + source-generated configuration binding) that publishes as a small, fast, self-contained native executable via `dotnet publish -r <rid>`.
 - **Extensible:** Easily add new commands, services, or configuration sections.
 
