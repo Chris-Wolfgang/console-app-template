@@ -17,7 +17,8 @@ namespace ConsoleAppTemplate.Command;
 /// <see cref="Framework.AutoRegisterCommandsConvention"/>). Use <c>--output &lt;file&gt;</c>
 /// to write the manifest to a file (recommended - keeps it free of log output); with no
 /// option it is written to stdout. See <c>cli-contract/</c> for a baseline check script
-/// and CI workflow, and Instructions.md for the "keeping your CLI contract stable" note.
+/// and CI workflow, and <c>cli-contract/README.md</c> for the "keeping your CLI contract
+/// stable" note.
 /// </remarks>
 [Command
 (

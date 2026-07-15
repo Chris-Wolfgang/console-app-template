@@ -43,7 +43,9 @@ try
         exit 1
     }
 
-    $diff = Compare-Object (Get-Content $baseline) (Get-Content $current)
+    # -SyncWindow 0 keeps the comparison sequence-aware so a pure reordering of lines
+    # is still reported as drift (the default window is order-insensitive).
+    $diff = Compare-Object (Get-Content $baseline) (Get-Content $current) -SyncWindow 0
     if ($null -ne $diff)
     {
         Write-Host "CLI surface has changed from the committed baseline:" -ForegroundColor Yellow

@@ -35,13 +35,13 @@ CLI changed; note breaking changes in your release notes):
 pwsh cli-contract/check-cli-contract.ps1 -Update
 
 # Linux / macOS
-cli-contract/check-cli-contract.sh --update
+bash cli-contract/check-cli-contract.sh --update
 ```
 
 Verify no drift (what CI runs):
 
 ```sh
-pwsh cli-contract/check-cli-contract.ps1     # or: cli-contract/check-cli-contract.sh
+pwsh cli-contract/check-cli-contract.ps1     # or: bash cli-contract/check-cli-contract.sh
 ```
 
 ## CI
