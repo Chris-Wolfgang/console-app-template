@@ -50,6 +50,20 @@ The templates are designed for scalability, maintainability, and ease-of-use, wh
 
 ---
 
+## 🎯 Supported Frameworks
+
+The `Wolfgang.Template.Console` package installs three templates:
+
+| Template | `dotnet new` short name | Generated project targets |
+|---|---|---|
+| Wolfgang Console App | `cwconsole` | `net8.0` |
+| Wolfgang Console SubCommand | `cwsubcmd` | Adds files to an existing project (inherits host's TFM) |
+| Wolfgang Console ETL SubCommand | `cwsubcmdetl` | Adds files to an existing project (inherits host's TFM) |
+
+The template pack itself targets `netstandard2.0` for `dotnet new` compatibility across all SDKs — this does not affect the generated project's target framework.
+
+See the [NuGet package page](https://www.nuget.org/packages/Wolfgang.Template.Console/) for the authoritative per-TFM compatibility matrix.
+
 ## Features
 
 - **Command Line Parsing:** Easily define commands, subcommands, and options.
