@@ -1,0 +1,36 @@
+<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <!--
+    Team-shared InspectCode / ReSharper severity profile for the
+    ConsoleAppTemplate solution.
+
+    Scope: this solution is the `dotnet new cwconsole` TEMPLATE CONTENT — a
+    scaffold users receive and edit. InspectCode's "unused member" family
+    fires on scaffolding whose real consumer is the user's code (not the
+    solution), so those rules are silenced solution-wide rather than case-
+    by-case:
+
+      * NotAccessedField.Compiler        — 38 palette constants in
+        Framework/ConsoleColors.cs. The palette exists so the generated app
+        can call `ConsoleColors.Foreground.Red` etc. from any command the
+        user adds; the template itself does not consume every entry.
+
+      * UnusedAutoPropertyAccessor.Global — Model/SampleConfiguration.cs
+        `CommandTimeout` (and any future settings the user adds). The
+        setter is invoked by Microsoft.Extensions.Configuration binding
+        via reflection, which InspectCode cannot see.
+
+      * RedundantUsingDirective           — Program.cs `using
+        ConsoleAppTemplate.Command;`. The generated Program.cs ships with
+        every project-namespace `using` in place so a user adding a new
+        subcommand or explicit [Subcommand(typeof(...))] entry does not
+        need to reason about which imports to add. Intentional
+        scaffolding, not dead code.
+
+    Sibling templates (SubCommandTemplate / EtlSubCommandTemplate) carry
+    {DefaultNamespace} placeholder tokens and are not in this solution, so
+    they are not inspected here.
+  -->
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=NotAccessedField_002ECompiler/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=UnusedAutoPropertyAccessor_002EGlobal/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RedundantUsingDirective/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+</wpf:ResourceDictionary>
