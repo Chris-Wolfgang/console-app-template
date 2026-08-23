@@ -75,6 +75,11 @@ namespace ConsoleAppTemplate
                             ;
                     })
                     
+#if (otel)
+                    // OpenTelemetry tracing + metrics (see Framework/OpenTelemetryHostBuilderExtensions).
+                    .ConfigureApplicationTelemetry()
+#endif
+
                     // Configure dependency injection
                     .ConfigureServices((_, serviceCollection) =>
                     {

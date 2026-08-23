@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- Native AOT: publish with a RID to produce a small, fast, self-contained native
+         executable with no JIT, e.g. `dotnet publish -c Release -r linux-x64`.
+         Setting PublishAot here also turns on the AOT/trim analyzers during every build,
+         so AOT-incompatible code is caught at compile time, not at publish. -->
+    <PublishAot>true</PublishAot>
+
+    <!-- Trimming + AOT friendliness -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Source-generate configuration binding so IConfiguration.Bind/Get is AOT- and
+         trim-safe (no reflection). Required for the Options binding in Program.cs. -->
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <!-- MA0026/S1135/S125 - the TODO/example comments are the template's guided setup checklist.
+         S1144 - starter helpers ship unreferenced until you use them.
+         MA0004/CA2007 - console apps have no SynchronizationContext, so ConfigureAwait(false) is moot. -->
+    <NoWarn>$(NoWarn);MA0026;S1135;S125;S1144;MA0004;CA2007</NoWarn>
+
+    <PackageVersion>0.1.0</PackageVersion>
+    <LangVersion>latest</LangVersion>
+    <Copyright>Copyright {copyright year} {author}</Copyright>
+    <Description>{description}</Description>
+    <Authors>{author}</Authors>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.122">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.29.0.143774">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.CommandLine" Version="2.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AppSettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ReadMe.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

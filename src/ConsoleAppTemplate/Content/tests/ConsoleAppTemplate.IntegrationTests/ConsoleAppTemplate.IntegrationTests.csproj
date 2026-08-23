@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <!-- Test methods follow the MethodUnderTest_when_condition_expected pattern; CA1707 (no underscores) does not apply to test names. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0" />
+    <!-- Microsoft.Extensions.Configuration + .DependencyInjection are used by the tests but
+         flow transitively from the referenced app (via Microsoft.Extensions.Hosting), so they
+         are not pinned directly here — that avoids an NU1605 downgrade whenever the app's
+         Hosting version moves ahead of a direct pin. -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- References the app under test so the composition (config binding + DI wiring)
+         can be exercised end to end. Internals are visible via InternalsVisibleTo. -->
+    <ProjectReference Include="..\..\ConsoleAppTemplate.csproj" />
+  </ItemGroup>
+
+</Project>

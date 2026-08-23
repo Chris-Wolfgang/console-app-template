@@ -1,5 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using ConsoleAppTemplate.Model;
+#if (otel)
+using ConsoleAppTemplate.Framework;
+#endif
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
@@ -84,11 +87,24 @@ internal class SampleCommand
         {
             // TODO Validate command line arguments
 
+#if (otel)
+            // Sample OpenTelemetry usage: open a span for this unit of work and tag it.
+            // The span is exported via the console (and OTLP, if configured). Adapt or
+            // remove as you instrument your own code. See Framework/Telemetry.cs.
+            using var activity = Telemetry.ActivitySource.StartActivity("ProcessSample");
+            activity?.SetTag("sample.max_lines", MaxLines);
+#endif
+
             // TODO Your code here - pass cancellationToken to your async calls so
             // Ctrl+C / host shutdown stops the command gracefully
             console.WriteLine("Hello world!");
             await Task.Yield(); // Simulate doing work
             cancellationToken.ThrowIfCancellationRequested();
+
+#if (otel)
+            // Sample metric: record that one item was processed.
+            Telemetry.ItemsProcessed.Add(1);
+#endif
 
             // Note You can use the reporter to write to the console
             reporter.Warn("Sample console warning");
