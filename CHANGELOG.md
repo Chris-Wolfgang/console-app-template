@@ -19,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.7.0] - 2026-08-24
+
+Feature release across the template family. `Wolfgang.Template.Console` gains four opt-in generation options, and a **new** `Wolfgang.Template.Console.Aot` package ships the native-AOT `cwconsole-aot` template. All four packages are published at 0.7.0 (`Subcommand` and `ETL-SubCommand` carry no functional changes this cycle and are re-published to keep the family version aligned).
+
+### Added
+- **New package `Wolfgang.Template.Console.Aot`** — the `cwconsole-aot` template: a native-AOT-ready console app built on System.CommandLine, the generic host (DI + logging), and source-generated configuration binding; publishes as a small self-contained native executable via `dotnet publish -r <rid>`. (#211)
+- `cwconsole --otel` — opt-in OpenTelemetry tracing + metrics (console exporter by default; set `OpenTelemetry:OtlpEndpoint` in AppSettings to also export via OTLP). (#124)
+- `cwconsole --cli-contract` — a `cli-surface` subcommand that emits a deterministic JSON manifest of the app's CLI arguments, plus a baseline-diff script and CI workflow that fail on a breaking CLI change. (#285)
+- `cwconsole --unit-tests` / `--integration-tests` / `--benchmarks` — scaffold companion xUnit unit-test, xUnit integration-test, and BenchmarkDotNet projects, each referencing the app via `InternalsVisibleTo`. (#22, #23, #24)
+- `cwconsole --top-level` — generate a top-level-statements `Program.cs` (no explicit `Main`); the default keeps the classic entry point. (#118)
+
+### Changed
+- `SECURITY.md` gained a "Release path & compromise scope" appendix documenting the OIDC / Trusted-Publishing release path. (#219)
+
 ## [0.6.1] - 2026-08-23
 
 _This release ships **`Wolfgang.Template.Console`** only. `Wolfgang.Template.Subcommand` and `Wolfgang.Template.ETL-SubCommand` remain at 0.6.0 — no changes in this cycle._
