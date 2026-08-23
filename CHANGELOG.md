@@ -19,6 +19,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.6.1] - 2026-08-23
+
+_This release ships **`Wolfgang.Template.Console`** only. `Wolfgang.Template.Subcommand` and `Wolfgang.Template.ETL-SubCommand` remain at 0.6.0 — no changes in this cycle._
+
+### Changed
+
+- `SampleConfiguration.CommandTimeout` uses `init` instead of `set` — idiomatic
+  record-immutability semantics; `Microsoft.Extensions.Configuration` binding is unaffected (#310, #318).
+- Removed an unused `using ConsoleAppTemplate.Command;` from `Program.cs` (#310, #318).
+- Analyzer dependency bumps in the generated project's csproj: `Meziantou.Analyzer`
+  3.0.122 → 3.0.152 (#312), `Microsoft.Extensions.Hosting` 10.0.10 → 10.0.11 (#313),
+  `Roslynator.Analyzers` 4.15.0 → 4.16.0 (#314), `SonarAnalyzer.CSharp`
+  10.29.0.143774 → 10.32.0.713 (#315).
+
+### Fixed
+
+- File-scope `// ReSharper disable NotAccessedField.Compiler` on `Framework/ConsoleColors.cs`
+  mirrors the existing csproj `<NoWarn>S1144</NoWarn>` for Sonar — the starter-helper palette
+  is intentional scaffolding for the user's generated app to consume, but was flooding
+  InspectCode with 38 false positives (#310, #318).
+
+### Security
+
+- OSSF Scorecard workflow now filters known won't-fix findings at the SARIF layer
+  before code-scanning upload (`BranchProtectionID`, `CodeReviewID`, `CIIBestPracticesID`,
+  `FuzzingID` whole-rule; `PinnedDependenciesID` `nugetCommand`/`pipCommand` sub-checks).
+  The published Scorecard score is unaffected — only the Code Scanning tab is trimmed so
+  real regressions stay visible (#310, #319).
+
 ## [0.6.0] - 2026-07-13
 
 ### Added

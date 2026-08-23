@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using ConsoleAppTemplate.Command;
 using ConsoleAppTemplate.Framework;
 using ConsoleAppTemplate.Model;
 using McMaster.Extensions.CommandLineUtils;

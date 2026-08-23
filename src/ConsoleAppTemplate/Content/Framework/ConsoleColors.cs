@@ -1,4 +1,12 @@
-﻿namespace ConsoleAppTemplate.Framework
+﻿// This is a starter helper — the template ships the full ANSI palette so the
+// generated app can use any code (e.g. Foreground.Green, Reset) from Day 1
+// without editing the framework. The template itself does not reference these
+// fields, which is intentional and documented in ConsoleAppTemplate.csproj
+// (Sonar's equivalent rule S1144 is suppressed there for the same reason).
+// InspectCode doesn't respect csproj NoWarn, so tell ReSharper the same thing
+// here as a narrow, file-scoped disable.
+// ReSharper disable NotAccessedField.Compiler
+namespace ConsoleAppTemplate.Framework
 {
     internal static class ConsoleColors
     {
