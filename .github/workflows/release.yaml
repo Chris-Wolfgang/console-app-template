@@ -844,9 +844,10 @@ jobs:
           GH_REPO: ${{ github.repository }}
           TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
-          # release-coverage.zip may be absent; nullglob drops unmatched patterns instead of failing.
           shopt -s nullglob
-          files=(./nuget-packages/*.nupkg ./nuget-packages/*.bom.json release-coverage.zip)
+          files=(./nuget-packages/*.nupkg ./nuget-packages/*.bom.json)
+          # The coverage zip only exists when the (optional) coverage artifact was produced.
+          if [ -f release-coverage.zip ]; then files+=(release-coverage.zip); fi
           echo "Uploading ${#files[@]} asset(s) to release $TAG_NAME"
           gh release upload "$TAG_NAME" "${files[@]}" --clobber
 
