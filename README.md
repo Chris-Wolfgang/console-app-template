@@ -27,6 +27,7 @@ A robust set of .NET templates for building console applications with modern dev
   - [Commands and Subcommands](#commands-and-subcommands)
   - [Configuration Files](#configuration-files)
   - [Logging](#logging)
+- [Building from Source](#building-from-source)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -249,6 +250,35 @@ See the [Threat Model](docs/THREAT-MODEL.md) for the STRIDE analysis behind thes
 controls, and [SECURITY.md](SECURITY.md) for how to report a vulnerability.
 
 ---
+
+## Building from Source
+
+The SDK and tools are listed under [Prerequisites](#prerequisites); `pwsh` (PowerShell 7) is needed for the scripts under `scripts/`.
+
+### Build Steps
+
+```bash
+# Clone the repository
+git clone https://github.com/Chris-Wolfgang/console-app-template.git
+cd console-app-template
+
+# Restore dependencies
+dotnet restore src/ConsoleAppTemplate.sln
+
+# Build the solution
+dotnet build src/ConsoleAppTemplate.sln --configuration Release
+
+# Run tests
+dotnet test src/ConsoleAppTemplate.sln --configuration Release
+
+# Run code formatting
+pwsh ./scripts/format.ps1
+
+# Run the PR workflow's Windows stage locally (build, tests on every TFM, coverage gates, DevSkim, gitleaks)
+pwsh ./scripts/build-pr.ps1
+```
+
+
 
 ## Contributing
 
