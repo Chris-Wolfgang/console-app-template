@@ -28,6 +28,9 @@ internal class HealthCommand
             Description = "Emit machine-readable JSON instead of text - useful for container/orchestrator health probes."
         )
     ]
+    // Set by CommandLineUtils through reflection when --json is passed; ReSharper cannot see
+    // that caller. Removing the setter breaks the option.
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public bool Json { get; set; }
 
 
