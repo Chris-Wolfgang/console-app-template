@@ -18,9 +18,15 @@ on:
   pull_request:
     branches:
       - main
+  # A push to main re-runs the same gates on the merged result and keeps the InspectCode
+  # alert set on main current: a pull_request run attributes its SARIF to the PR ref, so
+  # without this main's alerts freeze at whatever the last push-scan saw.
+  push:
+    branches:
+      - main
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -284,7 +290,7 @@ jobs:
   changelog-check:
     name: "Changelog Fragment Check"
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -445,7 +451,12 @@ jobs:
     name: "ReSharper InspectCode (upload SARIF)"
     runs-on: ubuntu-latest
     needs: inspectcode
-    if: always() && (needs.inspectcode.result == 'success' || needs.inspectcode.result == 'failure')
+    # A fork's pull_request token - and Dependabot's - is read-only and cannot write Code
+    # Scanning, so the upload would fail rather than skip. push runs always can.
+    if: >-
+      always() && (needs.inspectcode.result == 'success' || needs.inspectcode.result == 'failure')
+      && (github.event_name == 'push'
+          || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login != 'dependabot[bot]'))
     timeout-minutes: 10
     permissions:
       contents: read
