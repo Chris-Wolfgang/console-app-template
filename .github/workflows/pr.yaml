@@ -18,9 +18,18 @@ on:
   pull_request:
     branches:
       - main
+  # A push to main re-runs the same gates on the merged result and, crucially, keeps the
+  # InspectCode alert set on main CURRENT. A pull_request run attributes its SARIF to
+  # refs/pull/N/merge, so without this nothing ever uploads for refs/heads/main and the
+  # repository's alert list freezes at whenever it was last written.
+  push:
+    branches:
+      - main
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # The event name is part of the group so a push to main and a PR run never cancel each
+  # other - they are different validations of different content.
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -284,7 +293,11 @@ jobs:
   changelog-check:
     name: "Changelog Fragment Check"
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    # pull_request only: this job checks out refs/pull/N/head and diffs against the PR's
+    # base SHA, neither of which exists on a push.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
