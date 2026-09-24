@@ -1,7 +1,6 @@
 using System.CommandLine;
 using AotConsoleTemplate.Model;
 using AotConsoleTemplate.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -38,12 +37,16 @@ var rootCommand = new RootCommand("A native-AOT-ready console application built 
     nameOption,
 };
 
+// Resolved here rather than inside the action so the lambda never captures `host`, which the
+// enclosing `using` disposes. Nothing is disposed early as written - the action runs before
+// the scope ends - but capturing a disposable in a callback is not a pattern worth teaching
+// in a template (ReSharper: AccessToDisposedClosure).
+var greeter = host.Services.GetRequiredService<IGreeter>();
+var logger = host.Services.GetRequiredService<ILogger<Program>>();
+
 rootCommand.SetAction(async (parseResult, cancellationToken) =>
 {
     var name = parseResult.GetValue(nameOption)!;
-
-    var greeter = host.Services.GetRequiredService<IGreeter>();
-    var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
     logger.LogInformation("Greeting {Name}", name);
     await Console.Out.WriteLineAsync(greeter.Greet(name).AsMemory(), cancellationToken);
