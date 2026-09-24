@@ -41,6 +41,9 @@ internal class CliSurfaceCommand
             Description = "Write the manifest to this file instead of stdout (recommended - avoids mixing log output into the JSON)."
         )
     ]
+    // The setter is invoked by CommandLineUtils through reflection when --output is passed,
+    // which ReSharper cannot see; the value is read below. Removing it breaks the option.
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public string? Output { get; set; }
 
 
@@ -118,6 +121,10 @@ internal class CliSurfaceCommand
 
 
 
+    // These records exist to be serialized: JsonSerializer.Serialize(surface, ...) above reads
+    // every positional property by reflection. ReSharper sees no reader and reports them as
+    // unused - deleting them would silently empty the manifest this command exists to emit.
+    // ReSharper disable NotAccessedPositionalProperty.Local
     private sealed record CommandSurface
     (
         string Name,
@@ -133,4 +140,5 @@ internal class CliSurfaceCommand
 
 
     private sealed record ArgumentSurface(string Name, bool MultipleValues);
+    // ReSharper restore NotAccessedPositionalProperty.Local
 }
