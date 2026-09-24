@@ -636,7 +636,10 @@ jobs:
             exit 1
           fi
           mkdir -p ./provenance
-          cp "$BUNDLE_PATH" "./provenance/${GITHUB_REPOSITORY##*/}-${TAG_NAME}.intoto.jsonl"
+          # A tag may contain '/' (release/1.2). Left raw it becomes a directory in the
+          # destination path and cp fails; flatten it so the asset name stays one file.
+          tag_safe="${TAG_NAME//\//-}"
+          cp "$BUNDLE_PATH" "./provenance/${GITHUB_REPOSITORY##*/}-${tag_safe}.intoto.jsonl"
           ls -l ./provenance
 
       - name: Upload the provenance bundle for the release job
@@ -858,9 +861,14 @@ jobs:
           path: ./nuget-packages
 
       - name: Download provenance bundle
-        # Absent when the packages check skipped attestation - same tolerance the
-        # coverage download below already needs.
-        continue-on-error: true
+        # Deliberately NOT continue-on-error, unlike the coverage download below. The
+        # producer uploads this artifact under `has-packages == 'true'` with
+        # `if-no-files-found: error`, and that is the same condition gating this whole
+        # job - so if we got here the bundle exists. A failure here is a real failure,
+        # and tolerating it would be silent: `nullglob` in the upload step makes the
+        # missing *.intoto.jsonl vanish from the file list, so the release would publish
+        # without provenance and the workflow would still go green - the exact outcome
+        # this change exists to prevent.
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
           name: provenance-bundle
