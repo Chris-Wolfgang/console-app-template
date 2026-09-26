@@ -19,6 +19,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.8.0] - 2026-09-26
+
+### Fixed
+
+- The native-AOT template resolves its services before defining the command action, so the action no longer captures the disposable host. (#412)
+
+### Internal
+
+- Generated projects reference SonarAnalyzer.CSharp 10.34.0.3385, Microsoft.Extensions.Hosting 10.0.12 and System.Configuration.ConfigurationManager 10.0.12.
+- Generated projects reference Roslynator.Analyzers 5.0.0 (from 4.16.0), OpenTelemetry.Extensions.Hosting and OpenTelemetry.Exporter.Console 1.19.1 (with `--otel`), and the ETL subcommand item template references Wolfgang.Etl.Abstractions 0.26.0 (from 0.23.3). (#416, #418, #420, and the direct Dependabot commits since v0.7.0)
+- The generated OpenTelemetry extensions file no longer carries three unused `using` directives. (#413)
+- Generated projects reference Meziantou.Analyzer 3.0.290; with `--otel`, OpenTelemetry.Exporter.OpenTelemetryProtocol 1.19.1 (matching the other OpenTelemetry packages). (#422)
+- The console template pack project suppresses NU5110/NU5111 for `check-cli-contract.ps1`, which is template content rather than a NuGet install script, so it packs cleanly with warnings as errors. (#423)
+- Generated projects carry comments marking the CLI option properties and the CLI-surface records as reflection- and serializer-driven, so analyzers stop reporting them as unused. (#411)
+
 ## [0.7.0] - 2026-08-24
 
 Feature release across the template family. `Wolfgang.Template.Console` gains four opt-in generation options, and a **new** `Wolfgang.Template.Console.Aot` package ships the native-AOT `cwconsole-aot` template. All four packages are published at 0.7.0 (`Subcommand` and `ETL-SubCommand` carry no functional changes this cycle and are re-published to keep the family version aligned).
