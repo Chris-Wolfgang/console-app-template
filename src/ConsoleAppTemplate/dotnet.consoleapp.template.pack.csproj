@@ -11,7 +11,9 @@
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>
-    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <!-- NU5110/NU5111: Content/cli-contract/check-cli-contract.ps1 is template content copied into
+         the generated project, not a NuGet install script, so its placement outside tools/ is intended. -->
+    <NoWarn>$(NoWarn);NU5128;NU5110;NU5111</NoWarn>
     <NoDefaultExcludes>true</NoDefaultExcludes>
 	 <Copyright>Chris Wolfgang 2025-2026</Copyright>
 	 <PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
