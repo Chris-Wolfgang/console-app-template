@@ -1,0 +1,13 @@
+<Project>
+
+  <!--
+    Repo-wide build settings for this repository's own projects (the *.template.pack.csproj
+    packers). This file sits outside every template's Content/ folder, so it is never packed
+    into a template and never reaches a generated application - each template's content
+    project sets its own warnings-as-errors.
+  -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>
