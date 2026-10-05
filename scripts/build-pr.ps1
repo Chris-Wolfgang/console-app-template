@@ -249,6 +249,7 @@ if (-not $SkipSecurity) {
     # PATH: analyze never ran, no results file was written, and the step reported
     # "No security issues found". Any failure to run is now a failure.
     $devskimRan = $false
+    $devskimExit = $null
     if (Restore-LocalTools) {
         dotnet devskim analyze `
             --source-code . `
@@ -263,7 +264,13 @@ if (-not $SkipSecurity) {
 
     if (-not $devskimRan) {
         if (Test-Path "devskim-results.txt") { Get-Content "devskim-results.txt" -Raw | Write-Host }
-        Write-Fail "DevSkim did not complete successfully (exit code $devskimExit)"
+        if ($null -eq $devskimExit) {
+            # Restore-LocalTools failed, so DevSkim never ran and there is no exit code.
+            Write-Fail "DevSkim did not run: dotnet tool restore failed (see .config/dotnet-tools.json)"
+        }
+        else {
+            Write-Fail "DevSkim did not complete successfully (exit code $devskimExit)"
+        }
         $failed += "DevSkim"
         Remove-Item "devskim-results.txt" -ErrorAction SilentlyContinue
     }
