@@ -6,15 +6,18 @@ namespace ConsoleAppTemplate.Framework
     internal static class IHostBuilderExtensions
     {
         /// <summary>
-        /// Adds a configuration file to the host builder.
+        /// Adds the application's JSON configuration file (plus environment variables) to the host builder.
         /// </summary>
-        /// <param name="builder"> </param>
-        /// <param name="method"> </param>
-        /// <param name="optional" ></param>
-        /// <param name="reloadOnChange"> </param>
-        /// <returns>IHostBuilder</returns>
-        /// <exception cref="ArgumentNullException">builder is null</exception>
-        /// <exception cref="ArgumentOutOfRangeException">method was not a valid value</exception>
+        /// <param name="builder">The host builder to configure.</param>
+        /// <param name="method">
+        /// <see cref="ConfigurationFileMethod.SingleFile"/> reads <c>AppSettings.json</c>;
+        /// <see cref="ConfigurationFileMethod.OneFilePerEnvironment"/> reads <c>AppSettings.{DOTNET_ENVIRONMENT}.json</c>.
+        /// </param>
+        /// <param name="optional">When <see langword="true"/>, a missing configuration file is ignored instead of throwing.</param>
+        /// <param name="reloadOnChange">When <see langword="true"/>, the configuration is reloaded if the file changes.</param>
+        /// <returns>The same <paramref name="builder"/> instance, for chaining.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="method"/> is not a defined <see cref="ConfigurationFileMethod"/> value.</exception>
         /// <exception cref="InvalidOperationException">
         /// <paramref name="method"/> is <see cref="ConfigurationFileMethod.OneFilePerEnvironment"/> and the
         /// DOTNET_ENVIRONMENT environment variable is not set. Let it propagate to the top-level handler in

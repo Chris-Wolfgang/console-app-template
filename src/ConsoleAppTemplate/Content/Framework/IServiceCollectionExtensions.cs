@@ -18,7 +18,7 @@ namespace ConsoleAppTemplate.Framework
                         // Get the configuration from the host builder
                         .GetRequiredService<IConfiguration>()
 
-                        // Get the SampleConfiguration section from the config file
+                        // Get the section named by 'path' from the config file
                         .GetSection(path)
 
                         // Bind the section to the T class. This is reflection-based binding:
