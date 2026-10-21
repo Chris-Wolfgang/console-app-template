@@ -312,6 +312,38 @@ jobs:
             echo "$help_output" | grep -qE "^[[:space:]]+${cmd}([[:space:]]|\$)" || { echo "::error::auto-registered '$cmd' subcommand missing from the --help command list"; exit 1; }
           done
 
+      - name: Build generated project with every opt-in option (Release)
+        # The default instantiation above never compiles option-conditional
+        # content (Program.TopLevel.cs, the OpenTelemetry wiring, the health /
+        # cli-surface commands, the test and benchmark projects). Generate a
+        # second app with ALL opt-in switches on and build + run it, so each
+        # option is compiled at least once per PR (#500). One row is enough -
+        # the options are pure managed code, so this is keyed to the documented
+        # minimum SDK on Linux rather than repeated across the whole matrix.
+        if: matrix.os == 'ubuntu-latest' && matrix.sdk == '8.0'
+        shell: bash
+        working-directory: ./smoke
+        run: |
+          dotnet new cwconsole -n SmokeAllOptions -o ./smoke-all-options \
+            --otel --top-level --health-check --cli-contract \
+            --unit-tests --integration-tests --benchmarks
+          cd smoke-all-options
+          grep -q 'ConfigureApplicationTelemetry()' Program.cs || { echo "::error::--top-level --otel did not wire ConfigureApplicationTelemetry() into Program.cs"; exit 1; }
+          # The companions reference the app (not the other way round), so each
+          # is built explicitly; building only the app would skip them.
+          for project in SmokeAllOptions.csproj \
+                         tests/SmokeAllOptions.Tests/SmokeAllOptions.Tests.csproj \
+                         tests/SmokeAllOptions.IntegrationTests/SmokeAllOptions.IntegrationTests.csproj \
+                         benchmarks/SmokeAllOptions.Benchmarks/SmokeAllOptions.Benchmarks.csproj; do
+            dotnet restore "$project"
+            dotnet build "$project" --configuration Release --no-restore
+          done
+          dotnet run --project SmokeAllOptions.csproj -c Release --no-build -- --help
+          help_output="$(dotnet run --project SmokeAllOptions.csproj -c Release --no-build -- --help)"
+          for cmd in sample health cli-surface; do
+            echo "$help_output" | grep -qE "^[[:space:]]+${cmd}([[:space:]]|\$)" || { echo "::error::'$cmd' subcommand missing from the all-options --help command list"; exit 1; }
+          done
+
   # ============================================================================
   # CHANGELOG: every PR that touches src/ must add a fragment under
   # changelog/unreleased/ (or carry the `no-changelog` label). The script is
