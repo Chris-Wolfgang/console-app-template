@@ -12,7 +12,7 @@ on:
       - 'src/AotConsoleTemplate/**'
       - '.github/workflows/aot-smoke.yml'
   push:
-    branches: [ main, vNext ]
+    branches: [ main ]
     paths:
       - 'src/AotConsoleTemplate/**'
       - '.github/workflows/aot-smoke.yml'
