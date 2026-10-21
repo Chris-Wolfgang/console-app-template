@@ -75,7 +75,22 @@ internal class CliSurfaceCommand
         }
         else
         {
-            await File.WriteAllTextAsync(Output, json, cancellationToken);
+            // Write to a sibling temp file and move it into place so an interrupted
+            // run never leaves a truncated baseline behind.
+            var tempPath = Output + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            try
+            {
+                await File.WriteAllTextAsync(tempPath, json, cancellationToken);
+                File.Move(tempPath, Output, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+
             console.WriteLine($"CLI surface written to {Output}");
         }
 
