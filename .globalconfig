@@ -1,3 +1,8 @@
+# Not applicable in this template-pack repo: fleet-synced from repo-template for the
+# repo's own (code-free) *.template.pack.csproj projects. It is outside every Content/
+# folder, so it never reaches a generated app. Kept so template syncs stay clean; see
+# docs/adr/0004-template-pack-ci-adaptations.md.
+
 is_global = true
 
 # Global analyzer configuration

@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Not applicable in this template-pack repo: there is no test project in src/ConsoleAppTemplate.sln,
+     so nothing consumes these settings. Fleet-synced from repo-template and kept so template syncs
+     stay clean; see docs/adr/0004-template-pack-ci-adaptations.md. -->
 <RunSettings>
   <DataCollectionRunSettings>
     <DataCollectors>

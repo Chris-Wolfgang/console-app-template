@@ -66,6 +66,11 @@
     <Content Include="Console-Template-icon.ico" />
   </ItemGroup>
 
+  <!-- Blocking / obsolete APIs the banned-API analyzer rejects (see the file for the list). -->
+  <ItemGroup>
+    <AdditionalFiles Include="BannedSymbols.txt" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="Console-Template-icon.png">
       <Pack>True</Pack>
@@ -75,6 +80,13 @@
 
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <!-- Banned-API analyzer (RS0030): enforces the async-first rules in BannedSymbols.txt.
+         3.3.4 is the last build that loads on the .NET 8 SDK's compiler; newer majors need a
+         newer Roslyn and would be skipped there (CS9057). -->
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
