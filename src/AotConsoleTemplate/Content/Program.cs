@@ -54,4 +54,14 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
     return 0;
 });
 
-return await rootCommand.Parse(args).InvokeAsync();
+// Start the host so any IHostedService you register actually runs for the lifetime of the
+// command, and stop it afterwards so those services shut down cleanly before disposal.
+await host.StartAsync();
+try
+{
+    return await rootCommand.Parse(args).InvokeAsync();
+}
+finally
+{
+    await host.StopAsync();
+}
