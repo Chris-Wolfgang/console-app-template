@@ -46,6 +46,9 @@
 
   <ItemGroup>
     <PackageReference Include="Wolfgang.Etl.Abstractions" Version="0.26.1" PrivateAssets="all" />
+    <!-- Pin for the optional resilience switch: the smoke in pr.yaml reads this version
+         when it compiles a command generated with the switch. The post-action adds the package unpinned. -->
+    <PackageReference Include="Polly.Core" Version="8.8.0" PrivateAssets="all" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>

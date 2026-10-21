@@ -102,10 +102,28 @@
 			"valueSource": "response-file",
 			"valueTransform": "toResponseFileHandling",
 			"replaces": "ParseArgsAsSpaceSeparated"
+		},
+
+		"resilience": {
+			"type": "parameter",
+			"datatype": "bool",
+			"description": "Include Polly resilience policies for retry and circuit breaker support",
+			"defaultValue": "false"
 		}
 	},
+	"sources": [
+		{
+			"modifiers": [
+				{
+					"condition": "(!resilience)",
+					"exclude": [ "ResilienceOptions.cs" ]
+				}
+			]
+		}
+	],
 	"primaryOutputs": [
-		{ "path": "%name%.cs" }
+		{ "path": "%name%.cs" },
+		{ "path": "ResilienceOptions.cs", "condition": "(resilience)" }
 	],
 	"postActions": [
 		{
@@ -117,8 +135,23 @@
 				}
 			],
 			"args": {
-				"executable": "dotnet",
-				"args": [ "add", "package", "Wolfgang.Etl.Abstractions" ]
+				"referenceType": "package",
+				"reference": "Wolfgang.Etl.Abstractions"
+			},
+			"continueOnError": true
+		},
+		{
+			"condition": "(resilience)",
+			"description": "Add Polly.Core NuGet package",
+			"actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+			"manualInstructions": [
+				{
+					"text": "Run 'dotnet add package Polly.Core' in your project."
+				}
+			],
+			"args": {
+				"referenceType": "package",
+				"reference": "Polly.Core"
 			},
 			"continueOnError": true
 		}

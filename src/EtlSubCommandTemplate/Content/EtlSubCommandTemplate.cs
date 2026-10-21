@@ -1,6 +1,14 @@
 // NOTE: This class depends on Wolfgang.Etl.Abstractions
 // TODO Please run the following in your project folder:
 //   dotnet add package Wolfgang.Etl.Abstractions
+#if (resilience)
+//   dotnet add package Polly.Core
+//
+// NOTE: This command was generated with --resilience: the extract/transform/load pass runs
+// through a Polly pipeline (retry, circuit breaker, timeout). Its settings come from a
+// "Resilience" configuration section bound to ResilienceOptions (generated next to this
+// file) - see the TODOs in ResilienceOptions.cs for the Program.cs and AppSettings.json lines.
+#endif
 //
 // NOTE: If your application was created from the Wolfgang Console App template this
 // command is registered automatically at startup (AutoRegisterCommandsConvention).
@@ -9,6 +17,11 @@
 using System.ComponentModel.DataAnnotations;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
+#if (resilience)
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Retry;
+#endif
 using Wolfgang.Etl.Abstractions;
 
 namespace {DefaultNamespace}.Command;
@@ -59,6 +72,9 @@ internal class EtlSubCommandTemplate
     /// </returns>
     internal async Task<int> OnExecuteAsync
     (
+#if (resilience)
+        ResilienceOptions resilienceOptions,
+#endif
         IConsole console,
         ILogger<EtlSubCommandTemplate> logger,
         CancellationToken cancellationToken
@@ -70,6 +86,12 @@ internal class EtlSubCommandTemplate
         {
             // TODO: Validate the command options here if necessary
 
+#if (resilience)
+            // Polly validates the bound options while building the pipeline and throws a
+            // ValidationException for out-of-range values (surfaced through the catch below).
+            var pipeline = CreateResiliencePipeline(resilienceOptions, logger);
+
+#endif
             // TODO Build the pipeline and run it. Uncomment and fill in the types
             // below. A Progress<Report> reporter surfaces item counts as it runs.
             // For graceful Ctrl+C / host shutdown, have your extractor/transformer/
@@ -95,9 +117,16 @@ internal class EtlSubCommandTemplate
             // var transformer = new MyTransformer< , , Report>(loggerFactory.CreateLogger<MyTransformer< , , Report>>());
             // var loader = new MyLoader< , Report>(loggerFactory.CreateLogger<MyLoader< , Report>>());
             //
+#if (resilience)
+            // await ExecuteEtlAsync(pipeline, extractor, transformer, loader, progress, cancellationToken);
+
+            // Simulate doing work through the pipeline - remove once the ETL pipeline above is uncommented
+            await pipeline.ExecuteAsync(static _ => ValueTask.CompletedTask, cancellationToken);
+#else
             // await ExecuteEtlAsync(extractor, transformer, loader, progress);
 
             await Task.Yield(); // Simulate doing work - remove once the ETL pipeline above is uncommented
+#endif
             cancellationToken.ThrowIfCancellationRequested();
 
             logger.LogInformation("ETL process completed successfully.");
@@ -120,6 +149,49 @@ internal class EtlSubCommandTemplate
     }
 
 
+#if (resilience)
+    /// <summary>
+    /// Builds the resilience pipeline from <paramref name="options"/>, outermost strategy
+    /// first: the retry wraps the circuit breaker, which wraps the per-attempt timeout.
+    /// </summary>
+    internal static ResiliencePipeline CreateResiliencePipeline
+    (
+        ResilienceOptions options,
+        ILogger logger
+    )
+    {
+        return new ResiliencePipelineBuilder()
+            .AddRetry(new RetryStrategyOptions
+            {
+                MaxRetryAttempts = options.MaxRetryAttempts,
+                Delay = options.RetryDelay,
+                BackoffType = DelayBackoffType.Exponential,
+                UseJitter = true,
+                OnRetry = arguments =>
+                {
+                    logger.LogWarning
+                    (
+                        arguments.Outcome.Exception,
+                        "Attempt {Attempt} failed; retrying in {Delay}",
+                        arguments.AttemptNumber + 1,
+                        arguments.RetryDelay
+                    );
+                    return default;
+                }
+            })
+            .AddCircuitBreaker(new CircuitBreakerStrategyOptions
+            {
+                FailureRatio = options.CircuitBreakerFailureRatio,
+                MinimumThroughput = options.CircuitBreakerMinimumThroughput,
+                SamplingDuration = options.CircuitBreakerSamplingDuration,
+                BreakDuration = options.CircuitBreakerBreakDuration
+            })
+            .AddTimeout(options.AttemptTimeout)
+            .Build();
+    }
+#endif
+
+
     internal static Task ExecuteEtlAsync<TSource, TDestination, TProgress>
     (
         IExtractWithProgressAsync<TSource,TProgress> extractor,
@@ -132,4 +204,35 @@ internal class EtlSubCommandTemplate
         var transformedItems = transformer.TransformAsync(items);
         return loader.LoadAsync(transformedItems);
     }
+#if (resilience)
+
+
+    /// <summary>
+    /// Runs the ETL through <paramref name="pipeline"/>. The abstractions are lazy - the
+    /// extractor is only enumerated while the loader consumes it - so the whole
+    /// extract, transform and load pass is one resilience operation: a retry re-runs it
+    /// from the start. Make the loader idempotent (or resume with SkipItemCount), or move
+    /// the pipeline inside your extractor/loader around the individual remote call when
+    /// you need per-item retries. The methods used here take no CancellationToken, so a
+    /// timeout or Ctrl+C is reported by Polly while the in-flight attempt keeps running in
+    /// the background; implement the ...WithCancellationAsync interfaces and forward the
+    /// token Polly passes to the callback to stop an attempt early.
+    /// </summary>
+    internal static async Task ExecuteEtlAsync<TSource, TDestination, TProgress>
+    (
+        ResiliencePipeline pipeline,
+        IExtractWithProgressAsync<TSource, TProgress> extractor,
+        ITransformAsync<TSource, TDestination> transformer,
+        ILoadAsync<TDestination> loader,
+        IProgress<TProgress> reporter,
+        CancellationToken cancellationToken
+    ) where TDestination : notnull where TSource : notnull
+    {
+        await pipeline.ExecuteAsync
+        (
+            _ => new ValueTask(ExecuteEtlAsync(extractor, transformer, loader, reporter)),
+            cancellationToken
+        );
+    }
+#endif
 }
