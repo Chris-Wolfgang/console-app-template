@@ -6,7 +6,7 @@ namespace ConsoleAppTemplate.Framework;
 /// <summary>
 /// Central definitions for the app's OpenTelemetry instrumentation — the
 /// <see cref="ActivitySource"/> (traces/spans) and <see cref="Meter"/> (metrics)
-/// registered with OpenTelemetry in <c>Program.cs</c>.
+/// registered with OpenTelemetry in <c>Framework/OpenTelemetryHostBuilderExtensions.cs</c>.
 /// </summary>
 /// <remarks>
 /// Usage in a command:
@@ -26,12 +26,12 @@ internal static class Telemetry
 
 
 
-    /// <summary>Activity source for creating spans. Registered via <c>AddSource</c> in Program.cs.</summary>
+    /// <summary>Activity source for creating spans. Registered via <c>AddSource</c> in <c>OpenTelemetryHostBuilderExtensions</c>.</summary>
     public static readonly ActivitySource ActivitySource = new(ServiceName);
 
 
 
-    /// <summary>Meter for custom metrics. Registered via <c>AddMeter</c> in Program.cs.</summary>
+    /// <summary>Meter for custom metrics. Registered via <c>AddMeter</c> in <c>OpenTelemetryHostBuilderExtensions</c>.</summary>
     public static readonly Meter Meter = new(ServiceName);
 
 
