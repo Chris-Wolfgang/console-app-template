@@ -1,4 +1,4 @@
-﻿# ConsoleAppTemplate  
+# ConsoleAppTemplate  
 
 
 ## Description  
