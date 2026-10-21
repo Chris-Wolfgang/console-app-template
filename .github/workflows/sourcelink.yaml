@@ -2,6 +2,12 @@ name: SourceLink
 
 # End-to-end SourceLink verification.
 #
+# Not applicable in this template-pack repo: nothing under src/ targets net10.0 (the
+# *.template.pack.csproj packers are netstandard2.0 and ship no assembly; the Content/
+# app csprojs are template payload on net8.0), so the build loop below skips every
+# project and no PDB is verified. Fleet-synced from repo-template and kept so template
+# syncs stay clean; see docs/adr/0004-template-pack-ci-adaptations.md.
+#
 # Directory.Build.props enables Microsoft.SourceLink.GitHub + EmbedUntrackedSources
 # and the release packs .snupkg symbol packages. That embeds, into every PDB, a
 # map from each source document to its raw.githubusercontent.com URL at the build

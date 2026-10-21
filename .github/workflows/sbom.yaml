@@ -10,6 +10,11 @@ name: SBOM
 # signing needs a signing certificate/key.
 #
 # Skips automatically when the repo has no src/ project (e.g. the template repo).
+#
+# In this template-pack repo the loop deliberately includes the Content/ app csprojs:
+# the *.template.pack.csproj packers have no dependencies, so the SBOM that matters is
+# the generated app's dependency set (docs/THREAT-MODEL.md, 'Tampering'). Do not filter
+# them out; see docs/adr/0004-template-pack-ci-adaptations.md.
 
 on:
   pull_request:

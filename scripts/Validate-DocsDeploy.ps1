@@ -17,6 +17,10 @@
 
 .NOTES
     Requirements: git. Exit code 1 when any check fails.
+
+    Not applicable in this template-pack repo: there is no DocFX site (docfx_project/
+    is a placeholder) and no gh-pages deployment to validate. Fleet-synced from
+    repo-template; see docs/adr/0004-template-pack-ci-adaptations.md.
 #>
 
 [CmdletBinding()]

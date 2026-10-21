@@ -571,6 +571,9 @@ jobs:
           exit 0
 
       - name: Generate SBOM (CycloneDX)
+        # Iterates every src csproj on purpose, including the Content/ app projects:
+        # the template packers have no dependencies, so the generated app's dependency
+        # set is the SBOM worth attaching (docs/THREAT-MODEL.md; ADR 0004).
         if: steps.check-packages.outputs.has-packages == 'true'
         shell: pwsh
         run: |
