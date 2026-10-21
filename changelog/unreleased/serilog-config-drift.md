@@ -1,0 +1,3 @@
+type: fix
+
+Generated apps now actually enrich log events with `EnvironmentName` (the `Serilog.Enrichers.Environment` package was missing, so the configured enricher was a silent no-op), `WithExceptionDetails` is wired up so the already-referenced `Serilog.Exceptions` adds structured exception detail, the `Properties.Application` setting lives under `Serilog` with the project name substituted, the `Version` log property matches `--version`, all three config files log to `logs/<AppName>-.log`, and the `System.Configuration.ConfigurationManager` package is no longer referenced (a missing config section throws `InvalidOperationException`).
