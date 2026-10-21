@@ -270,29 +270,45 @@ jobs:
           fi
           echo "Wolfgang.Etl.Abstractions version from pack csproj: $version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          polly_version="$(grep -oE 'Include="Polly\.Core"[^>]*Version="[^"]+"' "$pack_csproj" | sed -E 's/.*Version="([^"]+)".*/\1/')"
+          if [ -z "$polly_version" ]; then
+            echo "::error::Could not read the Polly.Core version from $pack_csproj"
+            exit 1
+          fi
+          echo "Polly.Core version from pack csproj: $polly_version"
+          echo "polly-version=$polly_version" >> "$GITHUB_OUTPUT"
 
       - name: Add subcommands via the item templates
         # Restore first: the item templates' namespace auto-detection binds to
         # msbuild:RootNamespace, which only evaluates once the project is
         # restored. This also exercises that cwsubcmd/cwsubcmdetl generate
         # compilable code in a real project (regression guard for #262). The
-        # ETL subcommand needs Wolfgang.Etl.Abstractions at build time.
+        # ETL subcommand needs Wolfgang.Etl.Abstractions at build time, and the
+        # second ETL command (--resilience, #126) needs Polly.Core so the
+        # option-conditional Polly code is compiled on every PR.
         shell: bash
         working-directory: ./smoke/smoke-app
         env:
           ETL_ABSTRACTIONS_VERSION: ${{ steps.etl-abstractions.outputs.version }}
+          POLLY_CORE_VERSION: ${{ steps.etl-abstractions.outputs.polly-version }}
         run: |
           dotnet restore
           dotnet new cwsubcmd    --ClassName ExportCommand -o Command
           dotnet new cwsubcmdetl --ClassName ImportCommand -o Command
-          # Pin to the version the ETL pack declares (read in the previous step) so an
+          dotnet new cwsubcmdetl --ClassName SyncCommand   -o Command --resilience
+          # Pin to the versions the ETL pack declares (read in the previous step) so an
           # upstream release can't make the matrix non-deterministic and the smoke
           # cannot drift behind the template.
           dotnet add package Wolfgang.Etl.Abstractions --version "$ETL_ABSTRACTIONS_VERSION"
+          dotnet add package Polly.Core --version "$POLLY_CORE_VERSION"
           echo "Generated subcommand namespaces:"
-          grep -h '^namespace' Command/ExportCommand.cs Command/ImportCommand.cs
+          grep -h '^namespace' Command/ExportCommand.cs Command/ImportCommand.cs Command/SyncCommand.cs
           grep -q '^namespace SmokeApp\.Command;' Command/ExportCommand.cs || { echo "::error::cwsubcmd namespace not auto-detected (expected 'SmokeApp.Command')"; exit 1; }
           grep -q '^namespace SmokeApp\.Command;' Command/ImportCommand.cs || { echo "::error::cwsubcmdetl namespace not auto-detected (expected 'SmokeApp.Command')"; exit 1; }
+          grep -q '^namespace SmokeApp\.Command;' Command/SyncCommand.cs   || { echo "::error::cwsubcmdetl --resilience namespace not auto-detected (expected 'SmokeApp.Command')"; exit 1; }
+          grep -q 'ResiliencePipelineBuilder' Command/SyncCommand.cs || { echo "::error::--resilience did not emit the Polly pipeline into SyncCommand.cs"; exit 1; }
+          test -f Command/ResilienceOptions.cs || { echo "::error::--resilience did not emit the companion Command/ResilienceOptions.cs"; exit 1; }
+          ! grep -q 'ResiliencePipelineBuilder' Command/ImportCommand.cs || { echo "::error::the default cwsubcmdetl emitted Polly code without --resilience"; exit 1; }
 
       - name: Build generated project (Release)
         working-directory: ./smoke/smoke-app
@@ -303,12 +319,12 @@ jobs:
         working-directory: ./smoke/smoke-app
         run: |
           dotnet run --project SmokeApp.csproj -c Release --no-build -- --version
-          # All three commands should be auto-registered (sample + the two we added).
+          # All four commands should be auto-registered (sample + the three we added).
           # Match command-list lines ("  <name>   <description>") anchored at the
           # start rather than a bare substring, so a command name appearing inside a
           # description can't produce a false positive.
           help_output="$(dotnet run --project SmokeApp.csproj -c Release --no-build -- --help)"
-          for cmd in sample export import; do
+          for cmd in sample export import sync; do
             echo "$help_output" | grep -qE "^[[:space:]]+${cmd}([[:space:]]|\$)" || { echo "::error::auto-registered '$cmd' subcommand missing from the --help command list"; exit 1; }
           done
 

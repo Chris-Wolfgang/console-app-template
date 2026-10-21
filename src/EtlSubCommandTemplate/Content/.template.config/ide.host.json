@@ -35,6 +35,11 @@
             "id": "response-file",
             "name": { "text": "Response file support" },
             "isVisible": true
+        },
+        {
+            "id": "resilience",
+            "name": { "text": "Polly resilience (retry, circuit breaker, timeout)" },
+            "isVisible": true
         }
     ]
 }
