@@ -24,8 +24,8 @@ The workflow presents a GitHub OIDC token and `NuGet/login` exchanges it for a
 short-lived (~1 hour) key at push time.
 
 **One-time setup on nuget.org** (Account → Trusted Publishing), one policy **per
-package id** (`Wolfgang.Template.Console`, `Wolfgang.Template.Console.Subcommand`,
-`Wolfgang.Template.Console.ETL-SubCommand`):
+package id** (`Wolfgang.Template.Console`, `Wolfgang.Template.Console.Aot`,
+`Wolfgang.Template.Console.Subcommand`, `Wolfgang.Template.Console.ETL-SubCommand`):
 
 1. **Repository owner:** `Chris-Wolfgang`
 2. **Repository:** `console-app-template`
@@ -49,13 +49,15 @@ Ensure the following settings are enabled:
   - **Single developer repos:** 0 approvals (default)
   - **Multi-developer repos:** 1+ approvals (recommended)
 - ✅ **Require status checks to pass before merging**
-  - Required checks should include this repo's PR workflow job names:
+  - Required checks should include this repo's `pr.yaml` job names:
     - "Secrets Scan (gitleaks)"
     - "Detect .NET Projects"
     - "Build & Validate Templates"
+    - "Template Smoke (<os>, SDK <version>)" — one per matrix cell
+    - "Changelog Fragment Check"
+    - "ReSharper InspectCode"
     - "Security Scan (DevSkim)"
-    - "CodeQL"
-  - (Library repos use their Stage 1/2/3 test-matrix job names instead.)
+  - (There is no CodeQL workflow in this repo. Library repos use their Stage 1/2/3 test-matrix job names instead.)
 - ✅ **Require branches to be up to date before merging**
 - ✅ **Require conversation resolution before merging**
 - ✅ **Do not allow bypassing the above settings** (recommended, even for admins)
@@ -79,11 +81,11 @@ The workflow triggers automatically when the release is published.
 
 ### Expected Workflow Behavior
 
-1. **Job 1: validate-release** (3-10 minutes)
-   - Runs all framework tests with coverage
-   - Enforces 90% coverage threshold
-   - Uploads coverage report
-   - ✅ Auto-passes if tests succeed
+1. **Job 1: validate-release** (2-5 minutes)
+   - Checks the release tag matches the `.csproj` version
+   - Restores and builds the solution in Release
+   - The test and coverage steps find no `*Test*.csproj` under `tests/` and skip with a notice
+   - ✅ Auto-passes if the build succeeds
 
 2. **Job 2: pack-and-validate** (2-5 minutes)
    - Packs NuGet packages
@@ -115,26 +117,6 @@ with an unauthorized / no-matching-trusted-publishing-policy error.
 2. Confirm the `publish-nuget` job has `permissions: id-token: write`.
 3. Re-run the workflow from the Actions tab (do not re-publish the release).
 
-### Tests Fail on Specific Framework
-
-**Problem:** Tests pass on some frameworks but fail on others (e.g., net462).
-
-**Solution:**
-1. Check the test logs for framework-specific issues
-2. Fix compatibility issues in your code
-3. Test locally: `dotnet test --framework net462`
-4. Push fix, then re-publish the release (or re-run the workflow from the Actions tab)
-
-### Coverage Below 90% Threshold
-
-**Problem:** Workflow fails at coverage validation step.
-
-**Solution:**
-1. Review `CoverageReport/Summary.txt` artifact
-2. Add tests for uncovered code paths
-3. Ensure tests run on all frameworks
-4. Push fix, then re-publish the release (or re-run the workflow from the Actions tab)
-
 ### Smoke Test Fails to Install Package
 
 **Problem:** Package packs successfully but fails smoke test installation.
@@ -149,14 +131,13 @@ with an unauthorized / no-matching-trusted-publishing-policy error.
 
 Before creating a production GitHub Release (e.g., `v1.0.0`):
 
-- [ ] All tests pass on all platforms (pr.yaml workflow)
-- [ ] Code coverage meets 90% threshold
+- [ ] The smoke matrix and snapshot check pass (pr.yaml / snapshot.yml workflows)
 - [ ] Security scan shows no critical issues
-- [ ] Version numbers updated in `.csproj` files
-- [ ] `CHANGELOG.md` updated with release notes (if applicable)
+- [ ] Version numbers updated in all four template-pack `.csproj` files
+- [ ] `CHANGELOG.md` assembled from the fragments (`pwsh ./scripts/changelog.ps1 assemble`)
 - [ ] All PRs merged to `main` branch
-- [ ] Local build succeeds: `dotnet build --configuration Release`
-- [ ] Local tests pass: `dotnet test --configuration Release`
+- [ ] Local build succeeds: `dotnet build src/ConsoleAppTemplate.sln --configuration Release`
+- [ ] Local snapshot check passes: `bash tests/snapshots/snapshot.sh`
 
 **Create a production release:**
 1. Go to your repository's **Releases** page
@@ -180,14 +161,12 @@ Before creating a production GitHub Release (e.g., `v1.0.0`):
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  Job 1: validate-release (Windows)                          │
+│  • Verify release tag matches csproj version                │
 │  • Restore & Build                                          │
-│  • Test all frameworks (net5.0-10.0, net462-481)           │
-│  • Collect coverage                                         │
-│  • Enforce 90% threshold                                    │
-│  • Upload coverage artifacts                                │
+│  • Test + coverage steps skip (no test projects)            │
 └─────────────────────────────────────────────────────────────┘
                             │
-                            ▼ (only if tests pass)
+                            ▼ (only if the build passes)
 ┌─────────────────────────────────────────────────────────────┐
 │  Job 2: pack-and-validate (Windows)                         │
 │  • Restore & Build (fresh)                                  │
