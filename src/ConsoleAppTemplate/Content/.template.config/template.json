@@ -29,6 +29,11 @@
 			"identifier": "replace",
 			"pattern": "^(Line|Space)Separated$",
 			"replacement": "ParseArgsAs$1Separated"
+		},
+		"toSdkChannel": {
+			"identifier": "replace",
+			"pattern": "^net(\\d+)\\.(\\d+)$",
+			"replacement": "$1.$2.x"
 		}
 	},
 
@@ -53,6 +58,13 @@
 			],
 			"replaces": "net8.0",
 			"defaultValue": "net8.0"
+		},
+
+		"sdk-channel": {
+			"type": "derived",
+			"valueSource": "framework",
+			"valueTransform": "toSdkChannel",
+			"replaces": "8.0.x"
 		},
 
 		"version": {

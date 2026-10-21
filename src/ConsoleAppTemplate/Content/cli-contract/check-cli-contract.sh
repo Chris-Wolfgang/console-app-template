@@ -19,7 +19,10 @@ baseline="$script_dir/cli-surface.baseline.json"
 current="$(mktemp)"
 trap 'rm -f "$current"' EXIT
 
-dotnet run --project "$root_dir" -c Release -- cli-surface --output "$current" >/dev/null
+# Build first so compiler errors reach the console; only the command's own
+# stdout is discarded (the manifest goes to $current).
+dotnet build "$root_dir" -c Release
+dotnet run --project "$root_dir" -c Release --no-build -- cli-surface --output "$current" >/dev/null
 
 if [[ "${1:-}" == "--update" ]]; then
     cp "$current" "$baseline"
