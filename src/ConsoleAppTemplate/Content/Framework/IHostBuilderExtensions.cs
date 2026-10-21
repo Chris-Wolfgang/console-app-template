@@ -15,6 +15,11 @@ namespace ConsoleAppTemplate.Framework
         /// <returns>IHostBuilder</returns>
         /// <exception cref="ArgumentNullException">builder is null</exception>
         /// <exception cref="ArgumentOutOfRangeException">method was not a valid value</exception>
+        /// <exception cref="InvalidOperationException">
+        /// <paramref name="method"/> is <see cref="ConfigurationFileMethod.OneFilePerEnvironment"/> and the
+        /// DOTNET_ENVIRONMENT environment variable is not set. Let it propagate to the top-level handler in
+        /// Program, which prints the message to stderr and exits with ExitCode.UnhandledException.
+        /// </exception>
         public static IHostBuilder AddConfigurationFile
         (
             this IHostBuilder builder, 
@@ -66,7 +71,7 @@ namespace ConsoleAppTemplate.Framework
             var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
             if (string.IsNullOrWhiteSpace(environment))
             {
-                Environment.FailFast("System variable DOTNET_ENVIRONMENT is not set.");
+                throw new InvalidOperationException("Environment variable DOTNET_ENVIRONMENT is not set.");
             }
 
             builder

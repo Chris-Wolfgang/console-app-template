@@ -38,7 +38,7 @@ internal class CliSurfaceCommand
 
     [Option
         (
-            Description = "Write the manifest to this file instead of stdout (recommended - avoids mixing log output into the JSON)."
+            Description = "Write the manifest to this file instead of stdout."
         )
     ]
     // The setter is invoked by CommandLineUtils through reflection when --output is passed,

@@ -59,6 +59,11 @@ try
             application => application.Conventions.AddConvention(new AutoRegisterCommandsConvention())
         );
 }
+catch (OperationCanceledException e)
+{
+    Log.Logger.Warning(e, "Canceled");
+    return ExitCode.Canceled;
+}
 catch (Exception e)
 {
     await Console.Error.WriteLineAsync(e.Message);
