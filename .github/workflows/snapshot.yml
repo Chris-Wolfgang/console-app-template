@@ -2,7 +2,8 @@ name: Snapshot test
 
 # Approval/snapshot test for the generated project (issue #208). Regenerates a
 # project from cwconsole and compares a normalized per-file hash manifest against
-# the committed golden (tests/snapshots/cwconsole.manifest). Catches content and
+# the committed goldens (tests/snapshots/cwconsole.manifest for the defaults and
+# cwconsole-all-options.manifest with every opt-in switch enabled). Catches content and
 # structure drift in what the template GENERATES — including changes that still
 # compile, which the build-based smoke matrix can't see.
 #
