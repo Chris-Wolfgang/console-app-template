@@ -22,7 +22,10 @@
     Skip DevSkim and gitleaks scans.
 
 .PARAMETER CoverageThreshold
-    Minimum coverage percentage required. Defaults to 90.
+    Minimum line coverage percentage required. Defaults to 95, the fleet policy
+    for production assemblies. Mirrors CODECOV_MINIMUM in pr.yaml. No test
+    project exists in this repo today, so Step 2 finds nothing under ./tests
+    and Step 3 is skipped; the default applies as soon as one is added.
 
 .EXAMPLE
     pwsh ./scripts/build-pr.ps1
@@ -33,7 +36,7 @@ param(
     [switch]$SkipTests,
     [switch]$SkipCoverage,
     [switch]$SkipSecurity,
-    [int]$CoverageThreshold = 90
+    [int]$CoverageThreshold = 95
 )
 
 $ErrorActionPreference = 'Stop'
