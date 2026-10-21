@@ -1,6 +1,7 @@
 # PR validation workflow for template pack repository
 # Builds all template projects and runs security scanning
-# No test stage — this repo contains only dotnet new templates
+# No unit-test stage — this repo contains only dotnet new templates; the template
+# smoke matrix below, snapshot.yml and aot-smoke.yml exercise the generated output
 #
 # This repo's PRs come from same-repo branches (single maintainer), not
 # untrusted forks, so it uses `pull_request` (not `pull_request_target`).
@@ -170,15 +171,15 @@ jobs:
     name: "Template Smoke (${{ matrix.os }}, SDK ${{ matrix.sdk }})"
     runs-on: ${{ matrix.os }}
     needs: detect-projects
-    # Same-repo PRs only: under pull_request_target secrets are available to
-    # the workflow, and this job goes beyond building PR code - it RUNS the
-    # generated app. Skipping forked PRs closes the exfiltration path; a
-    # maintainer can re-run the smoke matrix after pulling a fork's changes
-    # into a same-repo branch.
+    # Pushes to main and same-repo PRs only: this job goes beyond building PR
+    # code - it RUNS the generated app. Skipping forked PRs keeps untrusted code
+    # from executing on the runner; a maintainer can re-run the smoke matrix
+    # after pulling a fork's changes into a same-repo branch.
     if: >-
       github.repository != 'Chris-Wolfgang/repo-template' &&
       needs.detect-projects.outputs.has-projects == 'true' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      (github.event_name == 'push' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
     strategy:
       fail-fast: false
       matrix:
@@ -243,6 +244,22 @@ jobs:
           dotnet new install ../smoke-packages/Wolfgang.Template.Console.*.nupkg
           dotnet new cwconsole -n SmokeApp -o ./smoke-app
 
+      - name: Read the Wolfgang.Etl.Abstractions version the ETL pack declares
+        # The ETL smoke must compile the generated command against the same
+        # Abstractions version the item template's pack csproj references, so
+        # the pin is read from that file instead of being duplicated here.
+        id: etl-abstractions
+        shell: bash
+        run: |
+          pack_csproj="src/EtlSubCommandTemplate/dotnet.etl-subcommand.template.pack.csproj"
+          version="$(grep -oE 'Include="Wolfgang\.Etl\.Abstractions"[^>]*Version="[^"]+"' "$pack_csproj" | sed -E 's/.*Version="([^"]+)".*/\1/')"
+          if [ -z "$version" ]; then
+            echo "::error::Could not read the Wolfgang.Etl.Abstractions version from $pack_csproj"
+            exit 1
+          fi
+          echo "Wolfgang.Etl.Abstractions version from pack csproj: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Add subcommands via the item templates
         # Restore first: the item templates' namespace auto-detection binds to
         # msbuild:RootNamespace, which only evaluates once the project is
@@ -251,13 +268,16 @@ jobs:
         # ETL subcommand needs Wolfgang.Etl.Abstractions at build time.
         shell: bash
         working-directory: ./smoke/smoke-app
+        env:
+          ETL_ABSTRACTIONS_VERSION: ${{ steps.etl-abstractions.outputs.version }}
         run: |
           dotnet restore
           dotnet new cwsubcmd    --ClassName ExportCommand -o Command
           dotnet new cwsubcmdetl --ClassName ImportCommand -o Command
-          # Pin the version so an upstream release can't make the matrix
-          # non-deterministic (fail a PR unrelated to template changes).
-          dotnet add package Wolfgang.Etl.Abstractions --version 0.15.0
+          # Pin to the version the ETL pack declares (read in the previous step) so an
+          # upstream release can't make the matrix non-deterministic and the smoke
+          # cannot drift behind the template.
+          dotnet add package Wolfgang.Etl.Abstractions --version "$ETL_ABSTRACTIONS_VERSION"
           echo "Generated subcommand namespaces:"
           grep -h '^namespace' Command/ExportCommand.cs Command/ImportCommand.cs
           grep -q '^namespace SmokeApp\.Command;' Command/ExportCommand.cs || { echo "::error::cwsubcmd namespace not auto-detected (expected 'SmokeApp.Command')"; exit 1; }
@@ -312,9 +332,9 @@ jobs:
             echo "::error::Failed to fetch origin/main — aborting before changelog check."
             exit 1
           fi
-          # Fail closed: never run the PR's own copy of the validator. (A first-adoption PR
-          # cannot reach this job anyway — pull_request_target runs the base branch's pr.yaml,
-          # so the job only exists once main carries both this workflow and the script.)
+          # Fail closed: never run the PR's own copy of the validator - the one on main
+          # is the trusted one, and a PR that first adds the script must merge it to
+          # main before this job can use it.
           if ! git cat-file -e origin/main:scripts/changelog.ps1 2>/dev/null; then
             echo "::error::scripts/changelog.ps1 is not present in origin/main — refusing to run the PR-controlled copy. Merge the script to main first."
             exit 1
@@ -441,11 +461,11 @@ jobs:
           Write-Host "✅ No error-severity InspectCode findings."
 
   # ============================================================================
-  # INSPECTCODE UPLOAD: the only job with security-events: write. It never checks
-  # out PR code — the checkout below is the trusted base ref (pull_request_target
-  # default), which upload-sarif needs only to resolve the workspace — and it
-  # uploads the SARIF the job above produced. Runs after a gate failure too (the
-  # warnings are the point) but not when the analysis never ran.
+  # INSPECTCODE UPLOAD: the only job with security-events: write. It never builds
+  # or runs PR code — the checkout below exists only so upload-sarif can resolve
+  # the workspace — and it uploads the SARIF the job above produced. Runs after
+  # a gate failure too (the warnings are the point) but not when the analysis
+  # never ran.
   # ============================================================================
   inspectcode-upload:
     name: "ReSharper InspectCode (upload SARIF)"
