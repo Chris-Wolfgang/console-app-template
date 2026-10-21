@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ConsoleAppTemplate.Framework
@@ -22,11 +21,16 @@ namespace ConsoleAppTemplate.Framework
                         // Get the SampleConfiguration section from the config file
                         .GetSection(path)
 
-                        // Bind the section to the T class
+                        // Bind the section to the T class. This is reflection-based binding:
+                        // it is fine for the default (framework-dependent, untrimmed) publish,
+                        // but under a trimmed or single-file publish it raises SYSLIB1104 -
+                        // switch to the configuration binder source generator
+                        // (<EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>)
+                        // if you enable trimming.
                         .Get<T>()
 
                     // If section is not found, throw an exception
-                    ?? throw new ConfigurationErrorsException
+                    ?? throw new InvalidOperationException
                     (
                         $"Could not bind to the config section '{path}'. " +
                         "Make sure the section exists in the config file and matches " +
