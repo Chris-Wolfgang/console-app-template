@@ -1,0 +1,6 @@
+# Dependency overrides applied when compiling semgrep.txt (uv pip compile --override).
+# GHSA-84m7-p3x7-pcfv: semgrep pins mcp==1.29.0, which is vulnerable; the first patched
+# release is 1.30.0. semgrep.txt is installed with --no-deps, so the exact pin is never
+# re-checked at install time. Pinned exactly (not >=) so the lock stays close to the
+# version semgrep was released against. Drop this once semgrep ships with mcp >= 1.30.0.
+mcp==1.30.0
