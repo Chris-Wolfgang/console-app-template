@@ -26,26 +26,25 @@
 	<Copyright>Copyright {copyright year} {author}</Copyright>
 	<Description>{description}</Description>
 	<Authors>{author}</Authors>
-	<PackageReadmeFile>ReadMe.md</PackageReadmeFile>
-	<RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
-	<RepositoryType>git</RepositoryType>
-	<PackageTags>template;console-app;</PackageTags>
-	<PackageIcon>Console-Template-icon.png</PackageIcon>
 	<ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
 	<GenerateDocumentationFile>True</GenerateDocumentationFile>
-	<Title>Wolfgang Console Template</Title>
-	<PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
   </PropertyGroup>
 
   <!-- Companion test/benchmark projects live under tests/ and benchmarks/ (separate
-       projects with their own references), and Program.TopLevel.cs is the alternate
-       top-level-statements entry point (emitted, renamed to Program.cs, only with the
-       top-level option). Keep all of these out of the default app compilation. -->
+       projects with their own references). Keep them out of the app compilation. -->
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
     <Compile Remove="benchmarks/**/*.cs" />
+  </ItemGroup>
+
+  <!--#if (!top-level)-->
+  <!-- Program.TopLevel.cs is the alternate top-level-statements entry point (emitted,
+       renamed to Program.cs, only with the top-level option). Keep it out of the
+       default app compilation. -->
+  <ItemGroup>
     <Compile Remove="Program.TopLevel.cs" />
   </ItemGroup>
+  <!--#endif-->
 
   <!--#if (unit-tests)-->
   <ItemGroup>

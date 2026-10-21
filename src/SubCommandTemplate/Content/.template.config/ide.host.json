@@ -16,7 +16,7 @@
             "add": [ "C#" ]
         }
     ],
-    "icon": "..\\..\\Console-Template-icon.png",
+    "icon": "icon.png",
     "itemHierarchyPaths": [
         "Code"
     ],
