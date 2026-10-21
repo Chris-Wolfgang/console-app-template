@@ -17,6 +17,22 @@ updates:
       - "dependencies"
 
   - package-ecosystem: "nuget"
+    directory: "/src/AotConsoleTemplate/Content"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/AotConsoleTemplate"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+
+  - package-ecosystem: "nuget"
     directory: "/src/EtlSubCommandTemplate"
     schedule:
       interval: "weekly"
