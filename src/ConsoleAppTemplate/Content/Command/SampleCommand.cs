@@ -47,14 +47,14 @@ internal class SampleCommand
     public char Delimiter { get; set; } = ',';
 
 
-    
+
     [Option
         (
             Description = "Number of lines to process"
         )
     ]
     // Ensures the user does not enter a negative number
-    [Range(0, 10_000)] 
+    [Range(0, 10_000)]
     public int MaxLines { get; set; } = 1000;
 
 

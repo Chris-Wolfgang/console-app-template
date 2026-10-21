@@ -23,6 +23,13 @@ namespace ConsoleAppTemplate.Command;
 )]
 internal class HealthCommand
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        WriteIndented = true,
+    };
+
+
+
     [Option
         (
             Description = "Emit machine-readable JSON instead of text - useful for container/orchestrator health probes."
@@ -181,7 +188,7 @@ internal class HealthCommand
             })
         };
 
-        console.WriteLine(JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true }));
+        console.WriteLine(JsonSerializer.Serialize(payload, SerializerOptions));
     }
 
 

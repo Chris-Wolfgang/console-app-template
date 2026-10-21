@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
- <PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
     <PackageType>Template</PackageType>
     <PackageVersion>0.8.0</PackageVersion>
     <PackageId>Wolfgang.Template.Console</PackageId>
     <Title>Wolfgang Console App</Title>
     <Authors>Chris Wolfgang</Authors>
-	 <Description>Template for creating C# console applications, configured with Serilog, McMaster commandLineUtils and several other packages</Description>
+    <Description>Template for creating C# console applications, configured with Serilog, McMaster commandLineUtils and several other packages</Description>
     <PackageTags>dotnet-new;templates;Chris Wolfgang</PackageTags>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeContentInPack>true</IncludeContentInPack>
@@ -15,16 +15,16 @@
          the generated project, not a NuGet install script, so its placement outside tools/ is intended. -->
     <NoWarn>$(NoWarn);NU5128;NU5110;NU5111</NoWarn>
     <NoDefaultExcludes>true</NoDefaultExcludes>
-	 <Copyright>Chris Wolfgang 2025-2026</Copyright>
-	 <PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
-	 <PackageReadmeFile>README.md</PackageReadmeFile>
-	 <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
-	 <RepositoryType>git</RepositoryType>
-	 <PackageIcon>Console-Template-icon.png</PackageIcon>
-	 <PackageLicenseExpression>MIT</PackageLicenseExpression>
-	 <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-	 <GenerateDocumentationFile>True</GenerateDocumentationFile>
-   </PropertyGroup>
+    <Copyright>Chris Wolfgang 2025-2026</Copyright>
+    <PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>Console-Template-icon.png</PackageIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
 
   <ItemGroup>
     <Content Include="**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;" />

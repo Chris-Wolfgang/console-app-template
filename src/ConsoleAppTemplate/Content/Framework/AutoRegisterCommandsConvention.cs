@@ -41,13 +41,14 @@ internal class AutoRegisterCommandsConvention : IConvention
             .GetTypes()
             .Where(type => type is { IsClass: true, IsAbstract: false } && type != typeof(Program))
             .Select(type => (Type: type, Attribute: type.GetCustomAttribute<CommandAttribute>()))
-            .Where(candidate => candidate.Attribute is not null);
+            .Where(candidate => candidate.Attribute is not null)
+            .Select(candidate => (candidate.Type, Attribute: candidate.Attribute!));
 
         foreach (var (type, attribute) in commandTypes)
         {
             // An empty or whitespace Name on the attribute would register an
             // unusable command - fall back to the derived name instead.
-            var name = string.IsNullOrWhiteSpace(attribute!.Name)
+            var name = string.IsNullOrWhiteSpace(attribute.Name)
                 ? DeriveName(type.Name)
                 : attribute.Name;
 
@@ -68,7 +69,7 @@ internal class AutoRegisterCommandsConvention : IConvention
     /// Derives the default subcommand name from a class name: a trailing "Command"
     /// is removed and the remainder is lower-cased, e.g. SampleCommand -> "sample".
     /// </summary>
-    private static string DeriveName(string typeName)
+    internal static string DeriveName(string typeName)
     {
         const string suffix = "Command";
 

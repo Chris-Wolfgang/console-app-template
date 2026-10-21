@@ -1,4 +1,4 @@
-﻿// NOTE: If your application was created from the Wolfgang Console App template this
+// NOTE: If your application was created from the Wolfgang Console App template this
 // command is registered automatically at startup (AutoRegisterCommandsConvention).
 // In an app without that convention, add [Subcommand(typeof(SubCommandTemplate))] to Program.
 using McMaster.Extensions.CommandLineUtils;
@@ -10,7 +10,7 @@ namespace {DefaultNamespace}.Command;
 (
     // TODO You can override the default name for the command by uncommenting the line below
     // Name = "{alternative-name}"
-    
+
     // TODO Add a description for your command
     Description = "{command-description}",
 
