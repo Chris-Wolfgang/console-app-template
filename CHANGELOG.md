@@ -112,3 +112,9 @@ _This release ships **`Wolfgang.Template.Console`** only. `Wolfgang.Template.Sub
 - Supply-chain hardening across the board: SHA-pinned actions, CycloneDX SBOM + SLSA
   attestation, permissive-only license audit, OSSF Scorecard, a zizmor/actionlint workflow
   audit, and OIDC publishing (no long-lived key to leak or rotate).
+
+[Unreleased]: https://github.com/Chris-Wolfgang/console-app-template/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/Chris-Wolfgang/console-app-template/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/Chris-Wolfgang/console-app-template/compare/v0.6.1...v0.7.0
+[0.6.1]: https://github.com/Chris-Wolfgang/console-app-template/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/Chris-Wolfgang/console-app-template/compare/v0.5.0...v0.6.0

@@ -43,8 +43,8 @@ You can contribute in several ways:
 
 7. **PR Checks:**  
    Once you create a pull request (PR), several Continuous Integration (CI) steps will run automatically. These may include:
-   - Building the project
-   - Running automated tests
+   - Building and packing the template packs
+   - Generating a project from each template and building it (the smoke matrix and the snapshot check)
    - Checking code style and linting
    - Running static analysis with multiple static analyzers (see list below)
 
@@ -58,9 +58,9 @@ You can contribute in several ways:
 
 This project maintains **extremely high code quality standards** through multiple layers of static analysis and automated enforcement.
 
-### The 7 Analyzers
+### The 5 Analyzers
 
-All code is analyzed by these tools during build:
+The console template content project (`src/ConsoleAppTemplate/Content/ConsoleAppTemplate.csproj` — the same `.csproj` a generated `cwconsole` app gets) is analyzed by these tools during build:
 
 1. **Microsoft.CodeAnalysis.NetAnalyzers** (Built-in .NET SDK)
    - Correctness, performance, and security rules
@@ -75,28 +75,21 @@ All code is analyzed by these tools during build:
    - Ensures proper `ConfigureAwait()` usage
    - Prevents fire-and-forget async calls
 
-4. **Microsoft.VisualStudio.Threading.Analyzers**
-   - Thread safety enforcement
-   - Async method naming conventions
-   - Deadlock prevention
-
-5. **Microsoft.CodeAnalysis.BannedApiAnalyzers**
-   - Blocks usage of APIs listed in `BannedSymbols.txt`
-   - Enforces async-first patterns (see below)
-
-6. **Meziantou.Analyzer**
+4. **Meziantou.Analyzer**
    - Comprehensive code quality checks
    - Performance optimizations
    - Best practice enforcement
 
-7. **SonarAnalyzer.CSharp**
+5. **SonarAnalyzer.CSharp**
    - Industry-standard code analysis
    - Security vulnerability detection
    - Code smell identification
 
-### Async-First Enforcement
+The native-AOT content project (`src/AotConsoleTemplate/Content/AotConsoleTemplate.csproj`) references Meziantou and Sonar only; the template-pack `.csproj` files contain no code.
 
-This library **prohibits synchronous blocking calls** via `BannedSymbols.txt`. The following APIs are **banned**:
+### Async-First Guidelines
+
+Generated apps are async end to end, and contributions should keep them that way. The root `BannedSymbols.txt` lists the blocking APIs to avoid; it is a reference list and is **not** wired into any project as a banned-API analyzer, so these are review guidelines (partly caught by AsyncFixer and Meziantou) rather than build errors. The following APIs are **banned** by convention:
 
 #### ❌ Blocking Async Operations
 ```csharp
@@ -171,19 +164,20 @@ dotnet build src/ConsoleAppTemplate.sln --configuration Release
 
 **Note:** Release builds treat all analyzer warnings as errors (`<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`). Debug builds allow warnings to facilitate development.
 
-Alternatively, run `pwsh ./scripts/build-pr.ps1` from the repo root — it wraps restore + build + test + format-check + Gitleaks with the right paths baked in.
+Alternatively, run `pwsh ./scripts/build-pr.ps1` from the repo root — it wraps restore + build + DevSkim + gitleaks with the right paths baked in (its test and coverage steps skip themselves because there are no test projects).
 
 ### Run Tests
 
-This repo currently has no test projects (it is a `dotnet new` template pack — `pr.yaml` documents "No test stage"), so the commands below are a no-op today. They are the standard invocation once test projects are added under `tests/`:
+This repo has no `dotnet test` projects (it is a `dotnet new` template pack — `pr.yaml` documents "No unit-test stage"). The tests are:
 
-```bash
-# Run all unit tests
-dotnet test src/ConsoleAppTemplate.sln --configuration Release
+- **Snapshot check** — `tests/snapshots/snapshot.sh` packs the console template, generates a project with the default options and with every option enabled, hashes every emitted file and compares against the goldens `tests/snapshots/cwconsole.manifest` and `cwconsole-all-options.manifest`. CI runs it in `snapshot.yml`. Any change under `src/ConsoleAppTemplate/Content/` changes the goldens — regenerate and commit them:
 
-# Run with coverage (if configured)
-dotnet test src/ConsoleAppTemplate.sln --collect:"XPlat Code Coverage"
-```
+  ```bash
+  bash tests/snapshots/snapshot.sh            # check mode (what CI runs)
+  bash tests/snapshots/snapshot.sh --update   # regenerate the goldens after an intended change
+  ```
+
+- **Smoke matrix** — the `Template Smoke (...)` jobs in `pr.yaml` pack every template, install it into an isolated hive, generate a project per option set and build it in Release (where warnings are errors). To reproduce one cell locally: `dotnet pack` the template pack, `dotnet new install` the `.nupkg`, `dotnet new cwconsole -n SmokeApp`, `dotnet build -c Release`.
 
 ### Code Formatting
 
@@ -215,7 +209,7 @@ Key style rules enforced:
 - **Final newline:** Yes
 - **Braces:** New line style (Allman)
 - **Naming:** PascalCase for public members, camelCase for parameters/locals
-- **File-scoped namespaces:** Required in C# 10+
+- **File-scoped namespaces:** Preferred (`csharp_style_namespace_declarations = file_scoped:suggestion`); all shipped template sources use them
 - **`var` preferences:** Use for built-in types and when type is obvious
 - **Null checks:** Prefer pattern matching (`is null`, `is not null`)
 
