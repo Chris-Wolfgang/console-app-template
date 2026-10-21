@@ -15,6 +15,10 @@ using Microsoft.Extensions.Logging;
 // The host builder loads appsettings.json (+ environment variables + command line).
 var builder = Host.CreateApplicationBuilder(args);
 
+// Route every log line to stderr so stdout carries only the command's output and the app
+// composes in pipelines (`app | jq`). The default console logger writes to stdout.
+builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
+
 // Bind the "Sample" section to strongly typed options. EnableConfigurationBindingGenerator
 // (see the csproj) makes this AOT- and trim-safe by source-generating the binding.
 builder.Services.Configure<SampleOptions>(builder.Configuration.GetSection("Sample"));

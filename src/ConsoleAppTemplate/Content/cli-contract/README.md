@@ -17,7 +17,7 @@ a change breaks that contract between releases.
   dotnet run -- cli-surface --output cli-contract/cli-surface.baseline.json
   ```
 
-  (Use `--output`; without it the manifest goes to stdout, mixed with any log lines.)
+  (Without `--output` the manifest goes to stdout; logs go to stderr, so `> file` works too.)
 
 - `cli-surface.baseline.json` is the committed snapshot of that surface. Create it once
   with the `--update` switch below, then commit it.

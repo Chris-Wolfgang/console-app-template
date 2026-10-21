@@ -59,11 +59,13 @@ try
             application => application.Conventions.AddConvention(new AutoRegisterCommandsConvention())
         );
 }
+catch (OperationCanceledException e)
+{
+    return HandleCanceled(e);
+}
 catch (Exception e)
 {
-    await Console.Error.WriteLineAsync(e.Message);
-    Log.Logger.Fatal(e, "Unhandled exception: {Message}", e.Message);
-    return ExitCode.UnhandledException;
+    return await HandleUnhandledAsync(e);
 }
 finally
 {
@@ -95,6 +97,32 @@ finally
 [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
 internal partial class Program
 {
+    /// <summary>
+    /// Logs a cancellation (Ctrl+C or a cancelled token that escaped a command) and maps it to
+    /// <see cref="ExitCode.Canceled"/>.
+    /// </summary>
+    private static int HandleCanceled(OperationCanceledException e)
+    {
+        Log.Logger.Warning(e, "Canceled");
+        return ExitCode.Canceled;
+    }
+
+
+
+    /// <summary>
+    /// Reports an exception that escaped every command handler: the message goes to stderr for the
+    /// user, the full exception to the log, and the process exits with
+    /// <see cref="ExitCode.UnhandledException"/>.
+    /// </summary>
+    private static async Task<int> HandleUnhandledAsync(Exception e)
+    {
+        await Console.Error.WriteLineAsync(e.Message);
+        Log.Logger.Fatal(e, "Unhandled exception: {Message}", e.Message);
+        return ExitCode.UnhandledException;
+    }
+
+
+
     /// <summary>
     /// Supplies the value shown by the --version option. Reads the assembly's
     /// informational version (set via the csproj Version/PackageVersion), falling
