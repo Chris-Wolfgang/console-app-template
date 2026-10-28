@@ -327,6 +327,9 @@ jobs:
           for cmd in sample export import sync; do
             echo "$help_output" | grep -qE "^[[:space:]]+${cmd}([[:space:]]|\$)" || { echo "::error::auto-registered '$cmd' subcommand missing from the --help command list"; exit 1; }
           done
+          # Bare invocation (no subcommand) runs the root OnExecute, whose parameters
+          # are resolved from DI; it must print help and exit 0 (#520).
+          dotnet run --project SmokeApp.csproj -c Release --no-build || { echo "::error::bare invocation (no subcommand) exited $?"; exit 1; }
 
       - name: Build generated project with every opt-in option (Release)
         # The default instantiation above never compiles option-conditional
@@ -359,6 +362,8 @@ jobs:
           for cmd in sample health cli-surface; do
             echo "$help_output" | grep -qE "^[[:space:]]+${cmd}([[:space:]]|\$)" || { echo "::error::'$cmd' subcommand missing from the all-options --help command list"; exit 1; }
           done
+          # Same bare-invocation check for the --top-level entry point (#520).
+          dotnet run --project SmokeAllOptions.csproj -c Release --no-build || { echo "::error::all-options bare invocation (no subcommand) exited $?"; exit 1; }
 
   # ============================================================================
   # CHANGELOG: every PR that touches src/ must add a fragment under
