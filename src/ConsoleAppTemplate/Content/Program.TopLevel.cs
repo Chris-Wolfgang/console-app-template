@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 // Top-level statements are the entry point - there is no explicit Main. The command
 // model (attributes), the --version provider and the default OnExecute live on the
@@ -158,7 +157,7 @@ internal partial class Program
         CommandLineApplication<Program> application,
         SampleConfiguration sampleConfiguration,
         IReporter reporter,
-        ILogger logger
+        ILogger<Program> logger
     )
     {
 
