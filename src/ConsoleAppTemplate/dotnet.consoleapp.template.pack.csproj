@@ -23,7 +23,7 @@
 	 <PackageIcon>Console-Template-icon.png</PackageIcon>
 	 <ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
 	 <PackageLicenseExpression>MIT</PackageLicenseExpression>
-	 <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	 <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
 	 <GenerateDocumentationFile>True</GenerateDocumentationFile>
    </PropertyGroup>
 
