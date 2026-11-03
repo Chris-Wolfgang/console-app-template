@@ -12,6 +12,10 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <!-- A template pack must not declare NuGet dependencies: the template's post-action adds
+         Wolfgang.Etl.Abstractions to the consuming project. Keep the PackageReferences below
+         (PrivateAssets="all") out of the nuspec. -->
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <NoDefaultExcludes>true</NoDefaultExcludes>
     <Copyright>Chris Wolfgang 2025-2026</Copyright>
     <PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
@@ -19,7 +23,6 @@
     <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIcon>Etl-SubCmd-Template-icon.png</PackageIcon>
-    <ApplicationIcon>Etl-SubCmd-Template-icon.ico</ApplicationIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -42,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Wolfgang.Etl.Abstractions" Version="0.26.1" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageReference Include="Wolfgang.Etl.Abstractions" Version="0.26.1" PrivateAssets="all" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
