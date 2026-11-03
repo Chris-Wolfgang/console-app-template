@@ -71,7 +71,7 @@ namespace ConsoleAppTemplate
                     {
                         configuration
                             .ReadFrom.Configuration(context.Configuration)
-                            .Enrich.WithProperty("Version", Assembly.GetEntryAssembly()?.GetName().Version)
+                            .Enrich.WithProperty("Version", GetVersion())
                             ;
                     })
                     

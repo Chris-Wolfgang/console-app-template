@@ -9,8 +9,8 @@ Projects generated from the templates in this repository reference the following
 | [McMaster.Extensions.CommandLineUtils](https://www.nuget.org/packages/McMaster.Extensions.CommandLineUtils) | Command-line parsing (commands, subcommands, options) | Apache-2.0 |
 | [McMaster.Extensions.Hosting.CommandLine](https://www.nuget.org/packages/McMaster.Extensions.Hosting.CommandLine) | Generic-host integration for CommandLineUtils | Apache-2.0 |
 | [Microsoft.Extensions.Hosting](https://www.nuget.org/packages/Microsoft.Extensions.Hosting) | Generic host, dependency injection, configuration | MIT |
-| [System.Configuration.ConfigurationManager](https://www.nuget.org/packages/System.Configuration.ConfigurationManager) | Configuration types | MIT |
 | [Serilog](https://www.nuget.org/packages/Serilog) | Structured logging | Apache-2.0 |
+| [Serilog.Enrichers.Environment](https://www.nuget.org/packages/Serilog.Enrichers.Environment) | Environment name / machine name / user name enrichers | Apache-2.0 |
 | [Serilog.Exceptions](https://www.nuget.org/packages/Serilog.Exceptions) | Exception detail enrichment | MIT |
 | [Serilog.Extensions.Hosting](https://www.nuget.org/packages/Serilog.Extensions.Hosting) | Serilog ↔ generic host integration | Apache-2.0 |
 | [Serilog.Extensions.Logging](https://www.nuget.org/packages/Serilog.Extensions.Logging) | Serilog provider for Microsoft.Extensions.Logging | Apache-2.0 |

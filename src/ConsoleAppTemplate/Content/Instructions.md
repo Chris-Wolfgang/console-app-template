@@ -379,8 +379,19 @@ or the appropriate package is not installed, the sink will not work.
 ### `Enrich`
 
 This section is used to add additional information to the logs. The exact configuration
-will depend on the enrichers you are using. In addition, you can add your own custom
-properties which will be written to the logs.
+will depend on the enrichers you are using. The template registers `FromLogContext`,
+`WithExceptionDetails` (from [Serilog.Exceptions](https://github.com/RehanSaeed/Serilog.Exceptions),
+structured exception detail) and `WithEnvironmentName` (from
+[Serilog.Enrichers.Environment](https://github.com/serilog/serilog-enrichers-environment)),
+with `WithMachineName` and `WithEnvironmentUserName` from the same package commented out
+ready to enable. As with sinks, an enricher's package must be listed in the `Using`
+section or Serilog silently ignores it.
+
+### `Properties`
+
+Fixed properties attached to every log event. The template sets `Application` to the
+project name; add any others you want on every event (an `Environment` tag, a
+deployment slot, ...).
 
 
 
