@@ -43,7 +43,7 @@ internal class HealthCommand
         CancellationToken cancellationToken
     )
     {
-        logger.LogInformation("Starting {Command}", GetType().Name);
+        logger.LogDebug("Starting {Command}", GetType().Name);
 
         try
         {
@@ -162,7 +162,7 @@ internal class HealthCommand
     {
         foreach (var check in checks)
         {
-            console.WriteLine($"{(check.Passed ? "✅" : "❌")} {check.Detail}");
+            console.WriteLine($"{(check.Passed ? "[PASS]" : "[FAIL]")} {check.Detail}");
         }
     }
 

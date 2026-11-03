@@ -47,10 +47,15 @@ internal class SubCommandTemplate
             cancellationToken.ThrowIfCancellationRequested();
 
         }
+        catch (OperationCanceledException e)
+        {
+            logger.LogWarning(e, "{Command} was canceled", GetType().Name);
+            return ExitCode.Canceled;
+        }
         catch (Exception e)
         {
             logger.LogCritical(e, "Unhandled error: {Message}", e.Message);
-            console.WriteLine(e);
+            await console.Error.WriteLineAsync(e.Message);
             return ExitCode.ApplicationError;
         }
 

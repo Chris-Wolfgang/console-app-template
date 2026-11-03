@@ -78,7 +78,7 @@ internal class SampleCommand
         CancellationToken cancellationToken
     )
     {
-        logger.LogInformation("Starting {Command}", GetType().Name);
+        logger.LogDebug("Starting {Command}", GetType().Name);
 
         // TODO Remove along with SampleConfiguration - demonstrates reading bound configuration
         logger.LogDebug("CommandTimeout is {CommandTimeout}", configuration.CommandTimeout);
@@ -116,9 +116,8 @@ internal class SampleCommand
         }
         catch (Exception e)
         {
-
             logger.LogCritical(e, "Unhandled error: {Message}", e.Message);
-            console.WriteLine(e);
+            await console.Error.WriteLineAsync(e.Message);
             return ExitCode.ApplicationError;
         }
 

@@ -71,12 +71,12 @@ jobs:
           bin="$(find "$RUNNER_TEMP/gen/SmokeAot" -type f -name SmokeAot -path '*publish*' | head -n1)"
           echo "Native binary: $bin"
           file "$bin"
-          # The app also logs an "info" line to stdout, so match on the greeting
-          # line rather than the whole output.
+          # Logs go to stderr (LogToStandardErrorThreshold = Trace in Program.cs), so
+          # stdout must be exactly the greeting line; the exact match guards that too.
           out="$("$bin" --name CI)"
           echo "Output: $out"
-          if ! printf '%s\n' "$out" | grep -qx 'Howdy, CI!'; then
-            echo "::error::Native AOT binary did not print the expected 'Howdy, CI!' line (greeting configured in appsettings.json). Full output:"
+          if [ "$out" != 'Howdy, CI!' ]; then
+            echo "::error::Native AOT binary stdout was not exactly 'Howdy, CI!' (greeting configured in appsettings.json; logs must go to stderr). Full stdout:"
             printf '%s\n' "$out"
             exit 1
           fi
