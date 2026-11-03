@@ -10,6 +10,4 @@ internal record SampleConfiguration
     // so a narrow inline disable rides along.
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public int CommandTimeout { get; init; }
-
-
 }

@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
- <PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
     <PackageType>Template</PackageType>
     <PackageVersion>0.8.0</PackageVersion>
     <PackageId>Wolfgang.Template.Console.Subcommand</PackageId>
@@ -19,11 +19,10 @@
     <RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIcon>SubCmd-Template-icon.png</PackageIcon>
-    <ApplicationIcon>SubCmd-Template-icon.ico</ApplicationIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-   </PropertyGroup>
+  </PropertyGroup>
 
   <ItemGroup>
     <Content Include="**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;" />

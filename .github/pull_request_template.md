@@ -43,7 +43,7 @@ Please delete options that are not relevant.
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] If this PR changes `src/`, I added a fragment under `changelog/unreleased/` (or applied the `no-changelog` label) — see [changelog/unreleased/README.md](../blob/main/changelog/unreleased/README.md)
-- [ ] I did not bundle protected configuration files (`.editorconfig`, `Directory.Build.props`, workflows, …) with unrelated code — they are held for maintainer review
+- [ ] I kept configuration changes (`.editorconfig`, `Directory.Build.props`, workflows, …) in their own PR rather than bundling them with unrelated code
 
 ## Screenshots (if applicable)
 

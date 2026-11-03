@@ -9,8 +9,8 @@ Projects generated from the templates in this repository reference the following
 | [McMaster.Extensions.CommandLineUtils](https://www.nuget.org/packages/McMaster.Extensions.CommandLineUtils) | Command-line parsing (commands, subcommands, options) | Apache-2.0 |
 | [McMaster.Extensions.Hosting.CommandLine](https://www.nuget.org/packages/McMaster.Extensions.Hosting.CommandLine) | Generic-host integration for CommandLineUtils | Apache-2.0 |
 | [Microsoft.Extensions.Hosting](https://www.nuget.org/packages/Microsoft.Extensions.Hosting) | Generic host, dependency injection, configuration | MIT |
-| [System.Configuration.ConfigurationManager](https://www.nuget.org/packages/System.Configuration.ConfigurationManager) | Configuration types | MIT |
 | [Serilog](https://www.nuget.org/packages/Serilog) | Structured logging | Apache-2.0 |
+| [Serilog.Enrichers.Environment](https://www.nuget.org/packages/Serilog.Enrichers.Environment) | Environment name / machine name / user name enrichers | Apache-2.0 |
 | [Serilog.Exceptions](https://www.nuget.org/packages/Serilog.Exceptions) | Exception detail enrichment | MIT |
 | [Serilog.Extensions.Hosting](https://www.nuget.org/packages/Serilog.Extensions.Hosting) | Serilog ↔ generic host integration | Apache-2.0 |
 | [Serilog.Extensions.Logging](https://www.nuget.org/packages/Serilog.Extensions.Logging) | Serilog provider for Microsoft.Extensions.Logging | Apache-2.0 |
@@ -24,6 +24,7 @@ Projects generated from the templates in this repository reference the following
 |---------|---------|
 | [AsyncFixer](https://www.nuget.org/packages/AsyncFixer) | MIT |
 | [Meziantou.Analyzer](https://www.nuget.org/packages/Meziantou.Analyzer) | MIT |
+| [Microsoft.CodeAnalysis.BannedApiAnalyzers](https://www.nuget.org/packages/Microsoft.CodeAnalysis.BannedApiAnalyzers) | MIT |
 | [Roslynator.Analyzers](https://www.nuget.org/packages/Roslynator.Analyzers) | Apache-2.0 |
 | [SonarAnalyzer.CSharp](https://www.nuget.org/packages/SonarAnalyzer.CSharp) | LGPL-3.0-only |
 
@@ -36,5 +37,6 @@ Adds a class that uses the packages already referenced by the host application (
 | Package | Purpose | License |
 |---------|---------|---------|
 | [Wolfgang.Etl.Abstractions](https://www.nuget.org/packages/Wolfgang.Etl.Abstractions) | ETL extract/transform/load abstractions | MIT |
+| [Polly.Core](https://www.nuget.org/packages/Polly.Core) | Retry, circuit breaker and timeout pipeline (only with `--resilience`) | BSD-3-Clause |
 
 Plus the host application's existing packages, as with `cwsubcmd`.

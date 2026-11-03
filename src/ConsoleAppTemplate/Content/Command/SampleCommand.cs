@@ -16,7 +16,7 @@ namespace ConsoleAppTemplate.Command;
     // TODO Add a description for your command
     Description = "<add description here>",
 
-    // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
+    // TODO Specify response file handling. The template sets ParseArgsAsSpaceSeparated; McMaster's default is Disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
     ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
 
 )]
@@ -47,14 +47,14 @@ internal class SampleCommand
     public char Delimiter { get; set; } = ',';
 
 
-    
+
     [Option
         (
             Description = "Number of lines to process"
         )
     ]
     // Ensures the user does not enter a negative number
-    [Range(0, 10_000)] 
+    [Range(0, 10_000)]
     public int MaxLines { get; set; } = 1000;
 
 
@@ -78,7 +78,7 @@ internal class SampleCommand
         CancellationToken cancellationToken
     )
     {
-        logger.LogInformation("Starting {Command}", GetType().Name);
+        logger.LogDebug("Starting {Command}", GetType().Name);
 
         // TODO Remove along with SampleConfiguration - demonstrates reading bound configuration
         logger.LogDebug("CommandTimeout is {CommandTimeout}", configuration.CommandTimeout);
@@ -116,9 +116,8 @@ internal class SampleCommand
         }
         catch (Exception e)
         {
-
             logger.LogCritical(e, "Unhandled error: {Message}", e.Message);
-            console.WriteLine(e);
+            await console.Error.WriteLineAsync(e.Message);
             return ExitCode.ApplicationError;
         }
 

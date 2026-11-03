@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 // Top-level statements are the entry point - there is no explicit Main. The command
 // model (attributes), the --version provider and the default OnExecute live on the
@@ -31,9 +30,14 @@ try
         {
             configuration
                 .ReadFrom.Configuration(context.Configuration)
-                .Enrich.WithProperty("Version", Assembly.GetEntryAssembly()?.GetName().Version)
+                .Enrich.WithProperty("Version", GetVersion())
                 ;
         })
+
+#if (otel)
+        // OpenTelemetry tracing + metrics (see Framework/OpenTelemetryHostBuilderExtensions).
+        .ConfigureApplicationTelemetry()
+#endif
 
         // Configure dependency injection
         .ConfigureServices((_, serviceCollection) =>
@@ -54,11 +58,13 @@ try
             application => application.Conventions.AddConvention(new AutoRegisterCommandsConvention())
         );
 }
+catch (OperationCanceledException e)
+{
+    return HandleCanceled(e);
+}
 catch (Exception e)
 {
-    await Console.Error.WriteLineAsync(e.Message);
-    Log.Logger.Fatal(e, "Unhandled exception: {Message}", e.Message);
-    return ExitCode.UnhandledException;
+    return await HandleUnhandledAsync(e);
 }
 finally
 {
@@ -68,7 +74,7 @@ finally
 
 [Command
 (
-    // TODO You can override the default name for the command by uncommenting the line below
+    // TODO Change the command name below, or remove the line to use the default (the entry assembly name)
     Name = "ConsoleAppTemplate",
 
     // TODO Add a description for the command
@@ -77,7 +83,7 @@ finally
     // TODO Specify what to do with unrecognized arguments. The default is to throw an exception. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.UnrecognizedArgumentHandling.html
     UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw,
 
-    // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
+    // TODO Specify response file handling. The template sets ParseArgsAsSpaceSeparated; McMaster's default is Disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
     ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
 )]
 // Sub commands are discovered and registered automatically - every class in this
@@ -91,8 +97,34 @@ finally
 internal partial class Program
 {
     /// <summary>
+    /// Logs a cancellation (Ctrl+C or a cancelled token that escaped a command) and maps it to
+    /// <see cref="ExitCode.Canceled"/>.
+    /// </summary>
+    private static int HandleCanceled(OperationCanceledException e)
+    {
+        Log.Logger.Warning(e, "Canceled");
+        return ExitCode.Canceled;
+    }
+
+
+
+    /// <summary>
+    /// Reports an exception that escaped every command handler: the message goes to stderr for the
+    /// user, the full exception to the log, and the process exits with
+    /// <see cref="ExitCode.UnhandledException"/>.
+    /// </summary>
+    private static async Task<int> HandleUnhandledAsync(Exception e)
+    {
+        await Console.Error.WriteLineAsync(e.Message);
+        Log.Logger.Fatal(e, "Unhandled exception: {Message}", e.Message);
+        return ExitCode.UnhandledException;
+    }
+
+
+
+    /// <summary>
     /// Supplies the value shown by the --version option. Reads the assembly's
-    /// informational version (set via the csproj Version/PackageVersion), falling
+    /// informational version (set via the csproj Version), falling
     /// back to the assembly version when no informational version is present.
     /// </summary>
     private static string GetVersion()
@@ -109,11 +141,11 @@ internal partial class Program
     /// <summary>
     /// This method is called if the user does not specify a sub command
     /// </summary>
-    /// <param name="application"></param>
-    /// <param name="reporter"></param>
-    /// <param name="sampleConfiguration"></param>
-    /// <param name="logger"></param>
-    /// <returns>0 on success or any positive number for failure</returns>
+    /// <param name="application">The root command, used here to show the help text.</param>
+    /// <param name="sampleConfiguration">The bound SampleConfiguration section (remove along with the sample).</param>
+    /// <param name="reporter">Console reporter for user-facing output (stdout/stderr).</param>
+    /// <param name="logger">Logger for this command.</param>
+    /// <returns><see cref="ExitCode.Success"/> (0) on success or any positive number for failure.</returns>
     /// <remarks>
     /// - If you are not using sub commands you can rewrite this method to meet your needs
     /// - You can add and remove any parameters as needed, but you will need to configure dependency injection
@@ -125,7 +157,7 @@ internal partial class Program
         CommandLineApplication<Program> application,
         SampleConfiguration sampleConfiguration,
         IReporter reporter,
-        ILogger logger
+        ILogger<Program> logger
     )
     {
 

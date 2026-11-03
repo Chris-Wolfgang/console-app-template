@@ -24,6 +24,10 @@
     evaluation itself fails. Run from the repository root; pr.yaml runs it on
     the Windows stage and build-pr.ps1 mirrors it locally.
 
+    Not applicable in this template-pack repo: there is no test project under
+    tests/, so the walk finds nothing and reports nothing. Fleet-synced from
+    repo-template; see docs/adr/0004-template-pack-ci-adaptations.md.
+
 .EXAMPLE
     pwsh ./scripts/tfm-parity.ps1
 #>

@@ -12,7 +12,7 @@ on:
       - 'src/AotConsoleTemplate/**'
       - '.github/workflows/aot-smoke.yml'
   push:
-    branches: [ main, vNext ]
+    branches: [ main ]
     paths:
       - 'src/AotConsoleTemplate/**'
       - '.github/workflows/aot-smoke.yml'
@@ -59,6 +59,11 @@ jobs:
           mkdir -p "$app"
           cd "$app"
           dotnet new cwconsole-aot -n SmokeAot
+          # Replace the default "Hello" greeting so the assertion below can only pass if
+          # appsettings.json was copied to the output and bound through the source-generated
+          # binder - the SampleOptions default would also print "Hello".
+          sed -i 's/"Greeting": "Hello"/"Greeting": "Howdy"/' appsettings.json
+          grep -q '"Greeting": "Howdy"' appsettings.json
           dotnet publish -c Release -r linux-x64
 
       - name: Run the native binary and assert output
@@ -66,12 +71,12 @@ jobs:
           bin="$(find "$RUNNER_TEMP/gen/SmokeAot" -type f -name SmokeAot -path '*publish*' | head -n1)"
           echo "Native binary: $bin"
           file "$bin"
-          # The app also logs an "info" line to stdout, so match on the greeting
-          # line rather than the whole output.
+          # Logs go to stderr (LogToStandardErrorThreshold = Trace in Program.cs), so
+          # stdout must be exactly the greeting line; the exact match guards that too.
           out="$("$bin" --name CI)"
           echo "Output: $out"
-          if ! printf '%s\n' "$out" | grep -qx 'Hello, CI!'; then
-            echo "::error::Native AOT binary did not print the expected 'Hello, CI!' line. Full output:"
+          if [ "$out" != 'Howdy, CI!' ]; then
+            echo "::error::Native AOT binary stdout was not exactly 'Howdy, CI!' (greeting configured in appsettings.json; logs must go to stderr). Full stdout:"
             printf '%s\n' "$out"
             exit 1
           fi

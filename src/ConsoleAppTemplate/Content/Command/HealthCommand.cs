@@ -23,6 +23,13 @@ namespace ConsoleAppTemplate.Command;
 )]
 internal class HealthCommand
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        WriteIndented = true,
+    };
+
+
+
     [Option
         (
             Description = "Emit machine-readable JSON instead of text - useful for container/orchestrator health probes."
@@ -43,7 +50,7 @@ internal class HealthCommand
         CancellationToken cancellationToken
     )
     {
-        logger.LogInformation("Starting {Command}", GetType().Name);
+        logger.LogDebug("Starting {Command}", GetType().Name);
 
         try
         {
@@ -162,7 +169,7 @@ internal class HealthCommand
     {
         foreach (var check in checks)
         {
-            console.WriteLine($"{(check.Passed ? "✅" : "❌")} {check.Detail}");
+            console.WriteLine($"{(check.Passed ? "[PASS]" : "[FAIL]")} {check.Detail}");
         }
     }
 
@@ -181,7 +188,7 @@ internal class HealthCommand
             })
         };
 
-        console.WriteLine(JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true }));
+        console.WriteLine(JsonSerializer.Serialize(payload, SerializerOptions));
     }
 
 
