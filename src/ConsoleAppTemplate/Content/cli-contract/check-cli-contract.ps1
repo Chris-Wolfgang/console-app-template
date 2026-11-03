@@ -24,7 +24,15 @@ $current = Join-Path ([System.IO.Path]::GetTempPath()) "cli-surface.$([System.Gu
 
 try
 {
-    dotnet run --project $root -c Release -- cli-surface --output $current | Out-Null
+    # Build first so compiler errors reach the console; only the command's own
+    # stdout is discarded (the manifest goes to $current).
+    dotnet build $root -c Release
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "Build failed with exit code $LASTEXITCODE."
+    }
+
+    dotnet run --project $root -c Release --no-build -- cli-surface --output $current | Out-Null
     if ($LASTEXITCODE -ne 0)
     {
         throw "cli-surface command failed with exit code $LASTEXITCODE."

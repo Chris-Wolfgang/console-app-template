@@ -1,3 +1,7 @@
+# Not applicable in this template-pack repo: tests/ holds only the snapshot goldens and
+# snapshot.sh (no test project), so no .cs file picks these up. Fleet-synced from
+# repo-template and kept so template syncs stay clean; see docs/adr/0004-template-pack-ci-adaptations.md.
+
 # Analyzer rules relaxed for test projects
 
 [*.cs]

@@ -1,4 +1,4 @@
-﻿// NOTE: If your application was created from the Wolfgang Console App template this
+// NOTE: If your application was created from the Wolfgang Console App template this
 // command is registered automatically at startup (AutoRegisterCommandsConvention).
 // In an app without that convention, add [Subcommand(typeof(SubCommandTemplate))] to Program.
 using McMaster.Extensions.CommandLineUtils;
@@ -10,11 +10,11 @@ namespace {DefaultNamespace}.Command;
 (
     // TODO You can override the default name for the command by uncommenting the line below
     // Name = "{alternative-name}"
-    
+
     // TODO Add a description for your command
     Description = "{command-description}",
 
-    // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
+    // TODO Specify response file handling. The template sets ParseArgsAsSpaceSeparated; McMaster's default is Disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
     ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
 
 )]
@@ -47,10 +47,15 @@ internal class SubCommandTemplate
             cancellationToken.ThrowIfCancellationRequested();
 
         }
+        catch (OperationCanceledException e)
+        {
+            logger.LogWarning(e, "{Command} was canceled", GetType().Name);
+            return ExitCode.Canceled;
+        }
         catch (Exception e)
         {
             logger.LogCritical(e, "Unhandled error: {Message}", e.Message);
-            console.WriteLine(e);
+            await console.Error.WriteLineAsync(e.Message);
             return ExitCode.ApplicationError;
         }
 

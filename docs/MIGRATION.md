@@ -15,7 +15,7 @@ values).
 
 ---
 
-## Unreleased
+## 0.6.0
 
 ### `--response-file` choice values shortened
 

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -21,31 +21,30 @@
                          skips it with this warning. The template uses reflection-based command
                          parsing, not the generator, so skipping it is harmless. No-op on .NET 10. -->
     <NoWarn>$(NoWarn);MA0026;S1135;S1144;S125;MA0004;CA2007;CS9057</NoWarn>
-	<PackageVersion>0.1.0</PackageVersion>
-	<LangVersion>latest</LangVersion>
-	<Copyright>Copyright {copyright year} {author}</Copyright>
-	<Description>{description}</Description>
-	<Authors>{author}</Authors>
-	<PackageReadmeFile>ReadMe.md</PackageReadmeFile>
-	<RepositoryUrl>https://github.com/Chris-Wolfgang/console-app-template</RepositoryUrl>
-	<RepositoryType>git</RepositoryType>
-	<PackageTags>template;console-app;</PackageTags>
-	<PackageIcon>Console-Template-icon.png</PackageIcon>
-	<ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
-	<GenerateDocumentationFile>True</GenerateDocumentationFile>
-	<Title>Wolfgang Console Template</Title>
-	<PackageProjectUrl>https://github.com/Chris-Wolfgang/console-app-template</PackageProjectUrl>
+  <Version>0.1.0</Version>
+  <LangVersion>latest</LangVersion>
+  <Copyright>Copyright {copyright year} {author}</Copyright>
+  <Description>{description}</Description>
+  <Authors>{author}</Authors>
+  <ApplicationIcon>Console-Template-icon.ico</ApplicationIcon>
+  <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <!-- Companion test/benchmark projects live under tests/ and benchmarks/ (separate
-       projects with their own references), and Program.TopLevel.cs is the alternate
-       top-level-statements entry point (emitted, renamed to Program.cs, only with the
-       top-level option). Keep all of these out of the default app compilation. -->
+       projects with their own references). Keep them out of the app compilation. -->
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
     <Compile Remove="benchmarks/**/*.cs" />
+  </ItemGroup>
+
+  <!--#if (!top-level)-->
+  <!-- Program.TopLevel.cs is the alternate top-level-statements entry point (emitted,
+       renamed to Program.cs, only with the top-level option). Keep it out of the
+       default app compilation. -->
+  <ItemGroup>
     <Compile Remove="Program.TopLevel.cs" />
   </ItemGroup>
+  <!--#endif-->
 
   <!--#if (unit-tests)-->
   <ItemGroup>
@@ -67,6 +66,11 @@
     <Content Include="Console-Template-icon.ico" />
   </ItemGroup>
 
+  <!-- Blocking / obsolete APIs the banned-API analyzer rejects (see the file for the list). -->
+  <ItemGroup>
+    <AdditionalFiles Include="BannedSymbols.txt" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="Console-Template-icon.png">
       <Pack>True</Pack>
@@ -76,6 +80,13 @@
 
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <!-- Banned-API analyzer (RS0030): enforces the async-first rules in BannedSymbols.txt.
+         3.3.4 is the last build that loads on the .NET 8 SDK's compiler; newer majors need a
+         newer Roslyn and would be skipped there (CS9057). -->
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -95,13 +106,13 @@
     <PackageReference Include="McMaster.Extensions.Hosting.CommandLine" Version="5.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.13" />
     <PackageReference Include="Serilog" Version="4.4.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.13" />
   </ItemGroup>
 
   <!--#if (otel)-->

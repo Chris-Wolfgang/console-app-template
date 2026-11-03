@@ -65,7 +65,7 @@
 
 		"description": {
 			"type": "parameter",
-			"description": "A description of this application. This name will appear in the <Description> tag in the csproj and in the copyright",
+			"description": "A description of this application. It will appear in the <Description> tag in the csproj",
 			"datatype": "text",
 			"replaces": "{description}",
 			"defaultValue": "(Console Application)"

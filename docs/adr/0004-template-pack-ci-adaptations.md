@@ -51,3 +51,26 @@ fork them:
 - These are *adaptations*, not a fork — the build/release workflows remain
   recognizably canonical. The one place that is a genuine fork is `pr.yaml`'s
   trigger and fork-safety model, split out into [ADR 0005](0005-pr-trigger-pull-request.md).
+
+## Addendum (2026-10-21) — inert fleet scaffolding is kept, not deleted
+
+`repo-template` syncs are additive: a file deleted here comes back on the next sync and
+the deletion has to be fought every time. So the fleet files that presuppose a
+library/application repo stay in the tree, each with a short "Not applicable in this
+template-pack repo" header pointing back here, and nothing else is built on them.
+Issue #509 is the audit that produced this list.
+
+| File(s) | Why it is inert here | Treatment |
+|---------|----------------------|-----------|
+| `.globalconfig`, `coverlet.runsettings`, `tests/.editorconfig` | No test project in `src/ConsoleAppTemplate.sln`; `.globalconfig` sits outside every `Content/` folder, so it never reaches a generated app | Header comment |
+| `benchmarks/.gitkeep`, `.github/workflows/benchmarks.yaml` | `benchmarks/` is empty; the benchmarks the templates *generate* live under `src/*/Content/benchmarks` and belong to the generated app | Header comment; detection made generic (first tracked `benchmarks/**/*.csproj`, no placeholder project name) and the "not present" message demoted from `::notice::` to a plain log line so pushes to `src/**` stop annotating |
+| `docfx_project/.gitkeep`, `.github/workflows/docfx.yaml`, `docs/DOCFX-VERSION-PICKER.md`, `scripts/Validate-DocsDeploy.ps1` | No DocFX site; `release.yaml`'s `detect-docfx` step already gates the docs job on `docfx_project/docfx.json` | Header comment / note |
+| `.github/workflows/stryker.yaml`, `scripts/tfm-parity.ps1`, `scripts/build-pr.ps1` (test + coverage steps) | All no-ops without `tests/*.csproj`; `build-pr.ps1` already says so in its help | Header comment (`build-pr.ps1` unchanged) |
+| `.github/workflows/sourcelink.yaml` | Nothing under `src/` targets `net10.0` (packers are `netstandard2.0` and ship no assembly; Content apps are `net8.0` payload), so its build loop skips every project and verifies no PDB | Header comment; **not** filtered to `*.template.pack.csproj` — there is nothing to verify either way |
+| `.github/workflows/sbom.yaml`, `release.yaml` "Generate SBOM" step | Iterate every `src/**/*.csproj`, including the two Content app csprojs | **Kept on purpose.** The `*.template.pack.csproj` packers have no package dependencies, so an SBOM of them is empty; the generated app's dependency set is the SBOM `docs/THREAT-MODEL.md` relies on ("Tampering: a malicious dependency pulled into the generated app"). Comment added at both sites |
+| `BannedSymbols.txt` (root) | Was a reference list no project consumed | **Wired.** Each content project (`ConsoleAppTemplate.csproj`, `AotConsoleTemplate.csproj`) now carries its own `Content/BannedSymbols.txt` as an `AdditionalFiles` item for `Microsoft.CodeAnalysis.BannedApiAnalyzers`, so a generated app fails its Release build (RS0030) on the listed blocking/obsolete APIs. The root file remains the fleet-synced reference copy; keep the two Content copies in step with it (they differ only in the header lines). Pinned to 3.3.4, the last build the .NET 8 SDK's compiler loads |
+
+Also noted, not changed: `.editorconfig`'s `[src/**/*.cs]` block says `Directory.Build.props`
+turns on `GenerateDocumentationFile` for `src/`; here each Content csproj sets it itself and
+`Directory.Build.props` does not. The comment is synced from `repo-template`, so the fix
+belongs there.
