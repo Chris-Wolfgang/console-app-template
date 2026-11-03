@@ -59,6 +59,11 @@ jobs:
           mkdir -p "$app"
           cd "$app"
           dotnet new cwconsole-aot -n SmokeAot
+          # Replace the default "Hello" greeting so the assertion below can only pass if
+          # appsettings.json was copied to the output and bound through the source-generated
+          # binder - the SampleOptions default would also print "Hello".
+          sed -i 's/"Greeting": "Hello"/"Greeting": "Howdy"/' appsettings.json
+          grep -q '"Greeting": "Howdy"' appsettings.json
           dotnet publish -c Release -r linux-x64
 
       - name: Run the native binary and assert output
@@ -70,8 +75,8 @@ jobs:
           # line rather than the whole output.
           out="$("$bin" --name CI)"
           echo "Output: $out"
-          if ! printf '%s\n' "$out" | grep -qx 'Hello, CI!'; then
-            echo "::error::Native AOT binary did not print the expected 'Hello, CI!' line. Full output:"
+          if ! printf '%s\n' "$out" | grep -qx 'Howdy, CI!'; then
+            echo "::error::Native AOT binary did not print the expected 'Howdy, CI!' line (greeting configured in appsettings.json). Full output:"
             printf '%s\n' "$out"
             exit 1
           fi
