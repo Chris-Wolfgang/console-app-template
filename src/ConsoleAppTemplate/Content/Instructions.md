@@ -172,25 +172,30 @@ TODOs in the file include
 The launchSettings.json file is used to configure the application when running in Visual Studio. 
 You can specify multiple configurations, and each configuration can have its own set of command line arguments.
 
-In the example below there are three profiles. 
-1. The first profile will run the program with `-?` option to display the help
-1. The second profile will run the `export` subcommand with `-?` option to display the help for the export subcommand
-1. The third profile will run the `export` subcommand with the command line argument `export-file.csv` and the commandline option `delimiter`
+The template ships four profiles in `Properties/launchSettings.json`:
+1. `<no options>` runs the program with no arguments
+1. `-?` runs the program with the `-?` option to display the help
+1. `sample -?` runs the `sample` subcommand with the `-?` option to display the help for that subcommand
+1. `sample` runs the `sample` subcommand with the arguments `AppSettings.json output.txt`
 
-```json 
+```json
 {
 	"profiles": {
+		"<no options>": {
+			"commandName": "Project",
+			"commandLineArgs": ""
+		},
 		"-?": {
 			"commandName": "Project",
 			"commandLineArgs": "-?"
 		},
-		"export -?": {
+		"sample -?": {
 			"commandName": "Project",
-			"commandLineArgs": "export -?"
+			"commandLineArgs": "sample -?"
 		},
-		"export": {
+		"sample": {
 			"commandName": "Project",
-			"commandLineArgs": "export-file.csv --delimiter=|"
+			"commandLineArgs": "sample AppSettings.json output.txt"
 		}
 	}
 }
@@ -250,10 +255,10 @@ either restore first, or pass `--DefaultNamespaceFallback <YourRootNamespace>`.
 	internal class SampleCommand
 	{
 		[Argument(0, Description = "The name and path of the source file")]
-		public string SourcePath { get; set; }
+		public required string SourcePath { get; set; }
 
 		[Argument(1, Description = "The name and path of the destination file")]
-		public string DestinationPath { get; set; }
+		public required string DestinationPath { get; set; }
 
 		[Option("-c|--count", Description = "The rows to parse.")]
 		public int Count { get; set; }
@@ -327,9 +332,9 @@ the Console and File sinks, but you don't have to. You can remove either or both
 do not have any sinks defined nothing will be logged. You can add any other sinks that you would 
 like. A list of sinks can be found at https://github.com/serilog/serilog/wiki/provided-sinks
 
-[!TIP]
-You can disable a sink temporarily by removing it from this list. You can still leave the 
-configuration in the `WriteTo` section, but it will not be used. 
+> [!TIP]
+> You can disable a sink temporarily by removing it from this list. You can still leave the
+> configuration in the `WriteTo` section, but it will not be used.
 
 
 
@@ -370,10 +375,10 @@ The exact configuration will depend on the sink you are using. The Console and F
 are configured for you as part of this template. 
 
 
-[!Note]
-The `WriteTo` section configures the individual sinks, however, the sink must be 
-registered in the `Using` section. If it is not registered in the `Using` section, 
-or the appropriate package is not installed, the sink will not work. 
+> [!NOTE]
+> The `WriteTo` section configures the individual sinks, however, the sink must be
+> registered in the `Using` section. If it is not registered in the `Using` section,
+> or the appropriate package is not installed, the sink will not work.
 
 
 ### `Enrich`

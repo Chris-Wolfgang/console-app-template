@@ -54,15 +54,16 @@ The templates are designed for scalability, maintainability, and ease-of-use, wh
 
 ## 🎯 Supported Frameworks
 
-The `Wolfgang.Template.Console` package installs three templates:
+Each of the four packages installs one template:
 
 | Template | `dotnet new` short name | Generated project targets |
 |---|---|---|
 | Wolfgang Console App | `cwconsole` | `net8.0` |
+| Wolfgang Console App (Native AOT) | `cwconsole-aot` | `net8.0` |
 | Wolfgang Console SubCommand | `cwsubcmd` | Adds files to an existing project (inherits host's TFM) |
 | Wolfgang Console ETL SubCommand | `cwsubcmdetl` | Adds files to an existing project (inherits host's TFM) |
 
-The template pack itself targets `netstandard2.0` for `dotnet new` compatibility across all SDKs — this does not affect the generated project's target framework.
+The template packs themselves target `netstandard2.0` for `dotnet new` compatibility across all SDKs — this does not affect the generated project's target framework.
 
 See the [NuGet package page](https://www.nuget.org/packages/Wolfgang.Template.Console/) for the authoritative per-TFM compatibility matrix.
 
@@ -166,7 +167,7 @@ The template supports a main command and subcommands. To view help:
 dotnet run -- --help
 ```
 
-Add new subcommands by creating classes and registering them in `Program.cs` — or generate one with `dotnet new cwsubcmd`.
+Add new subcommands by dropping a `[Command]`-attributed class into `Command/` — the generated app discovers and registers it automatically (see [Commands and Subcommands](#commands-and-subcommands)) — or generate one with `dotnet new cwsubcmd`.
 
 ---
 
@@ -177,25 +178,42 @@ A project generated from `cwconsole` looks like:
 ```
 MyConsoleApp/
 ├── Program.cs
+├── ExitCode.cs
 ├── AppSettings.json
 ├── AppSettings.Development.json
 ├── AppSettings.Production.json
 ├── Command/
-│   └── SampleCommand.cs
+│   ├── SampleCommand.cs
+│   ├── HealthCommand.cs            (with --health-check)
+│   └── CliSurfaceCommand.cs        (with --cli-contract)
 ├── Framework/
-│   └── (hosting, configuration, and console helpers)
+│   ├── AutoRegisterCommandsConvention.cs
+│   ├── ConfigurationFileMethod.cs
+│   ├── ConsoleColors.cs
+│   ├── IHostBuilderExtensions.cs
+│   ├── IServiceCollectionExtensions.cs
+│   ├── OpenTelemetryHostBuilderExtensions.cs   (with --otel)
+│   └── Telemetry.cs                            (with --otel)
 ├── Model/
 │   └── SampleConfiguration.cs
+├── Properties/
+│   └── launchSettings.json
 ├── Instructions.md
-└── ...
+├── ReadMe.md
+├── cli-contract/                   (with --cli-contract, plus .github/workflows/cli-contract.yml)
+├── tests/                          (with --unit-tests / --integration-tests)
+└── benchmarks/                     (with --benchmarks)
 ```
 
-- **Program.cs**: Entry point with main logic and configuration.
+- **Program.cs**: Entry point with main logic and configuration (top-level-statements form with `--top-level`).
+- **ExitCode.cs**: The process exit codes the app returns.
 - **AppSettings*.json**: Application configuration files.
 - **Command/**: Subcommand classes; add new commands here.
-- **Framework/**: Hosting and configuration extension helpers.
+- **Framework/**: Automatic command registration, hosting and configuration extension helpers.
 - **Model/**: Configuration binding models.
+- **Properties/launchSettings.json**: Visual Studio run profiles for the sample command.
 - **Instructions.md**: In-depth development and customization notes.
+- **ReadMe.md**: A starter README for your application.
 
 ---
 
@@ -204,11 +222,16 @@ MyConsoleApp/
 ### Commands and Subcommands
 
 - Define your main command in `Program.cs` using attributes.
-- Add subcommands by creating new classes and registering them with `[Subcommand(typeof(MyCommand))]`.
+- Add a subcommand by creating a class decorated with `[Command]` (for example under `Command/`). The generated app's `AutoRegisterCommandsConvention` discovers every such class in the assembly and registers it — no `[Subcommand(typeof(...))]` list to maintain (see [ADR 0002](docs/adr/0002-automatic-command-registration.md)).
+- Explicit `[Subcommand(typeof(...))]` entries on `Program` still work; the convention skips commands that are already registered, so the two styles can coexist.
 
 Example:
 ```csharp
-[Subcommand(typeof(MyNewCommand))]
+[Command("export", Description = "Exports the data")]
+internal class ExportCommand
+{
+    public Task<int> OnExecuteAsync(CancellationToken cancellationToken) => ...;
+}
 ```
 
 ### Configuration Files
@@ -236,15 +259,11 @@ InspectCode, and zizmor for workflow security).
 
 - **Target score floor:** **≥ 7.0 / 10.** Investigate and address any check that
   drops the aggregate below that; the per-check breakdown is in Code Scanning.
-- **Public badge / dashboard:** off by default (the score stays private in Code
-  Scanning). To publish to the public OpenSSF dashboard and enable the badge below,
-  set `publish_results: true` in [`.github/workflows/scorecard.yml`](.github/workflows/scorecard.yml)
-  (and add `id-token: write` to that job) — a deliberate "make our posture public"
-  decision. Once enabled, add:
+- **Public badge / dashboard:** results are also published to the public OpenSSF
+  dashboard (`publish_results: true` plus `id-token: write` in
+  [`.github/workflows/scorecard.yaml`](.github/workflows/scorecard.yaml)):
 
-  ```markdown
   [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Chris-Wolfgang/console-app-template/badge)](https://scorecard.dev/viewer/?uri=github.com/Chris-Wolfgang/console-app-template)
-  ```
 
 See the [Threat Model](docs/THREAT-MODEL.md) for the STRIDE analysis behind these
 controls, and [SECURITY.md](SECURITY.md) for how to report a vulnerability.
@@ -268,15 +287,19 @@ dotnet restore src/ConsoleAppTemplate.sln
 # Build the solution
 dotnet build src/ConsoleAppTemplate.sln --configuration Release
 
-# Run tests
-dotnet test src/ConsoleAppTemplate.sln --configuration Release
+# Check the generated-project snapshot (packs the template, generates a project, compares file hashes
+# against tests/snapshots/*.manifest; add --update after an intended change to the template content)
+bash tests/snapshots/snapshot.sh
 
 # Run code formatting
 pwsh ./scripts/format.ps1
 
-# Run the PR workflow's Windows stage locally (build, tests on every TFM, coverage gates, DevSkim, gitleaks)
+# Run the PR workflow's Windows stage locally (build, DevSkim, gitleaks; the test and coverage
+# steps skip themselves because this repo has no test projects)
 pwsh ./scripts/build-pr.ps1
 ```
+
+There are no `dotnet test` projects in `src/ConsoleAppTemplate.sln` — this is a template pack. The tests are the snapshot check above and the CI smoke matrix in `pr.yaml`, which packs every template, installs it, generates a project per option set and builds it.
 
 
 
