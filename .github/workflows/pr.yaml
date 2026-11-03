@@ -30,6 +30,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  # Fleet coverage policy: production assemblies (anything under src/) at 95%
+  # line coverage or more, test assemblies (anything under tests/) at 100%.
+  # No test assembly exists in this repo today - src/ConsoleAppTemplate.sln holds
+  # only template packs and their Content projects, and there is no test stage
+  # above - so nothing reads these yet. They are declared here so the gate takes
+  # effect at the policy values the moment a test project and the fleet's
+  # coverage stage are added, instead of starting at a lower default.
+  CODECOV_MINIMUM: 95
+  CODECOV_TEST_MINIMUM: 100
+
 jobs:
   # ============================================================================
   # SECRETS SCAN: Detect leaked credentials before merge
