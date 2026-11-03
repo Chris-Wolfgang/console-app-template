@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
- <PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
     <PackageType>Template</PackageType>
     <PackageVersion>0.8.0</PackageVersion>
     <PackageId>Wolfgang.Template.Console.Subcommand</PackageId>
@@ -22,7 +22,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-   </PropertyGroup>
+  </PropertyGroup>
 
   <ItemGroup>
     <Content Include="**\*" Exclude="**\bin\**;**\obj\**;**\.vs\**;**\.git\**;" />

@@ -223,7 +223,7 @@
 	],
 
 	"primaryOutputs": [
-		{ 
+		{
 			"path": "Instructions.md"
 		}
 	],

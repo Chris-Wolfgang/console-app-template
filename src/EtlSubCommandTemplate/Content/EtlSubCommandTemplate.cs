@@ -1,4 +1,4 @@
-﻿// NOTE: This class depends on Wolfgang.Etl.Abstractions
+// NOTE: This class depends on Wolfgang.Etl.Abstractions
 // TODO Please run the following in your project folder:
 //   dotnet add package Wolfgang.Etl.Abstractions
 //
@@ -17,7 +17,7 @@ namespace {DefaultNamespace}.Command;
 (
     // TODO You can override the default name for the command by uncommenting the line below
     // Name = "{alternative-name}"
-    
+
     // TODO Add a description for your command
     Description = "{command-description}",
 
