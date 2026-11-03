@@ -21,7 +21,7 @@ namespace {DefaultNamespace}.Command;
     // TODO Add a description for your command
     Description = "{command-description}",
 
-    // TODO Specify response file handling. Default is disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
+    // TODO Specify response file handling. The template sets ParseArgsAsSpaceSeparated; McMaster's default is Disabled. See https://natemcmaster.github.io/CommandLineUtils/v3.0/api/McMaster.Extensions.CommandLineUtils.ResponseFileHandling.html
     ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
 
 )]
@@ -128,8 +128,8 @@ internal class EtlSubCommandTemplate
         IProgress<TProgress> reporter
     ) where TDestination : notnull where TSource : notnull
     {
-        var item = extractor.ExtractAsync(reporter);
-        var transformedItems = transformer.TransformAsync(item);
+        var items = extractor.ExtractAsync(reporter);
+        var transformedItems = transformer.TransformAsync(items);
         return loader.LoadAsync(transformedItems);
     }
 }
