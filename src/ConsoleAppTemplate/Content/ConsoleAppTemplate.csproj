@@ -21,7 +21,7 @@
                          skips it with this warning. The template uses reflection-based command
                          parsing, not the generator, so skipping it is harmless. No-op on .NET 10. -->
     <NoWarn>$(NoWarn);MA0026;S1135;S1144;S125;MA0004;CA2007;CS9057</NoWarn>
-  <PackageVersion>0.1.0</PackageVersion>
+  <Version>0.1.0</Version>
   <LangVersion>latest</LangVersion>
   <Copyright>Copyright {copyright year} {author}</Copyright>
   <Description>{description}</Description>

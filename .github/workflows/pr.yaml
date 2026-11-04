@@ -318,7 +318,11 @@ jobs:
         shell: bash
         working-directory: ./smoke/smoke-app
         run: |
-          dotnet run --project SmokeApp.csproj -c Release --no-build -- --version
+          # --version reads AssemblyInformationalVersion, so it must report the
+          # csproj <Version> (0.1.0), optionally with a +<commit> suffix (#521).
+          version_output="$(dotnet run --project SmokeApp.csproj -c Release --no-build -- --version)"
+          echo "$version_output"
+          echo "$version_output" | grep -qE '^0\.1\.0(\+[0-9a-f]+)?$' || { echo "::error::--version did not report the csproj Version 0.1.0"; exit 1; }
           # All four commands should be auto-registered (sample + the three we added).
           # Match command-list lines ("  <name>   <description>") anchored at the
           # start rather than a bare substring, so a command name appearing inside a
