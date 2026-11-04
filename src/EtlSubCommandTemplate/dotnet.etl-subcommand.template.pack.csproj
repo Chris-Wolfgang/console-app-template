@@ -24,7 +24,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageIcon>Etl-SubCmd-Template-icon.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
