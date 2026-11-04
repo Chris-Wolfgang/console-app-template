@@ -13,7 +13,17 @@ using Microsoft.Extensions.Logging;
 //     dotnet publish -c Release -r linux-x64
 //
 // The host builder loads appsettings.json (+ environment variables + command line).
-var builder = Host.CreateApplicationBuilder(args);
+// The content root defaults to the current directory, so a binary started from anywhere
+// else would silently run on default settings; point it at the folder holding the binary,
+// which is where the build copies appsettings.json.
+var builder = Host.CreateApplicationBuilder
+(
+    new HostApplicationBuilderSettings
+    {
+        Args = args,
+        ContentRootPath = AppContext.BaseDirectory,
+    }
+);
 
 // Route every log line to stderr so stdout carries only the command's output and the app
 // composes in pipelines (`app | jq`). The default console logger writes to stdout.
