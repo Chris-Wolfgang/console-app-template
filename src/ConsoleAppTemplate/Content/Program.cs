@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ConsoleAppTemplate;
 
@@ -36,7 +35,7 @@ internal class Program
 {
     /// <summary>
     /// Supplies the value shown by the --version option. Reads the assembly's
-    /// informational version (set via the csproj Version/PackageVersion), falling
+    /// informational version (set via the csproj Version), falling
     /// back to the assembly version when no informational version is present.
     /// </summary>
     private static string GetVersion()
@@ -159,7 +158,7 @@ internal class Program
         CommandLineApplication<Program> application,
         SampleConfiguration sampleConfiguration,
         IReporter reporter,
-        ILogger logger
+        ILogger<Program> logger
     )
     {
 

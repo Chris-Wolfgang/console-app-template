@@ -24,7 +24,7 @@
          MA0004/CA2007 - console apps have no SynchronizationContext, so ConfigureAwait(false) is moot. -->
     <NoWarn>$(NoWarn);MA0026;S1135;S125;S1144;MA0004;CA2007</NoWarn>
 
-    <PackageVersion>0.1.0</PackageVersion>
+    <Version>0.1.0</Version>
     <LangVersion>latest</LangVersion>
     <Copyright>Copyright {copyright year} {author}</Copyright>
     <Description>{description}</Description>

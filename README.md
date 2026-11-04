@@ -169,6 +169,12 @@ dotnet run -- --help
 
 Add new subcommands by dropping a `[Command]`-attributed class into `Command/` — the generated app discovers and registers it automatically (see [Commands and Subcommands](#commands-and-subcommands)) — or generate one with `dotnet new cwsubcmd`.
 
+For an ETL-style subcommand built on [Wolfgang.Etl.Abstractions](https://www.nuget.org/packages/Wolfgang.Etl.Abstractions), use `dotnet new cwsubcmdetl`. Pass `--resilience` to wrap the extract/transform/load pass in a [Polly](https://www.pollydocs.org/) pipeline (retry with exponential backoff, circuit breaker, per-attempt timeout) configured from a `Resilience` section in `AppSettings.json`; the template adds `Polly.Core` to the project and emits a `ResilienceOptions.cs` next to the command whose header lists the two lines to add to `Program.cs` and `AppSettings.json`:
+
+```sh
+dotnet new cwsubcmdetl --ClassName ImportCommand -o Command --resilience
+```
+
 ---
 
 ## Project Structure
