@@ -37,5 +37,6 @@ Adds a class that uses the packages already referenced by the host application (
 | Package | Purpose | License |
 |---------|---------|---------|
 | [Wolfgang.Etl.Abstractions](https://www.nuget.org/packages/Wolfgang.Etl.Abstractions) | ETL extract/transform/load abstractions | MIT |
+| [Polly.Core](https://www.nuget.org/packages/Polly.Core) | Retry, circuit breaker and timeout pipeline (only with `--resilience`) | BSD-3-Clause |
 
 Plus the host application's existing packages, as with `cwsubcmd`.
