@@ -85,11 +85,11 @@ The console template content project (`src/ConsoleAppTemplate/Content/ConsoleApp
    - Security vulnerability detection
    - Code smell identification
 
-The native-AOT content project (`src/AotConsoleTemplate/Content/AotConsoleTemplate.csproj`) references Meziantou and Sonar only; the template-pack `.csproj` files contain no code.
+The native-AOT content project (`src/AotConsoleTemplate/Content/AotConsoleTemplate.csproj`) references Meziantou, Sonar and the banned-API analyzer only; the template-pack `.csproj` files contain no code.
 
 ### Async-First Guidelines
 
-Generated apps are async end to end, and contributions should keep them that way. The root `BannedSymbols.txt` lists the blocking APIs to avoid; it is a reference list and is **not** wired into any project as a banned-API analyzer, so these are review guidelines (partly caught by AsyncFixer and Meziantou) rather than build errors. The following APIs are **banned** by convention:
+Generated apps are async end to end, and contributions should keep them that way. Each content project ships a `BannedSymbols.txt` wired into `Microsoft.CodeAnalysis.BannedApiAnalyzers`, so calling a listed API is RS0030 - a warning in Debug and an error in Release builds of the generated app. The root `BannedSymbols.txt` is the fleet-synced reference copy; keep the two content copies in step with it. The following APIs are **banned**:
 
 #### ❌ Blocking Async Operations
 ```csharp

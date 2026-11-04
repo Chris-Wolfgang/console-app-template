@@ -1,5 +1,10 @@
 # DocFX Version Picker
 
+> **Not applicable in this template-pack repo.** There is no DocFX site here
+> (`docfx_project/` is a placeholder and none of the files below exist); this
+> page is fleet-synced from `repo-template` and kept so template syncs stay
+> clean. See [ADR 0004](adr/0004-template-pack-ci-adaptations.md).
+
 The docs site shows an in-page version picker (a `<select>` dropdown in
 the header) so readers on any page can jump between published doc
 versions. The picker is a self-contained JavaScript snippet — DocFX's

@@ -7,6 +7,10 @@
 # The workflow looks for a stryker-config.json at the repo root or under
 # tests/**/. If none is present the run is a no-op (Stryker setup is a
 # per-repo follow-up; this file is the canonical infrastructure).
+#
+# Not applicable in this template-pack repo: there is no test project and no
+# stryker-config.json, so the weekly run is a no-op. Fleet-synced from repo-template;
+# see docs/adr/0004-template-pack-ci-adaptations.md.
 name: Stryker (mutation testing)
 
 on:

@@ -1,5 +1,10 @@
 name: Deploy DocFX Pages
 
+# Not applicable in this template-pack repo: docfx_project/ holds only a .gitkeep (no
+# docfx.json), so release.yaml's detect-docfx step never calls this workflow and a manual
+# dispatch would fail at `docfx metadata`. Fleet-synced from repo-template and kept so
+# template syncs stay clean; see docs/adr/0004-template-pack-ci-adaptations.md.
+
 on:
   # Called by release.yaml after a GitHub Release is published.
   # Callers may pass an explicit 'version' string (e.g. v1.2.3); when omitted,
