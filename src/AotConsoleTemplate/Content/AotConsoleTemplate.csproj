@@ -33,7 +33,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Meziantou.Analyzer" Version="3.0.320">
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.321">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -44,7 +44,7 @@
     <!-- Banned-API analyzer (RS0030): enforces the async-first rules in BannedSymbols.txt.
          3.3.4 is the last build that loads on the .NET 8 SDK's compiler; newer majors need a
          newer Roslyn and would be skipped there (CS9057). -->
-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
