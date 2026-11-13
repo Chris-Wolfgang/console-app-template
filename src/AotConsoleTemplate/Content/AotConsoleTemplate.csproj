@@ -48,7 +48,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.CommandLine" Version="2.0.14" />
+    <PackageReference Include="System.CommandLine" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.14" />
   </ItemGroup>
