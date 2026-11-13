@@ -49,8 +49,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.CommandLine" Version="2.0.14" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="11.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="11.0.0" />
   </ItemGroup>
 
   <!-- Blocking / obsolete APIs the banned-API analyzer rejects (see the file for the list). -->
