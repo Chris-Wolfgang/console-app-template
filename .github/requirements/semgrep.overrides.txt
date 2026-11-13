@@ -8,7 +8,7 @@ mcp==1.30.0
 # fixed in 1.45.1). The SDK, exporter and instrumentation packages pin the API exactly, so the
 # whole OpenTelemetry family moves together to the 1.45.1 / 0.66b1 release. Same --no-deps
 # reasoning as above. Drop these once semgrep allows opentelemetry-api >= 1.45.1.
-opentelemetry-api==1.45.1
+opentelemetry-api==1.45.2
 opentelemetry-sdk==1.45.1
 opentelemetry-exporter-otlp-proto-http==1.45.1
 opentelemetry-instrumentation-requests==0.66b1
