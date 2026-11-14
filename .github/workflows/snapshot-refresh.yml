@@ -1,0 +1,135 @@
+name: Snapshot refresh (Dependabot)
+
+# Regenerates the snapshot goldens on Dependabot PRs (issue #604).
+#
+# A Dependabot bump to the console template's csproj files changes the generated
+# SnapshotApp.csproj, so the golden hashes in tests/snapshots/*.manifest go stale and
+# `Verify generated-output snapshot` (snapshot.yml) fails on every such PR. Until now
+# each one was superseded by hand with `./tests/snapshots/snapshot.sh --update`. This
+# workflow does that step on the Dependabot PR itself and pushes the regenerated
+# goldens as one extra commit, so the bump arrives green and the snapshot check can be
+# made a required check without blocking every bump.
+#
+# Token: a push made with GITHUB_TOKEN starts no workflow runs, so the new head would
+# never get its required checks. The push therefore uses a fine-grained PAT stored as
+# the DEPENDABOT secret SNAPSHOT_REFRESH_TOKEN (Dependabot-triggered runs can read only
+# Dependabot secrets): this repository only, Contents read/write, Metadata read. Without
+# the secret the job regenerates, reports the drift in the job summary and stops - it
+# never fails the PR on that account (snapshot.yml is the gate).
+#
+# Safety:
+# - Runs only for PRs opened by dependabot[bot] from this repository (the PR author, not
+#   the spoofable github.actor - zizmor bot-conditions). The refresh push triggers one more
+#   run, which finds the goldens current and commits nothing, so it does not loop. Runs
+#   started by anyone but Dependabot see only Actions secrets, not the Dependabot secret,
+#   so they take the report-only path.
+# - Pushes only on top of a head commit authored by dependabot[bot].
+# - Commits only the two manifest files, and refuses when the regeneration changed
+#   anything else.
+# - A plain fast-forward push to the head commit this run checked out; if the branch
+#   moved in the meantime the push is rejected and the next Dependabot push re-runs it.
+#   Never a force push.
+#
+# Triggers mirror snapshot.yml's pull_request paths, minus its own workflow file.
+
+on:
+  pull_request:
+    paths:
+      - 'src/ConsoleAppTemplate/Content/**'
+      - 'src/ConsoleAppTemplate/**/*.csproj'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snapshot-refresh-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    name: Refresh snapshot goldens (Dependabot)
+    runs-on: ubuntu-latest
+    if: >-
+      github.repository != 'Chris-Wolfgang/repo-template' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    env:
+      SNAPSHOT_REFRESH_TOKEN: ${{ secrets.SNAPSHOT_REFRESH_TOKEN }}
+    steps:
+      - name: Checkout the PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Regenerate the goldens
+        id: regen
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./tests/snapshots/snapshot.sh --update
+          changed="$(git status --porcelain)"
+          if [ -z "$changed" ]; then
+            echo "Goldens already match the generated output - nothing to commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "$changed"
+          # Only the two goldens may change; anything else means the regeneration
+          # touched files it should not, so stop rather than commit it.
+          unexpected="$(git status --porcelain | grep -vE '^ M tests/snapshots/cwconsole(-all-options)?\.manifest$' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "::error::snapshot.sh --update changed files other than the two goldens:"
+            echo "$unexpected"
+            exit 1
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Report (no token configured)
+        if: steps.regen.outputs.changed == 'true' && env.SNAPSHOT_REFRESH_TOKEN == ''
+        shell: bash
+        run: |
+          {
+            echo "### Snapshot goldens are stale on this Dependabot PR"
+            echo
+            echo "The Dependabot secret \`SNAPSHOT_REFRESH_TOKEN\` is not set, so the regenerated goldens were not pushed."
+            echo "Run \`./tests/snapshots/snapshot.sh --update\` on this branch and commit \`tests/snapshots/*.manifest\`."
+            echo
+            echo '```diff'
+            git diff -- tests/snapshots
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning::Snapshot goldens are stale; SNAPSHOT_REFRESH_TOKEN is not set, so nothing was pushed (see the job summary)."
+
+      - name: Commit and push the regenerated goldens
+        if: steps.regen.outputs.changed == 'true' && env.SNAPSHOT_REFRESH_TOKEN != ''
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          # The checked-out commit must still be Dependabot's: never stack a refresh
+          # on top of commits somebody else pushed.
+          author="$(git log -1 --format='%an' "$HEAD_SHA")"
+          if [ "$author" != "dependabot[bot]" ]; then
+            echo "::error::Head commit $HEAD_SHA is authored by '$author', not dependabot[bot]; not pushing."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/snapshots/cwconsole.manifest tests/snapshots/cwconsole-all-options.manifest
+          git commit -m "test(snapshot): regenerate goldens for the dependency bump" \
+            -m "Generated by snapshot-refresh.yml with ./tests/snapshots/snapshot.sh --update (#604)."
+          # Authenticate the push with a header, never a token in the remote URL, and
+          # drop the header however the step exits.
+          trap 'git config --unset-all http.https://github.com/.extraheader || true' EXIT
+          git config http.https://github.com/.extraheader \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$SNAPSHOT_REFRESH_TOKEN" | base64 -w0)"
+          git push origin "HEAD:refs/heads/$HEAD_REF"
+          echo "Pushed $(git rev-parse --short HEAD) to $HEAD_REF."
