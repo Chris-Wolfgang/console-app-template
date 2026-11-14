@@ -10,4 +10,16 @@
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Reproducible builds (fleet standard, issue #578). A literal year range, never
+         $([System.DateTime]::UtcNow.Year): a clock-derived value puts the BUILD year in the
+         package metadata, so a rebuild of an old tag after 1 January no longer matches what
+         was released. The first release PR of a new year bumps the second year. A pack
+         csproj that sets its own <Copyright> overrides this value. -->
+    <Copyright>Copyright (c) 2025-2026 Chris Wolfgang</Copyright>
+    <!-- Deterministic source paths (/_/ instead of the runner's checkout path) on CI builds.
+         GitHub Actions sets CI=true; local builds keep real paths for debugging. -->
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
 </Project>
