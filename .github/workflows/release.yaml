@@ -602,6 +602,67 @@ jobs:
           }
 
 
+      # Reproducible builds (issue #578, fleet standard standards/reproducible-builds.md).
+      # Publish what a verifier needs to rebuild a tag and compare: SHA256SUMS.txt and
+      # BUILD-MANIFEST.txt, written next to the packages so the attestation below and the
+      # release upload cover them. The hashes come from the exact .nupkg files that
+      # publish-nuget pushes (this job's nuget-packages artifact).
+      # These packs ship no assemblies (IncludeBuildOutput=false), so there are no
+      # per-TFM .dll/.pdb lines. A .nupkg zip is never byte-reproducible (NuGet's random
+      # *.psmdcp part and zip timestamps), so besides one line per package, every payload
+      # entry gets its own line keyed <package file>/<entry>, with the same OPC metadata
+      # exclusions as reproducible-build.yml (*.psmdcp and _rels/.rels). Those entry lines
+      # are what a rebuild must match. docs/REPRODUCIBLE-BUILD.md walks through it.
+      - name: Write SHA256SUMS.txt and BUILD-MANIFEST.txt
+        if: steps.check-packages.outputs.has-packages == 'true'
+        shell: pwsh
+        env:
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+        run: |
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $packagesPath = Join-Path $PWD 'nuget-packages'
+          $sha = [System.Security.Cryptography.SHA256]::Create()
+          $lines = [System.Collections.Generic.List[string]]::new()
+          $packages = Get-ChildItem -Path $packagesPath -Filter '*.nupkg' | Sort-Object Name
+          foreach ($pkg in $packages) {
+            $lines.Add(('{0}  {1}' -f (Get-FileHash -Algorithm SHA256 -LiteralPath $pkg.FullName).Hash.ToLowerInvariant(), $pkg.Name))
+            $zip = [System.IO.Compression.ZipFile]::OpenRead($pkg.FullName)
+            try {
+              $entries = $zip.Entries |
+                Where-Object { $_.FullName -notlike '*.psmdcp' -and $_.FullName -ne '_rels/.rels' -and -not $_.FullName.EndsWith('/') } |
+                Sort-Object FullName
+              foreach ($entry in $entries) {
+                $stream = $entry.Open()
+                try { $hash = [System.Convert]::ToHexString($sha.ComputeHash($stream)).ToLowerInvariant() }
+                finally { $stream.Dispose() }
+                $lines.Add(('{0}  {1}/{2}' -f $hash, $pkg.Name, $entry.FullName))
+              }
+            }
+            finally { $zip.Dispose() }
+          }
+          # LF line endings and no BOM, so `sha256sum -c`-style tooling and a diff on
+          # any OS read the file as written.
+          $utf8 = [System.Text.UTF8Encoding]::new($false)
+          [System.IO.File]::WriteAllText((Join-Path $packagesPath 'SHA256SUMS.txt'), (($lines -join "`n") + "`n"), $utf8)
+
+          $manifest = @(
+            "tag: $env:RELEASE_TAG_NAME"
+            "commit: $env:GITHUB_SHA"
+            "repository: $env:GITHUB_REPOSITORY"
+            "workflow-run: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+            "dotnet-sdk: $(dotnet --version)"
+            "runner-os: $env:RUNNER_OS $env:RUNNER_ARCH"
+            "runner-image: $env:ImageOS $env:ImageVersion"
+            "CI: $env:CI"
+            "ContinuousIntegrationBuild: $(if ($env:CI -eq 'true') { 'true' } else { 'false' }) (Directory.Build.props sets it when CI=true)"
+            "Deterministic: true (SDK default)"
+            "pack-command: dotnet pack <src/*/*.template.pack.csproj> --configuration Release `"/p:PackageVersion=<tag without leading v>`""
+          )
+          [System.IO.File]::WriteAllText((Join-Path $packagesPath 'BUILD-MANIFEST.txt'), (($manifest -join "`n") + "`n"), $utf8)
+
+          Get-Content (Join-Path $packagesPath 'BUILD-MANIFEST.txt')
+          Write-Host "SHA256SUMS.txt: $($lines.Count) line(s) for $($packages.Count) package(s)"
+
       # SLSA build-provenance attestation (issue #206). Records a signed,
       # verifiable statement that these exact .nupkg files were built by this
       # workflow at this commit. Stored in GitHub's attestation store (not
@@ -615,7 +676,12 @@ jobs:
         id: attest
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-path: 'nuget-packages/*.nupkg'
+          # The hash list and build manifest are attested too, so `gh attestation verify`
+          # covers what a verifier compares against, not only the packages (#578).
+          subject-path: |
+            nuget-packages/*.nupkg
+            nuget-packages/SHA256SUMS.txt
+            nuget-packages/BUILD-MANIFEST.txt
 
       # The attestation above goes to GitHub's attestation store, which is what
       # `gh attestation verify` reads. Tooling that audits the RELEASE PAGE does not
@@ -902,7 +968,7 @@ jobs:
           TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
           shopt -s nullglob
-          files=(./nuget-packages/*.nupkg ./nuget-packages/*.bom.json ./provenance/*.intoto.jsonl)
+          files=(./nuget-packages/*.nupkg ./nuget-packages/*.bom.json ./nuget-packages/SHA256SUMS.txt ./nuget-packages/BUILD-MANIFEST.txt ./provenance/*.intoto.jsonl)
           # The coverage zip only exists when the (optional) coverage artifact was produced.
           if [ -f release-coverage.zip ]; then files+=(release-coverage.zip); fi
           echo "Uploading ${#files[@]} asset(s) to release $TAG_NAME"

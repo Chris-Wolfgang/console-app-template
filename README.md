@@ -274,6 +274,10 @@ InspectCode, and zizmor for workflow security).
 See the [Threat Model](docs/THREAT-MODEL.md) for the STRIDE analysis behind these
 controls, and [SECURITY.md](SECURITY.md) for how to report a vulnerability.
 
+Each release publishes `SHA256SUMS.txt` and `BUILD-MANIFEST.txt` next to the packages, all
+covered by the build-provenance attestation. [Verifying a release](docs/REPRODUCIBLE-BUILD.md)
+shows how to rebuild a tag and compare.
+
 ---
 
 ## Building from Source
