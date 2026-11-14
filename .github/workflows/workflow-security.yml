@@ -60,8 +60,8 @@ jobs:
 
       - name: Run actionlint
         env:
-          ACTIONLINT_VERSION: "1.7.7"
-          ACTIONLINT_SHA256: "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757"  # DevSkim: ignore DS173237 - public file checksum, not a secret
+          ACTIONLINT_VERSION: "1.7.12"
+          ACTIONLINT_SHA256: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"  # DevSkim: ignore DS173237 - public file checksum, not a secret
         run: |
           # Pinned binary, checksum-verified before extraction (don't pipe curl
           # straight into tar - verify integrity first). shellcheck is preinstalled

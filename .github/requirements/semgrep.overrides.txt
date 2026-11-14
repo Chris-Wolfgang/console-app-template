@@ -6,10 +6,11 @@
 mcp==1.30.0
 # GHSA-xcq7-p3pf-p88h: semgrep pins opentelemetry-api~=1.37.0 (unbounded tracestate parsing,
 # fixed in 1.45.1). The SDK, exporter and instrumentation packages pin the API exactly, so the
-# whole OpenTelemetry family moves together to the 1.45.1 / 0.66b1 release. Same --no-deps
-# reasoning as above. Drop these once semgrep allows opentelemetry-api >= 1.45.1.
+# whole OpenTelemetry family moves together. GHSA-mf5v-w3w3-f6cg (opentelemetry-api, fixed in
+# 1.45.2) moved the family again to the 1.45.2 / 0.66b2 release. Same --no-deps reasoning as
+# above. Drop these once semgrep allows opentelemetry-api >= 1.45.2.
 opentelemetry-api==1.45.2
-opentelemetry-sdk==1.45.1
-opentelemetry-exporter-otlp-proto-http==1.45.1
-opentelemetry-instrumentation-requests==0.66b1
-opentelemetry-instrumentation-threading==0.66b1
+opentelemetry-sdk==1.45.2
+opentelemetry-exporter-otlp-proto-http==1.45.2
+opentelemetry-instrumentation-requests==0.66b2
+opentelemetry-instrumentation-threading==0.66b2
