@@ -307,6 +307,8 @@ pwsh ./scripts/build-pr.ps1
 
 There are no `dotnet test` projects in `src/ConsoleAppTemplate.sln` — this is a template pack. The tests are the snapshot check above and the CI smoke matrix in `pr.yaml`, which packs every template, installs it, generates a project per option set and builds it.
 
+The smoke matrix covers five legs with the documented minimum SDK (8.0): Linux x64 (`ubuntu-latest`), Linux ARM64 (`ubuntu-24.04-arm`), Windows x64 (`windows-latest`), Windows ARM64 (`windows-11-arm`) and macOS ARM64 (`macos-latest`); SDK 9.0 and 10.0 are spot-checked on Linux x64. The generated app targets net8.0, so every leg builds and runs that one TFM.
+
 
 
 ## Contributing
