@@ -610,8 +610,8 @@ jobs:
       # These packs ship no assemblies (IncludeBuildOutput=false), so there are no
       # per-TFM .dll/.pdb lines. A .nupkg zip is never byte-reproducible (NuGet's random
       # *.psmdcp part and zip timestamps), so besides one line per package, every payload
-      # entry gets its own line keyed <package file>/<entry>, with the same OPC metadata
-      # exclusions as reproducible-build.yml (*.psmdcp and _rels/.rels). Those entry lines
+      # entry gets its own line keyed <package file>/<entry>, leaving out NuGet's OPC metadata
+      # entries (*.psmdcp and _rels/.rels). Those entry lines
       # are what a rebuild must match. docs/REPRODUCIBLE-BUILD.md walks through it.
       - name: Write SHA256SUMS.txt and BUILD-MANIFEST.txt
         if: steps.check-packages.outputs.has-packages == 'true'
