@@ -31,8 +31,12 @@ Releases cut before these assets were added (v0.8.0 and earlier) have no `SHA256
   `package/services/metadata/core-properties/*.psmdcp` part (and the `_rels/.rels` that names
   it) and zip timestamps into every package, so no rebuild reproduces the container byte for
   byte. Those two OPC metadata entries are left out of the entry lines for the same reason.
-  The [`reproducible-build.yml`](../.github/workflows/reproducible-build.yml) check packs
-  every template twice on each change under `src/` and fails if the payload ever differs.
+  The [`reproducible-build.yaml`](../.github/workflows/reproducible-build.yaml) check
+  (`Reproducible build`, the fleet's canonical copy) packs every packable project twice on
+  each pull request to `main`, with `git clean -xffd` in between, and fails unless every
+  package entry and every `.dll`/`.pdb` under `bin/Release/<tfm>/` is byte-identical. A
+  second job packs on Windows and reports cross-OS differences in its job summary without
+  failing.
 - **Cross-OS:** the release packs on the OS recorded in `BUILD-MANIFEST.txt`. `.gitattributes`
   pins LF line endings, so another OS is expected to match, but only the recorded OS is
   what the bar promises.
