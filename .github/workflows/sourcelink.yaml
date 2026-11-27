@@ -2,10 +2,10 @@ name: SourceLink
 
 # End-to-end SourceLink verification.
 #
-# Not applicable in this template-pack repo: nothing under src/ targets net10.0 (the
-# *.template.pack.csproj packers are netstandard2.0 and ship no assembly; the Content/
-# app csprojs are template payload on net8.0), so the build loop below skips every
-# project and no PDB is verified. Fleet-synced from repo-template and kept so template
+# Not applicable in this template-pack repo: no src/ project ships an assembly (the
+# *.template.pack.csproj packers are netstandard2.0 and pack only Content/ files; the
+# Content/ app csprojs are template payload, now on net10.0 since #610), so the build
+# loop below skips every project and no PDB is verified. Fleet-synced from repo-template and kept so template
 # syncs stay clean; see docs/adr/0004-template-pack-ci-adaptations.md.
 #
 # Directory.Build.props enables Microsoft.SourceLink.GitHub + EmbedUntrackedSources
@@ -80,6 +80,14 @@ jobs:
             # and they produce no net10.0 PDB for the SourceLink step to verify.
             # Exact TFM only: net10.0-android / net10.0-windows10.0.x are platform TFMs that
             # cannot be built with -f net10.0.
+            # Template payload (src/*/Content/**) is never shipped as an assembly - the
+            # packs carry its source files - so it has no PDB a consumer would step into.
+            case "$proj" in
+              */Content/*)
+                echo "== skip $proj (template payload, ships no assembly) =="
+                continue
+                ;;
+            esac
             if ! grep -qE 'net10\.0([;<"]|$)' "$proj"; then
               echo "== skip $proj (no net10.0 target) =="
               continue
@@ -99,8 +107,8 @@ jobs:
           shopt -s globstar nullglob
           pdbs=(src/**/bin/Release/net10.0/*.pdb)
           if [ ${#pdbs[@]} -eq 0 ]; then
-            # Every src project was skipped above (no exact net10.0 target: template
-            # packs, netstandard-only libraries, platform-TFM apps). Nothing to verify
+            # Every src project was skipped above (template payload, or no exact
+            # net10.0 target: template packs, netstandard-only libraries, platform-TFM apps). Nothing to verify
             # is not a failure; the build step already proved the projects compile.
             echo "::notice::No src project targets net10.0 - no PDBs to verify; skipping."
             exit 0
