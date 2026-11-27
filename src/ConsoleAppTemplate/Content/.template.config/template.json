@@ -13,7 +13,7 @@
 	"baselines": {
 		"default": {
 			"defaultOverrides": {
-				"framework": "net8.0",
+				"framework": "net10.0",
 				"version": "0.1.0"
 			}
 		}
@@ -44,27 +44,19 @@
 			"datatype": "choice",
 			"choices": [
 				{
-					"choice": "net8.0",
-					"description": ".NET 8.0 (LTS)"
-				},
-				{
-					"choice": "net9.0",
-					"description": ".NET 9.0 (STS)"
-				},
-				{
 					"choice": "net10.0",
 					"description": ".NET 10.0 (LTS)"
 				}
 			],
-			"replaces": "net8.0",
-			"defaultValue": "net8.0"
+			"replaces": "net10.0",
+			"defaultValue": "net10.0"
 		},
 
 		"sdk-channel": {
 			"type": "derived",
 			"valueSource": "framework",
 			"valueTransform": "toSdkChannel",
-			"replaces": "8.0.x"
+			"replaces": "10.0.x"
 		},
 
 		"version": {
