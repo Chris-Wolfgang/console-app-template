@@ -16,7 +16,7 @@ This is a **.NET template pack** repository that provides `dotnet new` templates
 ## Build and Validation Instructions
 
 ### Prerequisites
-- .NET SDK (8.0+ recommended)
+- .NET SDK (10.0+ required)
 - DevSkim CLI (installed via `dotnet tool install --global Microsoft.CST.DevSkim.CLI`)
 
 ### Build Process

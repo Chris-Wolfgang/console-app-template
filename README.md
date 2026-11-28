@@ -7,7 +7,7 @@ A robust set of .NET templates for building console applications with modern dev
 [![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/console-app-template/pr.yaml?event=pull_request&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/console-app-template/actions/workflows/pr.yaml)
 [![Release](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/console-app-template/release.yaml?label=release&logo=github)](https://github.com/Chris-Wolfgang/console-app-template/actions/workflows/release.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg)](https://dotnet.microsoft.com/)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github)](https://github.com/Chris-Wolfgang/console-app-template)
 
 ---
@@ -58,8 +58,8 @@ Each of the four packages installs one template:
 
 | Template | `dotnet new` short name | Generated project targets |
 |---|---|---|
-| Wolfgang Console App | `cwconsole` | `net8.0` |
-| Wolfgang Console App (Native AOT) | `cwconsole-aot` | `net8.0` |
+| Wolfgang Console App | `cwconsole` | `net10.0` |
+| Wolfgang Console App (Native AOT) | `cwconsole-aot` | `net10.0` |
 | Wolfgang Console SubCommand | `cwsubcmd` | Adds files to an existing project (inherits host's TFM) |
 | Wolfgang Console ETL SubCommand | `cwsubcmdetl` | Adds files to an existing project (inherits host's TFM) |
 
@@ -88,7 +88,7 @@ See the [NuGet package page](https://www.nuget.org/packages/Wolfgang.Template.Co
 
 ### Prerequisites
 
-- [.NET 8.0 SDK or later](https://dotnet.microsoft.com/en-us/download)
+- [.NET 10.0 SDK or later](https://dotnet.microsoft.com/en-us/download)
 - (Optional) [Visual Studio](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/)
 
 ### Installation
@@ -156,7 +156,7 @@ You can also publish the app and run the executable:
 
 ```sh
 dotnet publish -c Release
-./bin/Release/net8.0/publish/MyConsoleApp.exe [options]
+./bin/Release/net10.0/publish/MyConsoleApp.exe [options]
 ```
 
 ### Command Line Options
@@ -311,7 +311,7 @@ pwsh ./scripts/build-pr.ps1
 
 There are no `dotnet test` projects in `src/ConsoleAppTemplate.sln` — this is a template pack. The tests are the snapshot check above and the CI smoke matrix in `pr.yaml`, which packs every template, installs it, generates a project per option set and builds it.
 
-The smoke matrix covers five legs with the documented minimum SDK (8.0): Linux x64 (`ubuntu-latest`), Linux ARM64 (`ubuntu-24.04-arm`), Windows x64 (`windows-latest`), Windows ARM64 (`windows-11-arm`) and macOS ARM64 (`macos-latest`); SDK 9.0 and 10.0 are spot-checked on Linux x64. The generated app targets net8.0, so every leg builds and runs that one TFM.
+The smoke matrix covers five legs with the documented minimum SDK (10.0): Linux x64 (`ubuntu-latest`), Linux ARM64 (`ubuntu-24.04-arm`), Windows x64 (`windows-latest`), Windows ARM64 (`windows-11-arm`) and macOS ARM64 (`macos-latest`). The generated app targets net10.0, so every leg builds and runs that one TFM.
 
 
 

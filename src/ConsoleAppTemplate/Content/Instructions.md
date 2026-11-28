@@ -426,7 +426,7 @@ Customize it with csproj properties as needed:
 <PropertyGroup>
     <ContainerRepository>my-app</ContainerRepository>
     <ContainerImageTags>1.0.0;latest</ContainerImageTags>
-    <ContainerBaseImage>mcr.microsoft.com/dotnet/runtime:8.0</ContainerBaseImage>
+    <ContainerBaseImage>mcr.microsoft.com/dotnet/runtime:10.0</ContainerBaseImage>
 </PropertyGroup>
 ```
 
